@@ -1,14 +1,14 @@
 import { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
+  debug: process.env.NODE_ENV === "development",
+  session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
     newUser: "/",
   },
-  providers: [
-    // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
-    // while this file is also used in non-Node.js environments
-  ],
+  providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       let isLoggedIn = !!auth?.user;
@@ -21,12 +21,12 @@ export const authConfig = {
       }
 
       if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+        return true;
       }
 
       if (isOnChat) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return false;
       }
 
       if (isLoggedIn) {

@@ -1,32 +1,40 @@
-import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+import { sql } from '@/lib/db';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-config({
-  path: ".env.local",
-});
+async function runMigration() {
+  try {
+    // 读取migrations目录下的所有SQL文件
+    const migrationsDir = path.join(process.cwd(), 'db', 'migrations');
+    const files = await fs.readdir(migrationsDir);
+    
+    // 按文件名排序以确保正确的执行顺序
+    const sqlFiles = files
+      .filter((f: string) => f.endsWith('.sql'))
+      .sort();
+    
+    console.log('Running migrations...');
+    
+    for (const file of sqlFiles) {
+      const filePath = path.join(migrationsDir, file);
+      const content = await fs.readFile(filePath, 'utf8');
+      
+      console.log(`Executing ${file}...`);
+      try {
+        // 使用模板字符串执行 SQL
+        await sql`${content}`;
+        console.log(`Completed ${file}`);
+      } catch (error) {
+        console.error(`Error executing ${file}:`, error);
+        throw error;
+      }
+    }
 
-const runMigrate = async () => {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error("POSTGRES_URL is not defined");
+    console.log('All migrations completed successfully');
+  } catch (error) {
+    console.error('Migration failed:', error);
+    process.exit(1);
   }
+}
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
-  const db = drizzle(connection);
-
-  console.log("⏳ Running migrations...");
-
-  const start = Date.now();
-  await migrate(db, { migrationsFolder: "./lib/drizzle" });
-  const end = Date.now();
-
-  console.log("✅ Migrations completed in", end - start, "ms");
-  process.exit(0);
-};
-
-runMigrate().catch((err) => {
-  console.error("❌ Migration failed");
-  console.error(err);
-  process.exit(1);
-});
+runMigration();

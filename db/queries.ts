@@ -4,6 +4,8 @@ import { genSaltSync, hashSync } from "bcrypt-ts";
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { sql } from '@/lib/db';
+import { redis } from '@/lib/db';
 
 import { user, chat, User, reservation } from "./schema";
 
@@ -14,22 +16,94 @@ let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
 let db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
+  // First try to get from Redis cache
+  const cachedUser = await redis.get(`user:${email}`);
+  if (cachedUser) {
+    return [cachedUser as User];
+  }
+
+  // If not in cache, query from Postgres
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    const result = await sql`
+      SELECT * FROM "User" 
+      WHERE email = ${email}
+    `;
+    
+    if (result.length > 0) {
+      // Cache the user data
+      await redis.set(`user:${email}`, result[0], {
+        ex: 3600 // Expire in 1 hour
+      });
+    }
+    
+    return result;
   } catch (error) {
-    console.error("Failed to get user from database");
+    console.error("Failed to get user:", error);
     throw error;
   }
 }
 
-export async function createUser(email: string, password: string) {
-  let salt = genSaltSync(10);
-  let hash = hashSync(password, salt);
+export async function createUser(userData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  agreedToTerms: boolean;
+}) {
+  const salt = genSaltSync(10);
+  const hashedPassword = hashSync(userData.password, salt);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    // Store user in Postgres
+    const result = await sql`
+      INSERT INTO "User" (
+        first_name, 
+        last_name,
+        email,
+        password,
+        agreed_to_terms,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${userData.firstName},
+        ${userData.lastName},
+        ${userData.email},
+        ${hashedPassword},
+        ${userData.agreedToTerms},
+        NOW(),
+        NOW()
+      )
+      RETURNING *
+    `;
+
+    const newUser = result[0];
+
+    // Store profile image if provided
+    if (userData.profileImage) {
+      const { url } = await put(
+        `profile-images/${newUser.id}`, 
+        userData.profileImage,
+        { access: 'public' }
+      );
+      
+      await sql`
+        UPDATE "User"
+        SET profile_image_url = ${url}
+        WHERE id = ${newUser.id}
+      `;
+      
+      newUser.profileImageUrl = url;
+    }
+
+    // Cache the new user
+    await redis.set(`user:${userData.email}`, newUser, {
+      ex: 3600 // Expire in 1 hour
+    });
+
+    return newUser;
   } catch (error) {
-    console.error("Failed to create user in database");
+    console.error("Failed to create user:", error);
     throw error;
   }
 }

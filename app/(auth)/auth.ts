@@ -3,6 +3,7 @@ import NextAuth, { User, Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { getUser } from "@/db/queries";
+import { sql } from "@/lib/db";
 
 import { authConfig } from "./auth.config";
 
@@ -19,12 +20,31 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        let users = await getUser(email);
-        if (users.length === 0) return null;
-        let passwordsMatch = await compare(password, users[0].password!);
-        if (passwordsMatch) return users[0] as any;
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        try {
+          const result = await sql`
+            SELECT * FROM "User"
+            WHERE email = ${credentials.email}
+          `;
+
+          if (result.length === 0) return null;
+
+          const user = result[0];
+          const passwordsMatch = await compare(credentials.password, user.password);
+          
+          if (!passwordsMatch) return null;
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.first_name} ${user.last_name}`,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
+        }
       },
     }),
   ],
@@ -33,20 +53,12 @@ export const {
       if (user) {
         token.id = user.id;
       }
-
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
       }
-
       return session;
     },
   },
