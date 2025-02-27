@@ -1,6 +1,7 @@
 import { compare } from "bcrypt-ts";
 import NextAuth, { Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { NeonQueryFunction } from '@neondatabase/serverless';
 
 import { getUser } from "@/db/queries";
 import { sql } from "@/lib/db";
@@ -40,12 +41,14 @@ export const {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const result = await sql.query(
-            `SELECT * FROM "User" WHERE email = $1`,
-            [credentials.email]
-          ) as DbUser[];
+          // 使用模板字符串方式，并正确处理类型
+          const result = await sql`
+            SELECT id, email, password, first_name, last_name 
+            FROM "User" 
+            WHERE email = ${credentials.email}
+          ` as unknown as DbUser[];
 
-          if (result.length === 0) return null;
+          if (!result || result.length === 0) return null;
 
           const user = result[0];
           const passwordsMatch = await compare(credentials.password, user.password);
