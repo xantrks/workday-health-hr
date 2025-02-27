@@ -1,4 +1,4 @@
-import { compare } from "bcrypt-ts";
+import { compare } from "bcryptjs";
 import NextAuth, { Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';

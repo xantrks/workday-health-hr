@@ -28,6 +28,7 @@
     "@vercel/postgres": "^0.10.0",
     "ai": "3.4.9",
     "bcrypt-ts": "^5.0.2",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
@@ -57,6 +58,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/d3-scale": "^4.0.8",
     "@types/node": "^20.11.24",
     "@types/pdf-parse": "^1.1.4",

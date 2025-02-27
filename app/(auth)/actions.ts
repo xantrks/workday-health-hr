@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { hashSync } from "bcrypt-ts";
+import { hashSync } from "bcryptjs";
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/db";
 
@@ -145,13 +145,15 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       
     } catch (dbError) {
       console.error("Database error:", dbError);
-      // 检查是否是唯一约束冲突
-      if (dbError.code === '23505') { // PostgreSQL 唯一约束冲突的错误码
-        return {
-          status: "user_exists"
-        };
+      // 添加类型检查
+      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
+        if (dbError.code === '23505') {
+          return {
+            status: "user_exists"
+          };
+        }
       }
-      throw dbError; // 抛出其他数据库错误
+      throw dbError;
     }
 
   } catch (error) {
