@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 import { getToken } from 'next-auth/jwt';
 
 interface Token {
@@ -15,6 +16,20 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
+  
+  // 处理根路径访问逻辑 - 重定向到适当的页面
+  if (path === '/' || path === '') {
+    if (token) {
+      // 已登录用户重定向到其仪表盘
+      const dashboardPath = token.role === 'hr' ? 
+        `/hr-dashboard/${token.id}` : 
+        `/employee-dashboard/${token.id}`;
+      return NextResponse.redirect(new URL(dashboardPath, origin));
+    } else {
+      // 未登录用户重定向到登录页
+      return NextResponse.redirect(new URL('/login', origin));
+    }
+  }
   
   // 如果是登录页面，已登录用户重定向到对应仪表盘
   if (path === '/login' && token) {
@@ -44,7 +59,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/',
     '/login',
+    '/register',
     '/hr-dashboard/:path*',
     '/employee-dashboard/:path*'
   ]

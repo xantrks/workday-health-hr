@@ -8,8 +8,8 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sanicle.cloud",
-  description: "Health Management Solution for Professional Women",
+  title: "FemTech 女性健康平台",
+  description: "专业女性的健康管理解决方案",
   icons: {
     icon: "/images/sanicle_logo.svg"
   }
@@ -22,11 +22,13 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="zh" suppressHydrationWarning>
-      <body className="antialiased" suppressHydrationWarning>
+      <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
           <Toaster position="top-center" />
           <Navbar />
-          {children}
+          <main className="min-h-[calc(100vh-4rem)] flex flex-col">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>

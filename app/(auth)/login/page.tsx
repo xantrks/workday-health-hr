@@ -4,8 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { toast } from "sonner";
 import { useFormState } from 'react-dom';
+import { toast } from "sonner";
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -28,11 +28,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (state.status === "failed") {
-      toast.error("Invalid email or password");
+      toast.error("邮箱或密码错误");
     } else if (state.status === "invalid_data") {
-      toast.error("Please check your input");
+      toast.error("请检查您的输入信息");
     } else if (state.status === "success" && state.userId) {
-      toast.success("Login successful");
+      toast.success("登录成功");
       const basePath = window.location.origin;
       const dashboardPath = state.role === "hr" ? 
         `/hr-dashboard/${state.userId}` : 
@@ -42,9 +42,9 @@ export default function LoginPage() {
   }, [state.status, state.role, state.userId]);
 
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] w-full">
       {/* 左侧品牌区域 */}
-      <div className="hidden w-1/2 bg-primary lg:flex flex-col items-center justify-center p-8">
+      <div className="hidden lg:flex w-1/2 bg-primary items-center justify-center p-8">
         <div className="max-w-md text-white">
           <Image 
             src="/images/sanicle_logo_white.svg" 
@@ -53,33 +53,33 @@ export default function LoginPage() {
             height={60}
             className="mb-8"
           />
-          <h1 className="text-3xl font-bold mb-4">Welcome to FemTech Health Platform</h1>
+          <h1 className="text-3xl font-bold mb-4">欢迎使用 FemTech 女性健康平台</h1>
           <p className="text-lg opacity-90 mb-6">
-            We are dedicated to providing comprehensive health management solutions for professional women, helping you better balance work and health.
+            我们致力于为职场女性提供全面的健康管理解决方案，帮助您更好地平衡工作与健康。
           </p>
-          <div className="grid grid-cols-2 gap-4 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">Period Tracking</h3>
-              <p className="text-sm opacity-80">Smart cycle prediction to help you better plan work and life</p>
+              <h3 className="font-medium text-lg mb-2">经期追踪</h3>
+              <p className="text-sm opacity-80">智能周期预测，帮助您更好地规划工作和生活</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">Health Consultation</h3>
-              <p className="text-sm opacity-80">Chat with AI health assistant anytime for professional advice</p>
+              <h3 className="font-medium text-lg mb-2">健康咨询</h3>
+              <p className="text-sm opacity-80">随时与AI健康助手聊天，获取专业建议</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">Medical Appointments</h3>
-              <p className="text-sm opacity-80">Convenient medical service booking system to save your time</p>
+              <h3 className="font-medium text-lg mb-2">医疗预约</h3>
+              <p className="text-sm opacity-80">便捷的医疗服务预约系统，节省您的时间</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">Data Analysis</h3>
-              <p className="text-sm opacity-80">Personalized health data analysis to help you monitor your health</p>
+              <h3 className="font-medium text-lg mb-2">数据分析</h3>
+              <p className="text-sm opacity-80">个性化健康数据分析，帮助您监控健康状况</p>
             </div>
           </div>
         </div>
       </div>
       
       {/* 右侧登录表单 */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 pt-16 md:pt-20">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex justify-center mb-8">
             <Image 
@@ -91,37 +91,37 @@ export default function LoginPage() {
           </div>
           
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Welcome Back
+            <h2 className="text-2xl font-bold tracking-tight">
+              欢迎回来
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Please sign in to your account
+              请登录您的账户
             </p>
           </div>
 
           <AuthForm action={formAction} variant="login">
             <div className="space-y-5">
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium">邮箱</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  placeholder="Enter your email"
+                  placeholder="请输入您的邮箱"
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium">密码</Label>
                   <Link
                     href="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    Forgot password?
+                    忘记密码？
                   </Link>
                 </div>
                 <Input
@@ -130,7 +130,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  placeholder="Enter your password"
+                  placeholder="请输入您的密码"
                   className="mt-1"
                 />
               </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                 className="w-full py-2.5"
                 loading={state.status === "in_progress"}
               >
-                Sign in
+                登录
               </SubmitButton>
 
               <div className="relative my-6">
@@ -148,18 +148,18 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs">
                   <span className="bg-background px-2 text-muted-foreground">
-                    or
+                    或者
                   </span>
                 </div>
               </div>
 
               <p className="text-center text-sm text-muted-foreground mb-4">
-                Don&apos;t have an account?{" "}
+                还没有账户？{" "}
                 <Link
                   href="/register"
                   className="font-medium text-primary hover:underline"
                 >
-                  Sign up
+                  立即注册
                 </Link>
               </p>
             </div>

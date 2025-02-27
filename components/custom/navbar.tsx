@@ -1,6 +1,6 @@
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 import { auth, signOut } from "@/app/(auth)/auth";
 
@@ -26,67 +26,76 @@ export const Navbar = async () => {
   }
 
   return (
-    <>
-      <div className="bg-background absolute top-0 left-0 w-dvw py-2 px-3 justify-between flex flex-row items-center z-30">
-        <div className="flex flex-row gap-3 items-center">
+    <header className="sticky top-0 w-full bg-background border-b z-50 shadow-sm">
+      <div className="container mx-auto py-3 px-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
           <History user={session?.user} />
-          <div className="flex flex-row gap-2 items-center">
-            <Image
-              src="/images/sanicle_logo.svg"
-              height={28}
-              width={100}
-              alt="Sanicle Logo"
-            />
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/images/sanicle_logo.svg"
+                height={28}
+                width={100}
+                alt="Sanicle Logo"
+                className="h-7 w-auto"
+              />
+            </Link>
             <div className="text-zinc-500 hidden md:block">
               <SlashIcon size={16} />
             </div>
-            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit hidden md:block">
+            <div className="text-sm text-zinc-700 dark:text-zinc-300 truncate w-28 md:w-fit hidden md:block">
               FemTech Health Platform
             </div>
           </div>
         </div>
 
-        {session?.user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="py-1.5 px-2 h-fit font-normal"
-                variant="secondary"
-              >
-                {session.user?.email}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <ThemeToggle />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="p-1 z-50">
-                <form
-                  className="w-full"
-                  action={async () => {
-                    "use server";
-
-                    await signOut({
-                      redirectTo: "/",
-                    });
-                  }}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          
+          {session?.user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="py-1.5 px-2 h-fit font-normal"
+                  variant="secondary"
                 >
-                  <button
-                    type="submit"
-                    className="w-full text-left px-1 py-0.5 text-red-500"
+                  {session.user?.email}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <Link href={session.user.role === 'hr' ? `/hr-dashboard/${session.user.id}` : `/employee-dashboard/${session.user.id}`} className="w-full">
+                    我的仪表盘
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-1 z-50">
+                  <form
+                    className="w-full"
+                    action={async () => {
+                      "use server";
+
+                      await signOut({
+                        redirectTo: "/login",
+                      });
+                    }}
                   >
-                    Sign out
-                  </button>
-                </form>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button className="py-1.5 px-2 h-fit font-normal text-white" asChild>
-            <Link href="/login">Sign in</Link>
-          </Button>
-        )}
+                    <button
+                      type="submit"
+                      className="w-full text-left px-1 py-0.5 text-red-500"
+                    >
+                      退出登录
+                    </button>
+                  </form>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="py-1.5 px-4 h-fit font-normal text-white" asChild>
+              <Link href="/login">登录</Link>
+            </Button>
+          )}
+        </div>
       </div>
-    </>
+    </header>
   );
 };
