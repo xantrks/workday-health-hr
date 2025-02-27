@@ -1,6 +1,7 @@
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
+import type { Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
 
