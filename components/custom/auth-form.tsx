@@ -37,7 +37,7 @@ export function AuthForm({
     <form action={action} className="space-y-4">
       {/* 只在注册表单中显示头像上传 */}
       {variant === "register" && (
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 mb-6">
           <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary">
             {previewUrl ? (
               <img
@@ -46,7 +46,7 @@ export function AuthForm({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
+              <div className="w-full h-full flex items-center justify-center bg-secondary">
                 <IconUser className="w-12 h-12 text-primary" />
               </div>
             )}
@@ -63,7 +63,7 @@ export function AuthForm({
             htmlFor="profileImage"
             className="text-sm text-primary cursor-pointer hover:underline"
           >
-            Upload Profile Picture
+            上传头像
           </Label>
         </div>
       )}

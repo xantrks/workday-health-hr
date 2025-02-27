@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import { auth, signOut } from "@/app/(auth)/auth";
 
@@ -16,6 +17,13 @@ import {
 
 export const Navbar = async () => {
   let session = await auth();
+  const headersList = headers();
+  const pathname = headersList.get("x-pathname") || "";
+  
+  // 在登录和注册页面不显示导航栏
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
 
   return (
     <>
@@ -24,21 +32,21 @@ export const Navbar = async () => {
           <History user={session?.user} />
           <div className="flex flex-row gap-2 items-center">
             <Image
-              src="/images/gemini-logo.png"
-              height={20}
-              width={20}
-              alt="gemini logo"
+              src="/images/sanicle_logo.svg"
+              height={28}
+              width={100}
+              alt="Sanicle Logo"
             />
-            <div className="text-zinc-500">
+            <div className="text-zinc-500 hidden md:block">
               <SlashIcon size={16} />
             </div>
-            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit">
-              Next.js Gemini Chatbot
+            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit hidden md:block">
+              FemTech 女性健康平台
             </div>
           </div>
         </div>
 
-        {session ? (
+        {session?.user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -67,7 +75,7 @@ export const Navbar = async () => {
                     type="submit"
                     className="w-full text-left px-1 py-0.5 text-red-500"
                   >
-                    Sign out
+                    退出登录
                   </button>
                 </form>
               </DropdownMenuItem>
@@ -75,7 +83,7 @@ export const Navbar = async () => {
           </DropdownMenu>
         ) : (
           <Button className="py-1.5 px-2 h-fit font-normal text-white" asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">登录</Link>
           </Button>
         )}
       </div>
