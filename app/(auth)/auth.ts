@@ -1,7 +1,7 @@
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
-import type { Session } from "next-auth";
+import type { Session, User as NextAuthUser } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
 
@@ -10,15 +10,16 @@ import { sql } from "@/lib/db";
 
 import { authConfig } from "./auth.config";
 
-interface ExtendedJWT extends JWT {
-  id: string;
-  role: string;
-}
-
-interface User {
+// 扩展 NextAuth 的 User 类型
+interface User extends NextAuthUser {
   id: string;
   email: string;
   name: string;
+  role: string;
+}
+
+interface ExtendedJWT extends JWT {
+  id: string;
   role: string;
 }
 
@@ -53,7 +54,7 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         const email = credentials?.email as string;
         const password = credentials?.password as string;
 
@@ -84,7 +85,7 @@ export const {
             email: user.email,
             name: `${user.first_name} ${user.last_name}`,
             role: user.role,
-          };
+          } as User;
         } catch (error) {
           console.error("Auth error:", error);
           return null;
@@ -94,16 +95,14 @@ export const {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // 初始登录时
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = (user as User).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // 确保这些字段存在于session.user中
         (session.user as User).id = token.id as string;
         (session.user as User).role = token.role as string;
       }
