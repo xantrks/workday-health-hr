@@ -1,5 +1,6 @@
 import { compare } from "bcryptjs";
 import NextAuth, { Session, User as NextAuthUser } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
 
@@ -8,7 +9,10 @@ import { sql } from "@/lib/db";
 
 import { authConfig } from "./auth.config";
 
-// 扩展 NextAuth 的 User 类型
+interface ExtendedJWT extends JWT {
+  role?: string;
+}
+
 interface User extends NextAuthUser {
   role?: string;
 }
@@ -92,15 +96,15 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as User).role;
+        (token as ExtendedJWT).id = user.id;
+        (token as ExtendedJWT).role = (user as User).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as User).role = token.role as string;
+        session.user.id = (token as ExtendedJWT).id as string;
+        (session.user as User).role = (token as ExtendedJWT).role as string;
       }
       return session as ExtendedSession;
     },

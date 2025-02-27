@@ -74,8 +74,8 @@ export async function createUser(userData: {
   profileImage?: File;
 }) {
   try {
-    // 首先创建用户基本信息
-    const result = await sql<DbUser[]>`
+    // 使用参数化查询
+    const result = await sql`
       INSERT INTO "User" (
         first_name,
         last_name,
@@ -115,14 +115,13 @@ export async function createUser(userData: {
         newUser.profileImageUrl = url;
       } catch (uploadError) {
         console.error("Failed to upload profile image:", uploadError);
-        // 不要因为头像上传失败而阻止用户创建
       }
     }
 
     return newUser;
   } catch (error) {
     console.error("Failed to create user:", error);
-    throw error; // 向上传递错误以便正确处理
+    throw error;
   }
 }
 

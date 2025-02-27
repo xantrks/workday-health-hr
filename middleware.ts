@@ -10,6 +10,9 @@ interface Token {
   email?: string;
   picture?: string;
   sub?: string;
+  iat?: number;
+  exp?: number;
+  jti?: string;
 }
 
 export async function middleware(request: NextRequest) {

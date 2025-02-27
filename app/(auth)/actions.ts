@@ -1,7 +1,7 @@
 "use server";
 
-import { z } from "zod";
 import { hashSync } from "bcryptjs";
+import { z } from "zod";
 
 import { createUser, getUser } from "@/db/queries";
 import { redis } from "@/lib/db";
