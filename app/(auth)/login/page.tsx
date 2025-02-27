@@ -33,13 +33,13 @@ export default function LoginPage() {
       toast.error("Please check your input");
     } else if (state.status === "success" && state.userId) {
       toast.success("Login successful");
-      if (state.role === "HR") {
-        router.push(`/hr-dashboard/${state.userId}`);
-      } else {
-        router.push(`/employee-dashboard/${state.userId}`);
-      }
+      const basePath = window.location.origin;
+      const dashboardPath = state.role === "HR" ? 
+        `/hr-dashboard/${state.userId}` : 
+        `/employee-dashboard/${state.userId}`;
+      window.location.href = `${basePath}${dashboardPath}`;
     }
-  }, [state.status, state.role, state.userId, router]);
+  }, [state.status, state.role, state.userId]);
 
   return (
     <div className="flex min-h-screen w-full overflow-x-hidden">

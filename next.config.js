@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'sanicle-ai.vercel.app'],
+      allowedOrigins: ['localhost:3000', process.env.NEXTAUTH_URL],
     }
   },
   serverExternalPackages: ['bcryptjs']

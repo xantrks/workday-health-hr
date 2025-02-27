@@ -14,28 +14,29 @@ export async function middleware(request: NextRequest) {
   }) as Token | null;
 
   const path = request.nextUrl.pathname;
+  const origin = request.nextUrl.origin;
   
   // 如果是登录页面，已登录用户重定向到对应仪表盘
   if (path === '/login' && token) {
     const dashboardPath = token.role === 'HR' ? 
       `/hr-dashboard/${token.id}` : 
       `/employee-dashboard/${token.id}`;
-    return NextResponse.redirect(new URL(dashboardPath, request.url));
+    return NextResponse.redirect(new URL(dashboardPath, origin));
   }
 
   // 如果访问仪表盘但未登录，重定向到登录页
   if ((path.startsWith('/hr-dashboard') || path.startsWith('/employee-dashboard')) && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/login', origin));
   }
 
   // 如果访问HR仪表盘但不是HR角色，重定向到未授权页面
   if (path.startsWith('/hr-dashboard') && token?.role !== 'HR') {
-    return NextResponse.redirect(new URL('/unauthorized', request.url));
+    return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
   // 如果访问员工仪表盘但是HR角色，重定向到未授权页面
   if (path.startsWith('/employee-dashboard') && token?.role === 'HR') {
-    return NextResponse.redirect(new URL('/unauthorized', request.url));
+    return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
   return NextResponse.next();
