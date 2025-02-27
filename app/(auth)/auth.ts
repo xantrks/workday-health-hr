@@ -1,7 +1,8 @@
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
-import type { Session, User as NextAuthUser } from "next-auth";
+import type { Session, User as NextAuthUser, DefaultUser } from "next-auth";
+import type { AdapterUser } from "@auth/core/adapters";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
 
@@ -10,32 +11,26 @@ import { sql } from "@/lib/db";
 
 import { authConfig } from "./auth.config";
 
-// 扩展 NextAuth 的 User 类型
-interface User extends NextAuthUser {
+// 扩展 NextAuth 的基础用户类型
+interface CustomUser extends DefaultUser {
   id: string;
   email: string;
   name: string;
   role: string;
 }
 
+// 扩展 Session 用户类型
+interface ExtendedSession extends Session {
+  user: CustomUser;
+}
+
+// 扩展 JWT 类型
 interface ExtendedJWT extends JWT {
   id: string;
   role: string;
 }
 
-interface ExtendedSession extends Session {
-  user: User;
-}
-
-// 定义返回给前端的用户类型
-interface DefaultUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
-// 改名为 DbUser 以避免与 next-auth 的 User 冲突
+// 数据库用户类型
 interface DbUser {
   id: string;
   email: string;
@@ -54,7 +49,7 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials): Promise<User | null> {
+      async authorize(credentials): Promise<CustomUser | null> {
         const email = credentials?.email as string;
         const password = credentials?.password as string;
 
@@ -80,12 +75,15 @@ export const {
             return null;
           }
 
-          return {
+          // 返回自定义用户对象
+          const customUser: CustomUser = {
             id: user.id,
             email: user.email,
             name: `${user.first_name} ${user.last_name}`,
             role: user.role,
-          } as User;
+          };
+
+          return customUser;
         } catch (error) {
           console.error("Auth error:", error);
           return null;
@@ -96,15 +94,18 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as User).role;
+        // 使用类型断言确保安全访问
+        const customUser = user as CustomUser;
+        token.id = customUser.id;
+        token.role = customUser.role;
       }
-      return token;
+      return token as ExtendedJWT;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as User).id = token.id as string;
-        (session.user as User).role = token.role as string;
+        const customUser = session.user as CustomUser;
+        customUser.id = token.id as string;
+        customUser.role = token.role as string;
       }
       return session as ExtendedSession;
     },
