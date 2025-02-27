@@ -50,19 +50,20 @@ export const login = async (
       });
 
       if (result?.error) {
+        console.error("SignIn error:", result.error);
         return { status: "failed" };
       }
 
+      // 确保返回用户ID和角色
       return { 
         status: "success",
         role: user.role,
-        userId: user.id
+        userId: user.id.toString() // 确保ID是字符串
       };
     } catch (signInError: any) {
       console.error("SignIn error:", signInError);
       return { status: "failed" };
     }
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
@@ -179,6 +180,7 @@ export async function register(prevState: RegisterActionState, formData: FormDat
 }
 
 const getBaseUrl = () => {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT || 3000}`;
 }

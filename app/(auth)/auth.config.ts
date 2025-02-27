@@ -11,28 +11,29 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      let isLoggedIn = !!auth?.user;
-      let isOnChat = nextUrl.pathname.startsWith("/");
-      let isOnRegister = nextUrl.pathname.startsWith("/register");
-      let isOnLogin = nextUrl.pathname.startsWith("/login");
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/hr-dashboard') || 
+                           nextUrl.pathname.startsWith('/employee-dashboard');
+      const isOnAuth = nextUrl.pathname.startsWith('/login') || 
+                      nextUrl.pathname.startsWith('/register');
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL("/", nextUrl));
+      // 已登录用户访问登录/注册页面时重定向到仪表盘
+      if (isLoggedIn && isOnAuth) {
+        const role = (auth.user as any).role;
+        const userId = (auth.user as any).id;
+        const dashboardPath = role === 'HR' ? 
+          `/hr-dashboard/${userId}` : 
+          `/employee-dashboard/${userId}`;
+        return Response.redirect(new URL(dashboardPath, nextUrl));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true;
-      }
+      // 允许访问登录和注册页面
+      if (isOnAuth) return true;
 
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false;
-      }
+      // 仪表盘页面需要登录
+      if (isOnDashboard) return isLoggedIn;
 
-      if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-
+      // 其他页面默认允许访问
       return true;
     },
   },
