@@ -2,6 +2,7 @@
 
 import { hashSync } from "bcryptjs";
 import { z } from "zod";
+import { SignInResponse } from "next-auth/react";
 
 import { createUser, getUser } from "@/db/queries";
 import { redis } from "@/lib/db";
@@ -37,23 +38,28 @@ export const login = async (
     
     const role = userResult[0]?.role;
 
-    // 然后进行登录
-    const result = await signIn("credentials", {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: true,
-      callbackUrl: getBaseUrl() + (role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
-    });
+    try {
+      // 然后进行登录
+      const result = await signIn("credentials", {
+        email: validatedData.email,
+        password: validatedData.password,
+        redirect: true,
+        callbackUrl: getBaseUrl() + (role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
+      });
 
-    if (result?.error) {
-      return { status: "failed" };
+      // 由于 redirect: true，这里的代码通常不会执行
+      return { 
+        status: "success",
+        role: role 
+      };
+    } catch (signInError: any) {
+      if (signInError?.message) {
+        console.error("SignIn error:", signInError);
+        return { status: "failed" };
+      }
+      throw signInError;
     }
 
-    // 移除重复的重定向代码，因为 signIn 已经处理了重定向
-    return { 
-      status: "success",
-      role: role 
-    };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
