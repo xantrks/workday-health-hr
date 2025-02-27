@@ -34,7 +34,7 @@ export default function LoginPage() {
     } else if (state.status === "success" && state.userId) {
       toast.success("Login successful");
       const basePath = window.location.origin;
-      const dashboardPath = state.role === "HR" ? 
+      const dashboardPath = state.role === "hr" ? 
         `/hr-dashboard/${state.userId}` : 
         `/employee-dashboard/${state.userId}`;
       window.location.href = `${basePath}${dashboardPath}`;

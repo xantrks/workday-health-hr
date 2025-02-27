@@ -71,6 +71,7 @@ export async function createUser(userData: {
   email: string;
   password: string;
   agreedToTerms: boolean;
+  role?: string;
   profileImage?: File;
 }) {
   try {
@@ -90,7 +91,7 @@ export async function createUser(userData: {
         ${userData.email},
         ${userData.password},
         ${userData.agreedToTerms},
-        'employee'
+        ${userData.role || 'employee'}
       )
       RETURNING *
     `;

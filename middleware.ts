@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   
   // 如果是登录页面，已登录用户重定向到对应仪表盘
   if (path === '/login' && token) {
-    const dashboardPath = token.role === 'HR' ? 
+    const dashboardPath = token.role === 'hr' ? 
       `/hr-dashboard/${token.id}` : 
       `/employee-dashboard/${token.id}`;
     return NextResponse.redirect(new URL(dashboardPath, origin));
@@ -30,12 +30,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // 如果访问HR仪表盘但不是HR角色，重定向到未授权页面
-  if (path.startsWith('/hr-dashboard') && token?.role !== 'HR') {
+  if (path.startsWith('/hr-dashboard') && token?.role !== 'hr') {
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
   // 如果访问员工仪表盘但是HR角色，重定向到未授权页面
-  if (path.startsWith('/employee-dashboard') && token?.role === 'HR') {
+  if (path.startsWith('/employee-dashboard') && token?.role === 'hr') {
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
