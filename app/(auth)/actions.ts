@@ -29,18 +29,7 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    const result = await signIn("credentials", {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: true,
-      callbackUrl: getBaseUrl() + (userResult[0]?.role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
-    });
-
-    if (result?.error) {
-      return { status: "failed" };
-    }
-
-    // 获取用户角色
+    // 先获取用户角色
     const userResult = await sql`
       SELECT role FROM "User" 
       WHERE email = ${validatedData.email}
@@ -48,13 +37,19 @@ export const login = async (
     
     const role = userResult[0]?.role;
 
-    // 根据角色重定向
-    if (role === 'HR') {
-      window.location.href = `${getBaseUrl()}/hr/dashboard`;
-    } else {
-      window.location.href = `${getBaseUrl()}/employee/dashboard`;
+    // 然后进行登录
+    const result = await signIn("credentials", {
+      email: validatedData.email,
+      password: validatedData.password,
+      redirect: true,
+      callbackUrl: getBaseUrl() + (role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
+    });
+
+    if (result?.error) {
+      return { status: "failed" };
     }
 
+    // 移除重复的重定向代码，因为 signIn 已经处理了重定向
     return { 
       status: "success",
       role: role 
@@ -178,5 +173,3 @@ export async function register(prevState: RegisterActionState, formData: FormDat
 const getBaseUrl = () => {
   if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return `http://localhost:${process.env.PORT || 3000}`
-}

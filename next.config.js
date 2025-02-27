@@ -2,15 +2,11 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'your-domain.vercel.app'],
+      allowedOrigins: ['localhost:3000', 'sanicle-ai.vercel.app'],
     },
     serverComponentsExternalPackages: ['bcryptjs'],
     esmExternals: 'loose',
-  },
-  // 禁用 Edge Runtime
-  experimental: {
-    runtime: 'nodejs',
-  },
+  }
 }
 
 module.exports = nextConfig 
