@@ -4,6 +4,7 @@ import { genSaltSync, hashSync } from "bcrypt-ts";
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { put } from "@vercel/blob";
 import { sql } from '@/lib/db';
 import { redis } from '@/lib/db';
 
