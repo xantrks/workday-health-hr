@@ -17,18 +17,18 @@ export default function UnauthorizedPage() {
           height={200}
           className="mx-auto mb-6"
           onError={(e) => {
-            // 如果图片加载失败，使用默认图标
+            // If image fails to load, hide it
             e.currentTarget.style.display = 'none';
           }}
         />
-        <h1 className="text-2xl font-bold mb-4">访问未授权</h1>
-        <p className="text-muted-foreground mb-8">您没有权限访问此页面。请确认您使用了正确的账户登录。</p>
+        <h1 className="text-2xl font-bold mb-4">Unauthorized Access</h1>
+        <p className="text-muted-foreground mb-8">You do not have permission to access this page. Please ensure you are logged in with the correct account.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button onClick={() => router.push('/login')} variant="default" className="w-full sm:w-auto">
-            返回登录页面
+            Return to Login
           </Button>
           <Button onClick={() => router.back()} variant="outline" className="w-full sm:w-auto">
-            返回上一页
+            Go Back
           </Button>
         </div>
       </div>

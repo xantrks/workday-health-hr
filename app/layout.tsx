@@ -8,8 +8,8 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FemTech 女性健康平台",
-  description: "专业女性的健康管理解决方案",
+  title: "FemTech Health Platform",
+  description: "Health Management Solution for Professional Women",
   icons: {
     icon: "/images/sanicle_logo.svg"
   }
@@ -21,7 +21,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
           <Toaster position="top-center" />

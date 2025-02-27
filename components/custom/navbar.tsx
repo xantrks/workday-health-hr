@@ -20,7 +20,7 @@ export const Navbar = async () => {
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "";
   
-  // 在登录和注册页面不显示导航栏
+  // Don't show navbar on login and register pages
   if (pathname === "/login" || pathname === "/register") {
     return null;
   }
@@ -65,7 +65,7 @@ export const Navbar = async () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
                   <Link href={session.user.role === 'hr' ? `/hr-dashboard/${session.user.id}` : `/employee-dashboard/${session.user.id}`} className="w-full">
-                    我的仪表盘
+                    My Dashboard
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="p-1 z-50">
@@ -83,7 +83,7 @@ export const Navbar = async () => {
                       type="submit"
                       className="w-full text-left px-1 py-0.5 text-red-500"
                     >
-                      退出登录
+                      Sign Out
                     </button>
                   </form>
                 </DropdownMenuItem>
@@ -91,7 +91,7 @@ export const Navbar = async () => {
             </DropdownMenu>
           ) : (
             <Button className="py-1.5 px-4 h-fit font-normal text-white" asChild>
-              <Link href="/login">登录</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
           )}
         </div>

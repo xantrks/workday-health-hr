@@ -17,21 +17,21 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
   
-  // 处理根路径访问逻辑 - 重定向到适当的页面
+  // Handle root path access logic - redirect to appropriate page
   if (path === '/' || path === '') {
     if (token) {
-      // 已登录用户重定向到其仪表盘
+      // Redirect logged-in users to their dashboard
       const dashboardPath = token.role === 'hr' ? 
         `/hr-dashboard/${token.id}` : 
         `/employee-dashboard/${token.id}`;
       return NextResponse.redirect(new URL(dashboardPath, origin));
     } else {
-      // 未登录用户重定向到登录页
+      // Redirect non-logged-in users to login page
       return NextResponse.redirect(new URL('/login', origin));
     }
   }
   
-  // 如果是登录页面，已登录用户重定向到对应仪表盘
+  // If on login page and already logged in, redirect to appropriate dashboard
   if (path === '/login' && token) {
     const dashboardPath = token.role === 'hr' ? 
       `/hr-dashboard/${token.id}` : 
@@ -39,17 +39,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(dashboardPath, origin));
   }
 
-  // 如果访问仪表盘但未登录，重定向到登录页
+  // If accessing dashboard but not logged in, redirect to login page
   if ((path.startsWith('/hr-dashboard') || path.startsWith('/employee-dashboard')) && !token) {
     return NextResponse.redirect(new URL('/login', origin));
   }
 
-  // 如果访问HR仪表盘但不是HR角色，重定向到未授权页面
+  // If accessing HR dashboard but not HR role, redirect to unauthorized page
   if (path.startsWith('/hr-dashboard') && token?.role !== 'hr') {
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
-  // 如果访问员工仪表盘但是HR角色，重定向到未授权页面
+  // If accessing employee dashboard but is HR role, redirect to unauthorized page
   if (path.startsWith('/employee-dashboard') && token?.role === 'hr') {
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }

@@ -43,7 +43,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
 
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg">加载中...</div>
+      <div className="text-lg">Loading...</div>
     </div>;
   }
 
@@ -53,69 +53,69 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-primary">员工健康仪表盘</h1>
-          <p className="text-muted-foreground mt-1">欢迎回来, {session.user.name}</p>
+          <h1 className="text-3xl font-bold text-primary">Employee Health Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome back, {session.user.name}</p>
         </div>
         <Button 
           className="mt-4 md:mt-0 bg-pink-600 hover:bg-pink-700"
           onClick={() => router.push(`/chat/new?userId=${params.userId}&role=employee`)}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
-          咨询 Sani 助手
+          Consult Sani Assistant
         </Button>
       </div>
 
       <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 mb-8">
-          <TabsTrigger value="overview">总览</TabsTrigger>
-          <TabsTrigger value="cycle">经期追踪</TabsTrigger>
-          <TabsTrigger value="health">健康状态</TabsTrigger>
-          <TabsTrigger value="appointments">医疗预约</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="cycle">Period Tracking</TabsTrigger>
+          <TabsTrigger value="health">Health Status</TabsTrigger>
+          <TabsTrigger value="appointments">Medical Appointments</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">下次经期预测</CardTitle>
+                <CardTitle className="text-sm font-medium">Next Period Prediction</CardTitle>
                 <Calendar className="h-4 w-4 text-pink-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">3月15日</div>
-                <p className="text-xs text-muted-foreground">距今还有7天</p>
+                <div className="text-2xl font-bold">March 15</div>
+                <p className="text-xs text-muted-foreground">7 days from now</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">情绪状态</CardTitle>
+                <CardTitle className="text-sm font-medium">Mood Status</CardTitle>
                 <Heart className="h-4 w-4 text-pink-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">良好</div>
-                <p className="text-xs text-muted-foreground">近7天平均</p>
+                <div className="text-2xl font-bold">Good</div>
+                <p className="text-xs text-muted-foreground">Last 7 days average</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">即将到来的预约</CardTitle>
+                <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
                 <Clock className="h-4 w-4 text-pink-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">1</div>
-                <p className="text-xs text-muted-foreground">3月10日 妇科检查</p>
+                <p className="text-xs text-muted-foreground">March 10 - Gynecological Exam</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">健康活动</CardTitle>
+                <CardTitle className="text-sm font-medium">Health Activity</CardTitle>
                 <Activity className="h-4 w-4 text-pink-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">85%</div>
-                <p className="text-xs text-muted-foreground">健康指数</p>
+                <p className="text-xs text-muted-foreground">Health Index</p>
               </CardContent>
             </Card>
           </div>
@@ -123,24 +123,24 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="col-span-2">
               <CardHeader>
-                <CardTitle>本月健康概览</CardTitle>
+                <CardTitle>Monthly Health Overview</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center border-t pt-4">
-                <p className="text-muted-foreground text-center">健康数据图表将在这里显示</p>
+                <p className="text-muted-foreground text-center">Health data chart will be displayed here</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>最近通知</CardTitle>
+                <CardTitle>Recent Notifications</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 rounded-lg border p-3">
                     <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">经期提醒</p>
+                      <p className="text-sm font-medium">Period Reminder</p>
                       <p className="text-sm text-muted-foreground">
-                        您的下一次经期预计在7天后开始
+                        Your next period is expected to start in 7 days
                       </p>
                     </div>
                     <CalendarIcon className="h-5 w-5 text-pink-500" />
@@ -148,9 +148,9 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                   
                   <div className="flex items-start gap-4 rounded-lg border p-3">
                     <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">医疗预约确认</p>
+                      <p className="text-sm font-medium">Appointment Confirmation</p>
                       <p className="text-sm text-muted-foreground">
-                        您的妇科检查预约已确认
+                        Your gynecological exam appointment has been confirmed
                       </p>
                     </div>
                     <Clock className="h-5 w-5 text-pink-500" />
@@ -164,37 +164,37 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         <TabsContent value="cycle" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>经期日历</CardTitle>
+              <CardTitle>Period Calendar</CardTitle>
               <CardDescription>
-                追踪和预测您的经期周期
+                Track and predict your menstrual cycle
               </CardDescription>
             </CardHeader>
             <CardContent className="h-96 flex items-center justify-center border-t pt-4">
-              <p className="text-muted-foreground text-center">经期日历将在这里显示</p>
+              <p className="text-muted-foreground text-center">Period calendar will be displayed here</p>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline">记录症状</Button>
-              <Button>更新周期</Button>
+              <Button variant="outline">Record Symptoms</Button>
+              <Button>Update Cycle</Button>
             </CardFooter>
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>周期分析</CardTitle>
+                <CardTitle>Cycle Analysis</CardTitle>
               </CardHeader>
               <CardContent className="h-60 flex items-center justify-center border-t pt-4">
-                <p className="text-muted-foreground text-center">周期分析图表将在这里显示</p>
+                <p className="text-muted-foreground text-center">Cycle analysis chart will be displayed here</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>症状记录</CardTitle>
+                <CardTitle>Symptom Records</CardTitle>
               </CardHeader>
               <CardContent className="h-60 flex flex-col space-y-4 border-t pt-4">
                 <div className="flex justify-between items-center">
-                  <p>腹痛</p>
+                  <p>Abdominal Pain</p>
                   <div className="flex">
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
@@ -204,7 +204,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p>情绪波动</p>
+                  <p>Mood Swings</p>
                   <div className="flex">
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
@@ -214,7 +214,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p>疲劳</p>
+                  <p>Fatigue</p>
                   <div className="flex">
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
@@ -231,115 +231,106 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         <TabsContent value="health" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>健康状态跟踪</CardTitle>
+              <CardTitle>Health Status Tracking</CardTitle>
               <CardDescription>
-                记录和监控您的整体健康状况
+                Record and monitor your overall health condition
               </CardDescription>
             </CardHeader>
             <CardContent className="h-80 flex items-center justify-center border-t pt-4">
-              <p className="text-muted-foreground text-center">健康状态图表将在这里显示</p>
+              <p className="text-muted-foreground text-center">Health status chart will be displayed here</p>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">添加今日记录</Button>
+              <Button className="w-full">Add Today's Record</Button>
             </CardFooter>
           </Card>
 
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>情绪记录</CardTitle>
+                <CardTitle>Mood Records</CardTitle>
               </CardHeader>
-              <CardContent className="h-40 flex items-center justify-center border-t pt-4">
-                <p className="text-muted-foreground text-center">情绪变化图将在这里显示</p>
+              <CardContent className="h-60 flex items-center justify-center border-t pt-4">
+                <p className="text-muted-foreground text-center">Mood tracking chart will be displayed here</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>睡眠质量</CardTitle>
+                <CardTitle>Sleep Quality</CardTitle>
               </CardHeader>
-              <CardContent className="h-40 flex items-center justify-center border-t pt-4">
-                <p className="text-muted-foreground text-center">睡眠数据将在这里显示</p>
+              <CardContent className="h-60 flex items-center justify-center border-t pt-4">
+                <p className="text-muted-foreground text-center">Sleep quality chart will be displayed here</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>能量水平</CardTitle>
+                <CardTitle>Stress Level</CardTitle>
               </CardHeader>
-              <CardContent className="h-40 flex items-center justify-center border-t pt-4">
-                <p className="text-muted-foreground text-center">能量水平数据将在这里显示</p>
+              <CardContent className="h-60 flex items-center justify-center border-t pt-4">
+                <p className="text-muted-foreground text-center">Stress level chart will be displayed here</p>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
         
         <TabsContent value="appointments" className="space-y-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">我的医疗预约</h2>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              新建预约
-            </Button>
-          </div>
-          
           <Card>
             <CardHeader>
-              <CardTitle>即将到来的预约</CardTitle>
+              <CardTitle>Medical Appointments</CardTitle>
+              <CardDescription>
+                Manage your upcoming medical appointments
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg">
+            <CardContent className="space-y-4 border-t pt-4">
+              <div className="rounded-lg border p-4">
+                <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium">妇科检查</h3>
-                    <p className="text-sm text-muted-foreground">妇科医院 - 张医生</p>
+                    <h3 className="font-medium">Gynecological Examination</h3>
+                    <p className="text-sm text-muted-foreground mt-1">March 10, 2023 - 10:00 AM</p>
+                    <p className="text-sm text-muted-foreground">Women's Health Clinic, Floor 3</p>
                   </div>
-                  <div className="mt-2 sm:mt-0 flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2 text-pink-500" />
-                    <span>2025年3月10日 10:00</span>
-                  </div>
-                  <div className="mt-2 sm:mt-0 flex space-x-2">
-                    <Button variant="outline" size="sm">重新安排</Button>
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">取消</Button>
-                  </div>
+                  <Button variant="outline" size="sm">Reschedule</Button>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg">
+              </div>
+              
+              <div className="rounded-lg border p-4">
+                <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium">心理咨询</h3>
-                    <p className="text-sm text-muted-foreground">心理健康中心 - 李顾问</p>
+                    <h3 className="font-medium">Annual Health Check</h3>
+                    <p className="text-sm text-muted-foreground mt-1">April 15, 2023 - 9:30 AM</p>
+                    <p className="text-sm text-muted-foreground">General Hospital, Health Check Center</p>
                   </div>
-                  <div className="mt-2 sm:mt-0 flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2 text-pink-500" />
-                    <span>2025年3月25日 15:30</span>
-                  </div>
-                  <div className="mt-2 sm:mt-0 flex space-x-2">
-                    <Button variant="outline" size="sm">重新安排</Button>
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">取消</Button>
-                  </div>
+                  <Button variant="outline" size="sm">Reschedule</Button>
                 </div>
               </div>
             </CardContent>
+            <CardFooter>
+              <Button className="w-full">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Book New Appointment
+              </Button>
+            </CardFooter>
           </Card>
           
           <Card>
             <CardHeader>
-              <CardTitle>历史预约记录</CardTitle>
+              <CardTitle>Appointment History</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg bg-gray-50">
-                  <div>
-                    <h3 className="font-medium">年度体检</h3>
-                    <p className="text-sm text-muted-foreground">市中心医院 - 王医生</p>
-                  </div>
-                  <div className="mt-2 sm:mt-0 flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>2025年2月15日 09:00</span>
-                  </div>
-                  <div className="mt-2 sm:mt-0">
-                    <Button variant="outline" size="sm">查看报告</Button>
-                  </div>
+            <CardContent className="space-y-4 border-t pt-4">
+              <div className="rounded-lg border p-4 bg-muted/50">
+                <div>
+                  <h3 className="font-medium">General Consultation</h3>
+                  <p className="text-sm text-muted-foreground mt-1">February 5, 2023 - 11:00 AM</p>
+                  <p className="text-sm text-muted-foreground">Dr. Sarah Johnson</p>
+                </div>
+              </div>
+              
+              <div className="rounded-lg border p-4 bg-muted/50">
+                <div>
+                  <h3 className="font-medium">Blood Test</h3>
+                  <p className="text-sm text-muted-foreground mt-1">January 20, 2023 - 8:30 AM</p>
+                  <p className="text-sm text-muted-foreground">Medical Laboratory, Floor 1</p>
                 </div>
               </div>
             </CardContent>
