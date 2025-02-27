@@ -40,10 +40,10 @@ export const {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const result = await sql<DbUser[]>`
-            SELECT * FROM "User"
-            WHERE email = ${credentials.email}
-          `;
+          const result = await sql.query(
+            `SELECT * FROM "User" WHERE email = $1`,
+            [credentials.email]
+          ) as DbUser[];
 
           if (result.length === 0) return null;
 
