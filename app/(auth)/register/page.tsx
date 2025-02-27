@@ -33,15 +33,15 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (state.status === "user_exists") {
-      toast.error("该邮箱已注册");
+      toast.error("Email already registered");
     } else if (state.status === "failed") {
-      toast.error(state.errors?.[0]?.message || "创建账户失败");
+      toast.error(state.errors?.[0]?.message || "Failed to create account");
     } else if (state.status === "invalid_data") {
       state.errors?.forEach(error => {
         toast.error(error.message);
       });
     } else if (state.status === "success") {
-      toast.success("账户创建成功");
+      toast.success("Account created successfully");
       router.push("/login");
     }
   }, [state, router]);
@@ -59,54 +59,54 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen w-full overflow-x-hidden">
-      {/* 左侧品牌区域 */}
+      {/* Brand section */}
       <div className="hidden w-1/2 bg-primary lg:flex flex-col items-center justify-center p-8">
         <div className="max-w-md text-white">
           <Image 
-            src="/images/sanicle_logo.svg" 
+            src="/images/sanicle_logo_white.svg" 
             alt="Sanicle Logo" 
             width={180} 
             height={60}
             className="mb-8"
           />
-          <h1 className="text-3xl font-bold mb-4">加入 FemTech 女性健康平台</h1>
+          <h1 className="text-3xl font-bold mb-4">Join FemTech Health Platform</h1>
           <p className="text-lg opacity-90 mb-6">
-            创建您的账户，开始享受我们为职场女性量身定制的健康管理服务。
+            Create your account and start enjoying our tailored health management services for professional women.
           </p>
           <div className="bg-white/10 p-6 rounded-lg mt-8">
-            <h3 className="font-medium text-xl mb-4">为什么选择我们?</h3>
-            <ul className="space-y-3">
+            <h3 className="font-medium text-xl mb-4">Why Choose Us?</h3>
+            <ul className="space-y-4">
               <li className="flex items-start">
-                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>专为职场女性设计的健康管理解决方案</span>
+                <span>Health management solutions designed for professional women</span>
               </li>
               <li className="flex items-start">
-                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>AI驱动的健康助手，提供个性化建议</span>
+                <span>AI-powered health assistant providing personalized advice</span>
               </li>
               <li className="flex items-start">
-                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>数据安全保障，保护您的隐私</span>
+                <span>Data security guarantee to protect your privacy</span>
               </li>
               <li className="flex items-start">
-                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>与HR系统集成，优化工作与健康的平衡</span>
+                <span>HR system integration for better work-health balance</span>
               </li>
             </ul>
           </div>
         </div>
       </div>
       
-      {/* 右侧注册表单 */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 pt-16 md:pt-20 overflow-y-auto">
+      {/* Registration form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 pt-16 md:pt-20">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex justify-center mb-8">
             <Image 
@@ -119,10 +119,10 @@ export default function RegisterPage() {
           
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              创建账户
+              Create Account
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              加入FemTech，管理您的健康与工作平衡
+              Join FemTech to manage your health and work balance
             </p>
           </div>
 
@@ -130,61 +130,61 @@ export default function RegisterPage() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="firstName" className="text-sm font-medium">名字</Label>
+                  <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                   <Input
                     id="firstName"
                     name="firstName"
                     type="text"
                     required
-                    placeholder="请输入名字"
+                    placeholder="Enter first name"
                     className="mt-1"
                   />
                 </div>
                 <div className="flex-1">
-                  <Label htmlFor="lastName" className="text-sm font-medium">姓氏</Label>
+                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
                   <Input
                     id="lastName"
                     name="lastName"
                     type="text"
                     required
-                    placeholder="请输入姓氏"
+                    placeholder="Enter last name"
                     className="mt-1"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">邮箱</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  placeholder="请输入邮箱"
+                  placeholder="Enter your email"
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-sm font-medium">密码</Label>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   required
-                  placeholder="请设置密码（至少8个字符）"
+                  placeholder="Set password (min 8 characters)"
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">确认密码</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
                   required
-                  placeholder="请再次输入密码"
+                  placeholder="Confirm your password"
                   className="mt-1"
                 />
               </div>
@@ -192,9 +192,9 @@ export default function RegisterPage() {
               <div className="flex items-center gap-2 mt-4">
                 <Checkbox id="agreedToTerms" name="agreedToTerms" required />
                 <Label htmlFor="agreedToTerms" className="text-sm">
-                  我同意{" "}
+                  I agree to the{" "}
                   <Link href="/terms" className="text-primary hover:underline">
-                    服务条款和隐私政策
+                    Terms of Service and Privacy Policy
                   </Link>
                 </Label>
               </div>
@@ -203,16 +203,16 @@ export default function RegisterPage() {
                 className="w-full py-2.5 mt-2"
                 loading={state.status === "in_progress"}
               >
-                创建账户
+                Create Account
               </SubmitButton>
 
               <p className="text-center text-sm text-muted-foreground mt-6 mb-4">
-                已有账户?{" "}
+                Already have an account?{" "}
                 <Link
                   href="/login"
                   className="font-medium text-primary hover:underline"
                 >
-                  立即登录
+                  Sign in
                 </Link>
               </p>
             </div>

@@ -41,7 +41,7 @@ export const Navbar = async () => {
               <SlashIcon size={16} />
             </div>
             <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit hidden md:block">
-              FemTech 女性健康平台
+              FemTech Health Platform
             </div>
           </div>
         </div>
@@ -75,7 +75,7 @@ export const Navbar = async () => {
                     type="submit"
                     className="w-full text-left px-1 py-0.5 text-red-500"
                   >
-                    退出登录
+                    Sign out
                   </button>
                 </form>
               </DropdownMenuItem>
@@ -83,7 +83,7 @@ export const Navbar = async () => {
           </DropdownMenu>
         ) : (
           <Button className="py-1.5 px-2 h-fit font-normal text-white" asChild>
-            <Link href="/login">登录</Link>
+            <Link href="/login">Sign in</Link>
           </Button>
         )}
       </div>

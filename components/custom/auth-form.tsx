@@ -63,7 +63,7 @@ export function AuthForm({
             htmlFor="profileImage"
             className="text-sm text-primary cursor-pointer hover:underline"
           >
-            上传头像
+            Upload Profile Image
           </Label>
         </div>
       )}

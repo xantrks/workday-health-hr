@@ -25,11 +25,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (state.status === "failed") {
-      toast.error("邮箱或密码无效");
+      toast.error("Invalid email or password");
     } else if (state.status === "invalid_data") {
-      toast.error("请检查您的输入");
+      toast.error("Please check your input");
     } else if (state.status === "success") {
-      toast.success("登录成功");
+      toast.success("Login successful");
       router.push("/"); // 登录成功后跳转到首页
     }
   }, [state.status, router]);
@@ -40,32 +40,32 @@ export default function LoginPage() {
       <div className="hidden w-1/2 bg-primary lg:flex flex-col items-center justify-center p-8">
         <div className="max-w-md text-white">
           <Image 
-            src="/images/sanicle_logo.svg" 
+            src="/images/sanicle_logo_white.svg" 
             alt="Sanicle Logo" 
             width={180} 
             height={60}
             className="mb-8"
           />
-          <h1 className="text-3xl font-bold mb-4">欢迎使用 FemTech 女性健康平台</h1>
+          <h1 className="text-3xl font-bold mb-4">Welcome to FemTech Health Platform</h1>
           <p className="text-lg opacity-90 mb-6">
-            我们致力于为职场女性提供全方位的健康管理解决方案，帮助您更好地平衡工作与健康。
+            We are dedicated to providing comprehensive health management solutions for professional women, helping you better balance work and health.
           </p>
           <div className="grid grid-cols-2 gap-4 mt-8">
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">经期追踪</h3>
-              <p className="text-sm opacity-80">智能预测周期，帮助您更好地规划工作与生活</p>
+              <h3 className="font-medium text-lg mb-2">Period Tracking</h3>
+              <p className="text-sm opacity-80">Smart cycle prediction to help you better plan work and life</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">健康咨询</h3>
-              <p className="text-sm opacity-80">随时与AI健康助手交流，获取专业建议</p>
+              <h3 className="font-medium text-lg mb-2">Health Consultation</h3>
+              <p className="text-sm opacity-80">Chat with AI health assistant anytime for professional advice</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">医疗预约</h3>
-              <p className="text-sm opacity-80">便捷的医疗服务预约系统，节省您的宝贵时间</p>
+              <h3 className="font-medium text-lg mb-2">Medical Appointments</h3>
+              <p className="text-sm opacity-80">Convenient medical service booking system to save your time</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-medium text-lg mb-2">数据分析</h3>
-              <p className="text-sm opacity-80">个性化健康数据分析，助您掌握健康状况</p>
+              <h3 className="font-medium text-lg mb-2">Data Analysis</h3>
+              <p className="text-sm opacity-80">Personalized health data analysis to help you monitor your health</p>
             </div>
           </div>
         </div>
@@ -85,36 +85,36 @@ export default function LoginPage() {
           
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              欢迎回来
+              Welcome Back
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              请登录您的账户
+              Please sign in to your account
             </p>
           </div>
 
           <AuthForm action={formAction} variant="login">
             <div className="space-y-5">
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">邮箱</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  placeholder="请输入您的邮箱"
+                  placeholder="Enter your email"
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">密码</Label>
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                   <Link
                     href="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    忘记密码?
+                    Forgot password?
                   </Link>
                 </div>
                 <Input
@@ -123,7 +123,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  placeholder="请输入您的密码"
+                  placeholder="Enter your password"
                   className="mt-1"
                 />
               </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                 className="w-full py-2.5"
                 loading={state.status === "in_progress"}
               >
-                登录
+                Sign in
               </SubmitButton>
 
               <div className="relative my-6">
@@ -141,18 +141,18 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs">
                   <span className="bg-background px-2 text-muted-foreground">
-                    或者
+                    or
                   </span>
                 </div>
               </div>
 
               <p className="text-center text-sm text-muted-foreground mb-4">
-                还没有账户?{" "}
+                Don't have an account?{" "}
                 <Link
                   href="/register"
                   className="font-medium text-primary hover:underline"
                 >
-                  立即注册
+                  Sign up
                 </Link>
               </p>
             </div>

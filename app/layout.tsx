@@ -7,8 +7,11 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FemTech 女性健康平台",
-  description: "专为职场女性设计的健康管理解决方案",
+  title: "Sanicle.cloud",
+  description: "Health Management Solution for Professional Women",
+  icons: {
+    icon: "/images/sanicle_logo.svg"
+  }
 };
 
 export default async function RootLayout({
