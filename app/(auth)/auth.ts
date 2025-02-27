@@ -11,6 +11,14 @@ interface ExtendedSession extends Session {
   user: User;
 }
 
+interface User {
+  id: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+}
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -24,7 +32,7 @@ export const {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const result = await sql`
+          const result = await sql<User[]>`
             SELECT * FROM "User"
             WHERE email = ${credentials.email}
           `;
