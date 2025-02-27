@@ -12,10 +12,11 @@ interface ExtendedSession extends Session {
   user: DefaultUser;
 }
 
-// 添加凭证类型定义
-interface Credential {
+// 定义返回给前端的用户类型
+interface DefaultUser {
+  id: string;
   email: string;
-  password: string;
+  name: string;
 }
 
 // 改名为 DbUser 以避免与 next-auth 的 User 冲突
@@ -27,13 +28,6 @@ interface DbUser {
   last_name: string;
 }
 
-// 定义返回给前端的用户类型
-interface DefaultUser {
-  id: string;
-  email: string;
-  name: string;
-}
-
 export const {
   handlers: { GET, POST },
   auth,
@@ -43,15 +37,18 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials: Credential | undefined) {
-        if (!credentials?.email || !credentials?.password) return null;
+      async authorize(credentials) {
+        const email = credentials?.email as string;
+        const password = credentials?.password as string;
+
+        if (!email || !password) return null;
 
         try {
           // 使用模板字符串方式，并正确处理类型
           const result = await sql`
             SELECT id, email, password, first_name, last_name 
             FROM "User" 
-            WHERE email = ${credentials.email}
+            WHERE email = ${email}
           ` as unknown as DbUser[];
 
           if (!result || result.length === 0) return null;
@@ -59,8 +56,8 @@ export const {
           const user = result[0];
           // 确保密码是字符串类型
           const passwordsMatch = await compare(
-            credentials.password.toString(),
-            user.password.toString()
+            password,
+            user.password
           );
           
           if (!passwordsMatch) return null;
