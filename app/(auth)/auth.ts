@@ -1,5 +1,5 @@
 import { compare } from "bcryptjs";
-import NextAuth, { Session, User as NextAuthUser } from "next-auth";
+import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
@@ -10,11 +10,15 @@ import { sql } from "@/lib/db";
 import { authConfig } from "./auth.config";
 
 interface ExtendedJWT extends JWT {
-  role?: string;
+  id: string;
+  role: string;
 }
 
-interface User extends NextAuthUser {
-  role?: string;
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
 }
 
 interface ExtendedSession extends Session {
@@ -67,13 +71,7 @@ export const {
           }
 
           const user = result[0];
-          
-          console.log("Comparing passwords for user:", email);
-          console.log("Stored password hash:", user.password);
-
           const passwordsMatch = await compare(password, user.password);
-          
-          console.log("Password match result:", passwordsMatch);
 
           if (!passwordsMatch) {
             console.log("Password mismatch for user:", email);
@@ -95,18 +93,25 @@ export const {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // 初始登录时
       if (user) {
-        (token as ExtendedJWT).id = user.id;
-        (token as ExtendedJWT).role = (user as User).role;
+        token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token as ExtendedJWT).id as string;
-        (session.user as User).role = (token as ExtendedJWT).role as string;
+        // 确保这些字段存在于session.user中
+        (session.user as User).id = token.id as string;
+        (session.user as User).role = token.role as string;
       }
       return session as ExtendedSession;
     },
   },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  debug: process.env.NODE_ENV === "development",
 });

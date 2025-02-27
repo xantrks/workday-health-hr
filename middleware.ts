@@ -1,64 +1,50 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 
 interface Token {
   id: string;
   role?: string;
-  name?: string;
-  email?: string;
-  picture?: string;
-  sub?: string;
-  iat?: number;
-  exp?: number;
-  jti?: string;
 }
 
 export async function middleware(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', request.nextUrl.pathname);
-
   const token = await getToken({ 
     req: request, 
     secret: process.env.NEXTAUTH_SECRET 
   }) as Token | null;
 
-  // 从URL中提取用户ID
-  const urlParts = request.nextUrl.pathname.split('/');
-  const urlUserId = urlParts[2]; // 获取URL中的用户ID
-
-  if (request.nextUrl.pathname.startsWith('/hr-dashboard/')) {
-    if (!token?.role || token.role.toLowerCase() !== 'hr') {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    // 验证URL中的用户ID是否匹配当前登录用户
-    if (token.id !== urlUserId) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
+  const path = request.nextUrl.pathname;
+  
+  // 如果是登录页面，已登录用户重定向到对应仪表盘
+  if (path === '/login' && token) {
+    const dashboardPath = token.role === 'HR' ? 
+      `/hr-dashboard/${token.id}` : 
+      `/employee-dashboard/${token.id}`;
+    return NextResponse.redirect(new URL(dashboardPath, request.url));
   }
 
-  if (request.nextUrl.pathname.startsWith('/employee-dashboard/')) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    // 验证URL中的用户ID是否匹配当前登录用户
-    if (token.id !== urlUserId) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
+  // 如果访问仪表盘但未登录，重定向到登录页
+  if ((path.startsWith('/hr-dashboard') || path.startsWith('/employee-dashboard')) && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  // 如果访问HR仪表盘但不是HR角色，重定向到未授权页面
+  if (path.startsWith('/hr-dashboard') && token?.role !== 'HR') {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
+  }
+
+  // 如果访问员工仪表盘但是HR角色，重定向到未授权页面
+  if (path.startsWith('/employee-dashboard') && token?.role === 'HR') {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    '/hr-dashboard/:userId*', 
-    '/employee-dashboard/:userId*', 
-    '/login'
+    '/login',
+    '/hr-dashboard/:path*',
+    '/employee-dashboard/:path*'
   ]
 };

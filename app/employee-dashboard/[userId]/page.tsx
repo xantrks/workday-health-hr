@@ -5,24 +5,27 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function EmployeeDashboard({ params }: { params: { userId: string } }) {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.replace('/login');
+    },
+  });
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/login');
-    } else if (status === 'authenticated' && session.user.id !== params.userId) {
-      router.replace('/unauthorized');
+    if (session?.user && session.user.id !== params.userId) {
+      router.replace(`/employee-dashboard/${session.user.id}`);
     }
-  }, [status, session, params.userId, router]);
+  }, [session, params.userId, router]);
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="text-lg">Loading...</div>
+    </div>;
   }
 
-  if (!session) {
-    return null;
-  }
+  if (!session?.user) return null;
 
   return (
     <div className="p-8">
