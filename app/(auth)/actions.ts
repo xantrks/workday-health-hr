@@ -32,7 +32,8 @@ export const login = async (
     const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
-      redirect: false,
+      redirect: true,
+      callbackUrl: getBaseUrl() + (userResult[0]?.role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
     });
 
     if (result?.error) {
@@ -46,6 +47,13 @@ export const login = async (
     `;
     
     const role = userResult[0]?.role;
+
+    // 根据角色重定向
+    if (role === 'HR') {
+      window.location.href = `${getBaseUrl()}/hr/dashboard`;
+    } else {
+      window.location.href = `${getBaseUrl()}/employee/dashboard`;
+    }
 
     return { 
       status: "success",
@@ -165,4 +173,10 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       }]
     };
   }
+}
+
+const getBaseUrl = () => {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return `http://localhost:${process.env.PORT || 3000}`
 }

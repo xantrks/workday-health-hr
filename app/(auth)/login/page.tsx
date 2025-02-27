@@ -3,25 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
+import { useFormState } from 'react-dom';
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { login, LoginActionState } from "../actions";
+import { login } from "../actions";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  const [state, formAction] = useActionState<LoginActionState, FormData>(
-    login,
-    {
-      status: "idle",
-    },
-  );
+  const [state, formAction] = useFormState(login, {
+    status: "idle"
+  });
 
   useEffect(() => {
     if (state.status === "failed") {
@@ -30,10 +27,10 @@ export default function LoginPage() {
       toast.error("Please check your input");
     } else if (state.status === "success") {
       toast.success("Login successful");
-      if (state.role === "hr") {
-        router.push("/hr-dashboard");
+      if (state.role === "HR") {
+        router.push("/hr/dashboard");
       } else {
-        router.push("/employee-dashboard");
+        router.push("/employee/dashboard");
       }
     }
   }, [state.status, state.role, router]);
