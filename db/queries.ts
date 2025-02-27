@@ -15,19 +15,40 @@ import { user, chat, User, reservation } from "./schema";
 let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
 let db = drizzle(client);
 
-export async function getUser(email: string): Promise<Array<User>> {
+// 定义用户类型
+interface DbUser {
+  id: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  agreed_to_terms: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export async function getUser(email: string): Promise<DbUser[]> {
   // First try to get from Redis cache
   const cachedUser = await redis.get(`user:${email}`);
   if (cachedUser) {
-    return [cachedUser as User];
+    return [cachedUser as DbUser];
   }
 
   // If not in cache, query from Postgres
   try {
     const result = await sql`
-      SELECT * FROM "User" 
+      SELECT 
+        id,
+        email,
+        password,
+        first_name,
+        last_name,
+        agreed_to_terms,
+        created_at,
+        updated_at
+      FROM "User" 
       WHERE email = ${email}
-    `;
+    ` as unknown as DbUser[];
     
     if (result.length > 0) {
       // Cache the user data
