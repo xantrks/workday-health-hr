@@ -3,10 +3,9 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'sanicle-ai.vercel.app'],
-    },
-    serverComponentsExternalPackages: ['bcryptjs'],
-    esmExternals: 'loose',
-  }
+    }
+  },
+  serverExternalPackages: ['bcryptjs']
 }
 
 module.exports = nextConfig 
