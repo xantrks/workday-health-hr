@@ -1,5 +1,5 @@
 import { compare } from "bcrypt-ts";
-import NextAuth, { User, Session } from "next-auth";
+import NextAuth, { Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { getUser } from "@/db/queries";
@@ -8,15 +8,23 @@ import { sql } from "@/lib/db";
 import { authConfig } from "./auth.config";
 
 interface ExtendedSession extends Session {
-  user: User;
+  user: DefaultUser;
 }
 
-interface User {
+// 改名为 DbUser 以避免与 next-auth 的 User 冲突
+interface DbUser {
   id: string;
   email: string;
   password: string;
   first_name: string;
   last_name: string;
+}
+
+// 定义返回给前端的用户类型
+interface DefaultUser {
+  id: string;
+  email: string;
+  name: string;
 }
 
 export const {
@@ -32,7 +40,7 @@ export const {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const result = await sql<User[]>`
+          const result = await sql<DbUser[]>`
             SELECT * FROM "User"
             WHERE email = ${credentials.email}
           `;
