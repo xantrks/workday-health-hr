@@ -1,30 +1,27 @@
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
-import type { Session, User as NextAuthUser } from "next-auth";
-import type { DefaultSession } from "next-auth";
+import type { Session, DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { NeonQueryFunction } from '@neondatabase/serverless';
 
-import { getUser } from "@/db/queries";
 import { sql } from "@/lib/db";
-
 import { authConfig } from "./auth.config";
+
+// 定义基础用户类型
+interface BaseUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
 
 // 声明模块扩展来扩展默认的 Session 类型
 declare module "next-auth" {
   interface Session extends DefaultSession {
-    user: {
-      id: string;
-      email: string;
-      name: string;
-      role: string;
-    } & DefaultSession["user"]
+    user: BaseUser & DefaultSession["user"]
   }
 
-  interface User extends NextAuthUser {
-    role: string;
-  }
+  interface User extends BaseUser {}
 }
 
 // 扩展 JWT 类型
@@ -52,7 +49,7 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials): Promise<User | null> {
+      async authorize(credentials): Promise<BaseUser | null> {
         const email = credentials?.email as string;
         const password = credentials?.password as string;
 
