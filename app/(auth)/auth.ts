@@ -12,6 +12,12 @@ interface ExtendedSession extends Session {
   user: DefaultUser;
 }
 
+// 添加凭证类型定义
+interface Credential {
+  email: string;
+  password: string;
+}
+
 // 改名为 DbUser 以避免与 next-auth 的 User 冲突
 interface DbUser {
   id: string;
@@ -37,7 +43,7 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      async authorize(credentials) {
+      async authorize(credentials: Credential | undefined) {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
@@ -51,7 +57,11 @@ export const {
           if (!result || result.length === 0) return null;
 
           const user = result[0];
-          const passwordsMatch = await compare(credentials.password, user.password);
+          // 确保密码是字符串类型
+          const passwordsMatch = await compare(
+            credentials.password.toString(),
+            user.password.toString()
+          );
           
           if (!passwordsMatch) return null;
 
