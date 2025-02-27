@@ -4,6 +4,7 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'your-domain.vercel.app'],
     },
+    serverComponentsExternalPackages: ['bcryptjs'],
   },
   // 禁用 Edge Runtime
   experimental: {

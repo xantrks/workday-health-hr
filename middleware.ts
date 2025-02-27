@@ -3,6 +3,15 @@ import type { NextRequest } from "next/server";
 import { cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 
+interface Token {
+  id: string;
+  role?: string;
+  name?: string;
+  email?: string;
+  picture?: string;
+  sub?: string;
+}
+
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
@@ -11,7 +20,7 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ 
     req: request, 
     secret: process.env.NEXTAUTH_SECRET 
-  });
+  }) as Token | null;
   
   // 检查是否访问受保护的路由
   if (request.nextUrl.pathname.startsWith('/hr-dashboard')) {

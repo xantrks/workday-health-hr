@@ -2,10 +2,10 @@
 
 import { z } from "zod";
 import { hashSync } from "bcryptjs";
-import { sql } from "@/lib/db";
-import { redis } from "@/lib/db";
 
 import { createUser, getUser } from "@/db/queries";
+import { redis } from "@/lib/db";
+import { sql } from "@/lib/db";
 
 import { signIn } from "./auth";
 

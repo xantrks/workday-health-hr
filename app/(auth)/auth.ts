@@ -1,5 +1,5 @@
 import { compare } from "bcryptjs";
-import NextAuth, { Session } from "next-auth";
+import NextAuth, { Session, User as NextAuthUser } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { NeonQueryFunction } from '@neondatabase/serverless';
 
@@ -8,8 +8,13 @@ import { sql } from "@/lib/db";
 
 import { authConfig } from "./auth.config";
 
+// 扩展 NextAuth 的 User 类型
+interface User extends NextAuthUser {
+  role?: string;
+}
+
 interface ExtendedSession extends Session {
-  user: DefaultUser;
+  user: User;
 }
 
 // 定义返回给前端的用户类型
@@ -46,7 +51,6 @@ export const {
         if (!email || !password) return null;
 
         try {
-          // 修改 SQL 查询方式
           const result = await sql`
             SELECT id, email, password, first_name, last_name, role 
             FROM "User" 
@@ -60,11 +64,9 @@ export const {
 
           const user = result[0];
           
-          // 添加日志以帮助调试
           console.log("Comparing passwords for user:", email);
           console.log("Stored password hash:", user.password);
 
-          // 使用 await 确保正确等待密码比较结果
           const passwordsMatch = await compare(password, user.password);
           
           console.log("Password match result:", passwordsMatch);
@@ -91,16 +93,16 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = (user as User).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        (session.user as User).role = token.role as string;
       }
-      return session;
+      return session as ExtendedSession;
     },
   },
 });
