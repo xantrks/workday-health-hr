@@ -16,6 +16,7 @@ export const user = pgTable("User", {
   email: varchar("email", { length: 64 }).notNull().unique(),
   password: varchar("password", { length: 64 }).notNull(),
   agreedToTerms: boolean("agreed_to_terms").notNull().default(false),
+  profileImageUrl: varchar("profile_image_url", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

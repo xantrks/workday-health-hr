@@ -70,6 +70,7 @@ export async function createUser(userData: {
   email: string;
   password: string;
   agreedToTerms: boolean;
+  profileImage?: File;
 }) {
   const salt = genSaltSync(10);
   const hashedPassword = hashSync(userData.password, salt);

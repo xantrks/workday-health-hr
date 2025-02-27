@@ -76,7 +76,8 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       email: formData.get("email"),
       password: formData.get("password"),
       confirmPassword: formData.get("confirmPassword"),
-      agreedToTerms: formData.get("agreedToTerms") === "on"
+      agreedToTerms: formData.get("agreedToTerms") === "on",
+      profileImage: formData.get("profileImage") as File | null
     };
 
     // 验证表单数据
@@ -107,22 +108,15 @@ export async function register(prevState: RegisterActionState, formData: FormDat
     const hashedPassword = hashSync(validatedData.data.password, 10);
 
     try {
-      // 创建新用户
-      await sql`
-        INSERT INTO "User" (
-          first_name,
-          last_name,
-          email,
-          password,
-          agreed_to_terms
-        ) VALUES (
-          ${validatedData.data.firstName},
-          ${validatedData.data.lastName},
-          ${validatedData.data.email},
-          ${hashedPassword},
-          ${validatedData.data.agreedToTerms}
-        )
-      `;
+      // 创建新用户，传入 profileImage
+      await createUser({
+        firstName: validatedData.data.firstName,
+        lastName: validatedData.data.lastName,
+        email: validatedData.data.email,
+        password: hashedPassword,
+        agreedToTerms: validatedData.data.agreedToTerms,
+        profileImage: rawFormData.profileImage || undefined
+      });
     } catch (dbError) {
       console.error("Database error:", dbError);
       return {
