@@ -73,61 +73,56 @@ export async function createUser(userData: {
   agreedToTerms: boolean;
   profileImage?: File;
 }) {
-  const salt = genSaltSync(10);
-  const hashedPassword = hashSync(userData.password, salt);
-
   try {
-    // Store user in Postgres
-    const result = await sql`
+    // 首先创建用户基本信息
+    const result = await sql<DbUser[]>`
       INSERT INTO "User" (
-        first_name, 
+        first_name,
         last_name,
         email,
         password,
         agreed_to_terms,
-        created_at,
-        updated_at
+        role
       )
       VALUES (
         ${userData.firstName},
         ${userData.lastName},
         ${userData.email},
-        ${hashedPassword},
+        ${userData.password},
         ${userData.agreedToTerms},
-        NOW(),
-        NOW()
+        'employee'
       )
       RETURNING *
     `;
 
     const newUser = result[0];
 
-    // Store profile image if provided
+    // 如果提供了头像，处理头像上传
     if (userData.profileImage) {
-      const { url } = await put(
-        `profile-images/${newUser.id}`, 
-        userData.profileImage,
-        { access: 'public' }
-      );
-      
-      await sql`
-        UPDATE "User"
-        SET profile_image_url = ${url}
-        WHERE id = ${newUser.id}
-      `;
-      
-      newUser.profileImageUrl = url;
+      try {
+        const { url } = await put(
+          `profile-images/${newUser.id}`, 
+          userData.profileImage,
+          { access: 'public' }
+        );
+        
+        await sql`
+          UPDATE "User"
+          SET profile_image_url = ${url}
+          WHERE id = ${newUser.id}
+        `;
+        
+        newUser.profileImageUrl = url;
+      } catch (uploadError) {
+        console.error("Failed to upload profile image:", uploadError);
+        // 不要因为头像上传失败而阻止用户创建
+      }
     }
-
-    // Cache the new user
-    await redis.set(`user:${userData.email}`, newUser, {
-      ex: 3600 // Expire in 1 hour
-    });
 
     return newUser;
   } catch (error) {
     console.error("Failed to create user:", error);
-    throw error;
+    throw error; // 向上传递错误以便正确处理
   }
 }
 

@@ -30,9 +30,13 @@ export default function LoginPage() {
       toast.error("Please check your input");
     } else if (state.status === "success") {
       toast.success("Login successful");
-      router.push("/"); // 登录成功后跳转到首页
+      if (state.role === "hr") {
+        router.push("/hr-dashboard");
+      } else {
+        router.push("/employee-dashboard");
+      }
     }
-  }, [state.status, router]);
+  }, [state.status, state.role, router]);
 
   return (
     <div className="flex min-h-screen w-full overflow-x-hidden">

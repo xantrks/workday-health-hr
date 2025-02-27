@@ -19,6 +19,7 @@ export const user = pgTable("User", {
   profileImageUrl: varchar("profile_image_url", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  role: varchar("role", { length: 20 }).notNull().default("employee"),
 });
 
 export type User = InferSelectModel<typeof user>;

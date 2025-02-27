@@ -1,18 +1,27 @@
-import NextAuth from "next-auth";
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { auth } from "@/app/(auth)/auth";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import { authConfig } from "@/app/(auth)/auth.config";
-
-export default NextAuth(authConfig).auth;
-
-export function middleware(request: NextRequest) {
-  // 克隆请求头
+export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
-  // 添加当前路径到请求头
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
-  // 返回带有修改后请求头的响应
+  // 获取当前用户会话
+  const session = await auth();
+  
+  // 检查是否访问受保护的路由
+  if (request.nextUrl.pathname.startsWith('/hr-dashboard')) {
+    if (!session?.user || session.user.role !== 'hr') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  if (request.nextUrl.pathname.startsWith('/employee-dashboard')) {
+    if (!session?.user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
   return NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -21,5 +30,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/:id", "/api/:path*", "/login", "/register"],
-};
+  matcher: ['/hr-dashboard/:path*', '/employee-dashboard/:path*'],
+}

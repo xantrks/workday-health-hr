@@ -16,6 +16,7 @@ const authFormSchema = z.object({
 
 export interface LoginActionState {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
+  role?: string;
 }
 
 export const login = async (
@@ -38,7 +39,18 @@ export const login = async (
       return { status: "failed" };
     }
 
-    return { status: "success" };
+    // 获取用户角色
+    const userResult = await sql`
+      SELECT role FROM "User" 
+      WHERE email = ${validatedData.email}
+    `;
+    
+    const role = userResult[0]?.role;
+
+    return { 
+      status: "success",
+      role: role 
+    };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
@@ -107,9 +119,9 @@ export async function register(prevState: RegisterActionState, formData: FormDat
     // 对密码进行哈希处理
     const hashedPassword = hashSync(validatedData.data.password, 10);
 
+    let newUser;
     try {
-      // 创建新用户，传入 profileImage
-      await createUser({
+      newUser = await createUser({
         firstName: validatedData.data.firstName,
         lastName: validatedData.data.lastName,
         email: validatedData.data.email,
@@ -117,28 +129,30 @@ export async function register(prevState: RegisterActionState, formData: FormDat
         agreedToTerms: validatedData.data.agreedToTerms,
         profileImage: rawFormData.profileImage || undefined
       });
+
+      // 成功创建用户后，缓存用户数据到 Redis
+      await redis.set(`user:${validatedData.data.email}`, {
+        firstName: validatedData.data.firstName,
+        lastName: validatedData.data.lastName,
+        email: validatedData.data.email
+      }, {
+        ex: 3600 // 1小时过期
+      });
+
+      return {
+        status: "success"
+      };
+      
     } catch (dbError) {
       console.error("Database error:", dbError);
-      return {
-        status: "failed",
-        errors: [{
-          message: "Database error occurred while creating account"
-        }]
-      };
+      // 检查是否是唯一约束冲突
+      if (dbError.code === '23505') { // PostgreSQL 唯一约束冲突的错误码
+        return {
+          status: "user_exists"
+        };
+      }
+      throw dbError; // 抛出其他数据库错误
     }
-
-    // 缓存用户数据到 Redis
-    await redis.set(`user:${validatedData.data.email}`, {
-      firstName: validatedData.data.firstName,
-      lastName: validatedData.data.lastName,
-      email: validatedData.data.email
-    }, {
-      ex: 3600 // 1小时过期
-    });
-
-    return {
-      status: "success"
-    };
 
   } catch (error) {
     console.error("Registration error:", error);
