@@ -46,12 +46,12 @@ export const {
         if (!email || !password) return null;
 
         try {
-          // 修改 SQL 查询以确保获取所有必要字段
-          const result = await sql<DbUser[]>`
+          // 修改 SQL 查询方式
+          const result = await sql`
             SELECT id, email, password, first_name, last_name, role 
             FROM "User" 
             WHERE email = ${email}
-          `;
+          `.then(rows => rows as unknown as DbUser[]);
 
           if (!result || result.length === 0) {
             console.log("User not found:", email);
@@ -62,7 +62,6 @@ export const {
           
           // 添加日志以帮助调试
           console.log("Comparing passwords for user:", email);
-          console.log("Input password:", password);
           console.log("Stored password hash:", user.password);
 
           // 使用 await 确保正确等待密码比较结果
@@ -75,7 +74,6 @@ export const {
             return null;
           }
 
-          // 返回用户信息
           return {
             id: user.id,
             email: user.email,
