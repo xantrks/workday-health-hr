@@ -14,6 +14,12 @@ import { Label } from "@/components/ui/label";
 
 import { login } from "../actions";
 
+export interface LoginActionState {
+  status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
+  role?: string;
+  userId?: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [state, formAction] = useFormState(login, {
@@ -25,15 +31,15 @@ export default function LoginPage() {
       toast.error("Invalid email or password");
     } else if (state.status === "invalid_data") {
       toast.error("Please check your input");
-    } else if (state.status === "success") {
+    } else if (state.status === "success" && state.userId) {
       toast.success("Login successful");
       if (state.role === "HR") {
-        router.push("/hr/dashboard");
+        router.push(`/hr-dashboard/${state.userId}`);
       } else {
-        router.push("/employee/dashboard");
+        router.push(`/employee-dashboard/${state.userId}`);
       }
     }
-  }, [state.status, state.role, router]);
+  }, [state.status, state.role, state.userId, router]);
 
   return (
     <div className="flex min-h-screen w-full overflow-x-hidden">

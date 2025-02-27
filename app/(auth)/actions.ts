@@ -18,6 +18,7 @@ const authFormSchema = z.object({
 export interface LoginActionState {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
   role?: string;
+  userId?: string;
 }
 
 export const login = async (
@@ -30,41 +31,42 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    // 先获取用户角色
+    // 获取用户角色和ID
     const userResult = await sql`
-      SELECT role FROM "User" 
+      SELECT id, role FROM "User" 
       WHERE email = ${validatedData.email}
     `;
     
-    const role = userResult[0]?.role;
+    const user = userResult[0];
+    if (!user) {
+      return { status: "failed" };
+    }
 
     try {
-      // 然后进行登录
       const result = await signIn("credentials", {
         email: validatedData.email,
         password: validatedData.password,
-        redirect: true,
-        callbackUrl: getBaseUrl() + (role === 'HR' ? '/hr/dashboard' : '/employee/dashboard')
+        redirect: false
       });
 
-      // 由于 redirect: true，这里的代码通常不会执行
-      return { 
-        status: "success",
-        role: role 
-      };
-    } catch (signInError: any) {
-      if (signInError?.message) {
-        console.error("SignIn error:", signInError);
+      if (result?.error) {
         return { status: "failed" };
       }
-      throw signInError;
+
+      return { 
+        status: "success",
+        role: user.role,
+        userId: user.id
+      };
+    } catch (signInError: any) {
+      console.error("SignIn error:", signInError);
+      return { status: "failed" };
     }
 
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
     }
-
     console.error("Login error:", error);
     return { status: "failed" };
   }
@@ -179,5 +181,4 @@ export async function register(prevState: RegisterActionState, formData: FormDat
 const getBaseUrl = () => {
   if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return `http://localhost:${process.env.PORT || 3000}`
 }

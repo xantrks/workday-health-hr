@@ -19,22 +19,32 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
-  // 获取 token
   const token = await getToken({ 
     req: request, 
     secret: process.env.NEXTAUTH_SECRET 
   }) as Token | null;
-  
-  // 检查是否访问受保护的路由
-  if (request.nextUrl.pathname.startsWith('/hr-dashboard')) {
-    if (!token?.role || token.role !== 'hr') {
+
+  // 从URL中提取用户ID
+  const urlParts = request.nextUrl.pathname.split('/');
+  const urlUserId = urlParts[2]; // 获取URL中的用户ID
+
+  if (request.nextUrl.pathname.startsWith('/hr-dashboard/')) {
+    if (!token?.role || token.role.toLowerCase() !== 'hr') {
       return NextResponse.redirect(new URL('/login', request.url));
+    }
+    // 验证URL中的用户ID是否匹配当前登录用户
+    if (token.id !== urlUserId) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
   }
 
-  if (request.nextUrl.pathname.startsWith('/employee-dashboard')) {
+  if (request.nextUrl.pathname.startsWith('/employee-dashboard/')) {
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
+    }
+    // 验证URL中的用户ID是否匹配当前登录用户
+    if (token.id !== urlUserId) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
   }
 
@@ -46,5 +56,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/hr-dashboard/:path*', '/employee-dashboard/:path*'],
-}
+  matcher: [
+    '/hr-dashboard/:userId*', 
+    '/employee-dashboard/:userId*', 
+    '/login'
+  ]
+};
