@@ -34,12 +34,12 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
-    <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background">
-      <div className="flex flex-col justify-between items-center gap-4 w-full max-w-5xl">
-        <div
-          ref={messagesContainerRef}
-          className="flex flex-col gap-4 h-full w-full items-center overflow-y-scroll px-4 md:px-6"
-        >
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 pb-4"
+      >
+        <div className="flex flex-col gap-4 w-full items-center max-w-3xl mx-auto">
           {messages.length === 0 && <Overview />}
 
           {messages.map((message) => (
@@ -58,8 +58,10 @@ export function Chat({
             className="shrink-0 min-w-[24px] min-h-[24px]"
           />
         </div>
-
-        <form className="flex flex-row gap-2 relative items-end w-full md:max-w-[600px] max-w-[calc(100dvw-32px)] px-4 md:px-0 mb-4">
+      </div>
+      
+      <div className="w-full border-t bg-background py-4 pb-8 fixed bottom-0 left-0 right-0 z-10 shadow-sm">
+        <form className="flex flex-row gap-2 relative items-end w-full max-w-[600px] mx-auto px-4 md:px-0">
           <MultimodalInput
             input={input}
             setInput={setInput}
@@ -73,6 +75,8 @@ export function Chat({
           />
         </form>
       </div>
+      
+      <div className="h-24"></div>
     </div>
   );
 }

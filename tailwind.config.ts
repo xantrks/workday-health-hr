@@ -62,7 +62,30 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-  safelist: ["w-32", "w-44", "w-52"],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities }: { addUtilities: Function }) {
+      const newUtilities = {
+        '.scrollbar-hide': {
+          /* Firefox */
+          'scrollbar-width': 'none',
+          /* Safari and Chrome */
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          }
+        },
+        '.scrollbar-default': {
+          /* Firefox */
+          'scrollbar-width': 'auto',
+          /* Safari and Chrome */
+          '&::-webkit-scrollbar': {
+            display: 'block'
+          }
+        }
+      }
+      addUtilities(newUtilities);
+    }
+  ],
+  safelist: ["w-32", "w-44", "w-52", "scrollbar-hide", "scrollbar-default"],
 };
 export default config;
