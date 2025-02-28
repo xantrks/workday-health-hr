@@ -44,8 +44,17 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] w-full">
       {/* Brand section */}
-      <div className="hidden lg:flex w-1/2 bg-primary items-center justify-center p-8">
-        <div className="max-w-md text-white">
+      <div 
+        className="hidden lg:flex w-1/2 relative items-center justify-center p-8 overflow-hidden"
+        style={{
+          backgroundImage: 'url(/images/a-diverse-group-of-women.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="max-w-md text-white relative z-10">
           <Image 
             src="/images/sanicle_logo_white.svg" 
             alt="Sanicle Logo" 
