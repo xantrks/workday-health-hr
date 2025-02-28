@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { 
   Users, 
   Activity, 
@@ -57,7 +57,8 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
           <p className="text-muted-foreground mt-1">Welcome back, {session.user.name}</p>
         </div>
         <Button 
-          className="mt-4 md:mt-0 bg-pink-600 hover:bg-pink-700"
+          className="mt-4 md:mt-0"
+          variant="accent"
           onClick={() => router.push(`/chat/new?userId=${params.userId}&role=hr`)}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
@@ -78,7 +79,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-                <Users className="h-4 w-4 text-pink-500" />
+                <Users className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">248</div>
@@ -89,7 +90,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Leave Rate</CardTitle>
-                <Calendar className="h-4 w-4 text-pink-500" />
+                <Calendar className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">4.2%</div>
@@ -100,7 +101,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Health Satisfaction</CardTitle>
-                <Heart className="h-4 w-4 text-pink-500" />
+                <Heart className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">87%</div>
@@ -111,7 +112,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
-                <Activity className="h-4 w-4 text-pink-500" />
+                <Activity className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">96.8%</div>

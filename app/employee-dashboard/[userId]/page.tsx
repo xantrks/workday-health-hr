@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { 
   Calendar, 
   Activity, 
@@ -14,6 +14,7 @@ import {
   PlusCircle
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function EmployeeDashboard({ params }: { params: { userId: string } }) {
@@ -57,7 +57,8 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
           <p className="text-muted-foreground mt-1">Welcome back, {session.user.name}</p>
         </div>
         <Button 
-          className="mt-4 md:mt-0 bg-pink-600 hover:bg-pink-700"
+          className="mt-4 md:mt-0"
+          variant="accent"
           onClick={() => router.push(`/chat/new?userId=${params.userId}&role=employee`)}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
@@ -78,7 +79,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Next Period Prediction</CardTitle>
-                <Calendar className="h-4 w-4 text-pink-500" />
+                <Calendar className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">March 15</div>
@@ -89,7 +90,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Mood Status</CardTitle>
-                <Heart className="h-4 w-4 text-pink-500" />
+                <Heart className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">Good</div>
@@ -100,7 +101,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
-                <Clock className="h-4 w-4 text-pink-500" />
+                <Clock className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">1</div>
@@ -111,7 +112,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Health Activity</CardTitle>
-                <Activity className="h-4 w-4 text-pink-500" />
+                <Activity className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">85%</div>
@@ -143,7 +144,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                         Your next period is expected to start in 7 days
                       </p>
                     </div>
-                    <CalendarIcon className="h-5 w-5 text-pink-500" />
+                    <CalendarIcon className="h-5 w-5 text-primary" />
                   </div>
                   
                   <div className="flex items-start gap-4 rounded-lg border p-3">
@@ -153,7 +154,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                         Your gynecological exam appointment has been confirmed
                       </p>
                     </div>
-                    <Clock className="h-5 w-5 text-pink-500" />
+                    <Clock className="h-5 w-5 text-accent" />
                   </div>
                 </div>
               </CardContent>
@@ -196,9 +197,9 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                 <div className="flex justify-between items-center">
                   <p>Abdominal Pain</p>
                   <div className="flex">
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-400"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-secondary"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent/30"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent/60"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
                   </div>
@@ -206,8 +207,8 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                 <div className="flex justify-between items-center">
                   <p>Mood Swings</p>
                   <div className="flex">
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-secondary"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent/40"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
@@ -216,10 +217,10 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
                 <div className="flex justify-between items-center">
                   <p>Fatigue</p>
                   <div className="flex">
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-200"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-300"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-400"></span>
-                    <span className="block w-4 h-4 mx-1 rounded-full bg-pink-500"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-secondary"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent/30"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent/60"></span>
+                    <span className="block w-4 h-4 mx-1 rounded-full bg-accent"></span>
                     <span className="block w-4 h-4 mx-1 rounded-full bg-gray-200"></span>
                   </div>
                 </div>

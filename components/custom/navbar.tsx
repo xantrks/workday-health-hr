@@ -43,13 +43,13 @@ export const Navbar = async () => {
             <div className="text-zinc-500 hidden md:block">
               <SlashIcon size={16} />
             </div>
-            <div className="text-sm text-zinc-700 dark:text-zinc-300 truncate w-28 md:w-fit hidden md:block">
+            <div className="text-sm text-primary dark:text-primary truncate w-28 md:w-fit hidden md:block font-medium">
               FemTech Health Platform
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
           
           {session?.user ? (
@@ -81,7 +81,7 @@ export const Navbar = async () => {
                   >
                     <button
                       type="submit"
-                      className="w-full text-left px-1 py-0.5 text-red-500"
+                      className="w-full text-left px-1 py-0.5 text-accent hover:text-accent/90"
                     >
                       Sign Out
                     </button>
@@ -90,7 +90,7 @@ export const Navbar = async () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button className="py-1.5 px-4 h-fit font-normal text-white" asChild>
+            <Button className="py-1.5 px-5 h-fit font-medium text-white bg-primary hover:bg-primary/90 shadow-sm" asChild>
               <Link href="/login">Sign In</Link>
             </Button>
           )}
