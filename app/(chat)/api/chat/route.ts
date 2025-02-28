@@ -18,6 +18,92 @@ import {
 } from "@/db/queries";
 import { generateUUID } from "@/lib/utils";
 
+// 用于检测语言的函数
+function detectLanguage(text: string): string {
+  // 中文字符范围检测
+  const chinesePattern = /[\u4e00-\u9fa5]/;
+  
+  // 如果包含中文字符，认为是中文
+  if (chinesePattern.test(text)) {
+    return 'chinese';
+  }
+  
+  // 西班牙语特有字符检测
+  const spanishPattern = /[áéíóúüñ¿¡]/i;
+  if (spanishPattern.test(text)) {
+    return 'spanish';
+  }
+  
+  // 默认返回英语
+  return 'english';
+}
+
+// 根据聊天历史和用户角色生成系统提示
+function generateSystemPrompt(messages: Array<Message>, userId: string): string {
+  // 检查是否为HR角色用户
+  const isHR = userId.includes('hr'); // 简化的检测逻辑，实际应基于用户数据库中的角色字段
+  
+  // 确定用户使用的语言
+  let userLanguage = 'english';
+  const userMessages = messages.filter(msg => msg.role === 'user');
+  if (userMessages.length > 0) {
+    const lastUserMessage = userMessages[userMessages.length - 1];
+    if (typeof lastUserMessage.content === 'string') {
+      userLanguage = detectLanguage(lastUserMessage.content);
+    }
+  }
+  
+  // 构建基础系统提示
+  let basePrompt = '';
+  
+  if (isHR) {
+    // HR角色的系统提示
+    basePrompt = `You are Sani Assistant, an HR support consultant specialized in workplace health management.
+
+Your capabilities include:
+- Analyzing leave patterns and workforce scheduling
+- Providing insights on workplace health trends
+- Suggesting employee wellbeing policies and initiatives
+- Helping with health-related HR queries
+
+Remember to:
+- Maintain strict confidentiality and only work with anonymized data
+- Provide evidence-based recommendations
+- Consider inclusivity and diversity in all advice
+- Balance employee needs with organizational requirements
+- Always protect personal health information according to regulations
+
+Current date: ${new Date().toLocaleDateString()}`;
+  } else {
+    // 员工角色的系统提示
+    basePrompt = `You are Sani Assistant, a personal health advisor specialized in women's workplace health.
+
+Your capabilities include:
+- Providing information about menstrual health and cycle management
+- Offering guidance on common health concerns
+- Suggesting self-care strategies for workplace wellbeing
+- Helping with preparing for medical appointments
+
+Remember to:
+- Keep all information confidential
+- Provide evidence-based health information
+- Encourage users to seek professional medical advice for serious concerns
+- Consider physical, mental, and emotional aspects of health
+- Focus on workplace wellbeing and work-life balance
+
+Current date: ${new Date().toLocaleDateString()}`;
+  }
+  
+  // 根据检测到的语言添加语言指示
+  if (userLanguage === 'chinese') {
+    basePrompt += "\n\nThe user is writing in Chinese. Please respond in Chinese.";
+  } else if (userLanguage === 'spanish') {
+    basePrompt += "\n\nThe user is writing in Spanish. Please respond in Spanish.";
+  }
+  
+  return basePrompt;
+}
+
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
     await request.json();
@@ -32,27 +118,12 @@ export async function POST(request: Request) {
     (message) => message.content.length > 0,
   );
 
+  // 生成针对用户角色和使用语言的系统提示
+  const systemPrompt = generateSystemPrompt(messages, session.user.id);
+
   const result = await streamText({
     model: geminiProModel,
-    system: `\n
-        - you help users book flights!
-        - keep your responses limited to a sentence.
-        - DO NOT output lists.
-        - after every tool call, pretend you're showing the result to the user and keep your response limited to a phrase.
-        - today's date is ${new Date().toLocaleDateString()}.
-        - ask follow up questions to nudge user into the optimal flow
-        - ask for any details you don't know, like name of passenger, etc.'
-        - C and D are aisle seats, A and F are window seats, B and E are middle seats
-        - assume the most popular airports for the origin and destination
-        - here's the optimal flow
-          - search for flights
-          - choose flight
-          - select seats
-          - create reservation (ask user whether to proceed with payment or change reservation)
-          - authorize payment (requires user consent, wait for user to finish payment and let you know when done)
-          - display boarding pass (DO NOT display boarding pass without verifying payment)
-        '
-      `,
+    system: systemPrompt,
     messages: coreMessages,
     tools: {
       getWeather: {
