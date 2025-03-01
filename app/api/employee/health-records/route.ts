@@ -17,37 +17,26 @@ export async function GET(req: NextRequest) {
     const endDateParam = url.searchParams.get("endDate");
     const recordType = url.searchParams.get("recordType");
     
-    let query = `
-      SELECT * FROM "HealthRecord" 
-      WHERE "userId" = $1
-    `;
-    
-    const queryParams: any[] = [userId];
-    let paramIndex = 2;
+    // 使用动态构建SQL查询
+    let sqlQuery = sql`SELECT * FROM "HealthRecord" WHERE "userId" = ${userId}`;
     
     if (recordType) {
-      query += ` AND record_type = $${paramIndex}`;
-      queryParams.push(recordType);
-      paramIndex++;
+      sqlQuery = sql`${sqlQuery} AND record_type = ${recordType}`;
     }
     
     if (startDateParam) {
-      query += ` AND date >= $${paramIndex}`;
-      queryParams.push(new Date(startDateParam));
-      paramIndex++;
+      sqlQuery = sql`${sqlQuery} AND date >= ${new Date(startDateParam)}`;
     }
     
     if (endDateParam) {
-      query += ` AND date <= $${paramIndex}`;
-      queryParams.push(new Date(endDateParam));
-      paramIndex++;
+      sqlQuery = sql`${sqlQuery} AND date <= ${new Date(endDateParam)}`;
     }
     
-    query += ` ORDER BY date DESC`;
+    sqlQuery = sql`${sqlQuery} ORDER BY date DESC`;
     
-    const records = await sql.query(query, queryParams);
+    const records = await sqlQuery;
     
-    return NextResponse.json({ data: records.rows });
+    return NextResponse.json({ data: records });
   } catch (error) {
     console.error("Error fetching health records:", error);
     return NextResponse.json({ error: "Failed to fetch health records" }, { status: 500 });
@@ -72,24 +61,23 @@ export async function POST(req: NextRequest) {
     
     const userId = token.id as string;
     
-    const result = await sql.query(
-      `INSERT INTO "HealthRecord" (
+    const result = await sql`
+      INSERT INTO "HealthRecord" (
         "userId", date, record_type, period_flow, symptoms, mood, sleep_hours, stress_level, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [
-        userId,
-        new Date(body.date),
-        body.recordType,
-        body.periodFlow || null,
-        body.symptoms ? JSON.stringify(body.symptoms) : null,
-        body.mood || null,
-        body.sleepHours || null,
-        body.stressLevel || null,
-        body.notes || null
-      ]
-    );
+      ) VALUES (
+        ${userId},
+        ${new Date(body.date)},
+        ${body.recordType},
+        ${body.periodFlow || null},
+        ${body.symptoms ? JSON.stringify(body.symptoms) : null},
+        ${body.mood || null},
+        ${body.sleepHours || null},
+        ${body.stressLevel || null},
+        ${body.notes || null}
+      ) RETURNING *
+    `;
     
-    return NextResponse.json({ success: true, data: result.rows[0] }, { status: 201 });
+    return NextResponse.json({ success: true, data: result[0] }, { status: 201 });
   } catch (error) {
     console.error("Error creating health record:", error);
     return NextResponse.json({ error: "Failed to create health record" }, { status: 500 });
@@ -114,66 +102,92 @@ export async function PUT(req: NextRequest) {
     const userId = token.id as string;
     
     // Check if record exists and belongs to the user
-    const check = await sql.query(
-      `SELECT * FROM "HealthRecord" WHERE id = $1 AND "userId" = $2`,
-      [body.id, userId]
-    );
+    const check = await sql`
+      SELECT * FROM "HealthRecord" WHERE id = ${body.id} AND "userId" = ${userId}
+    `;
     
-    if (check.rows.length === 0) {
+    if (check.length === 0) {
       return NextResponse.json({ error: "Record not found or unauthorized" }, { status: 404 });
     }
     
-    // Build update statement
-    let updateFields = [];
-    let params = [body.id, userId]; // id and userId are the first and second parameters
-    let paramIndex = 3;
+    // 使用单独的更新语句
+    let result;
     
-    if (body.periodFlow !== undefined) {
-      updateFields.push(`period_flow = $${paramIndex}`);
-      params.push(body.periodFlow);
-      paramIndex++;
+    // 根据提供的字段构建更新语句
+    if (body.periodFlow !== undefined && body.symptoms !== undefined && body.mood !== undefined && 
+        body.sleepHours !== undefined && body.stressLevel !== undefined && body.notes !== undefined) {
+      // 所有字段都提供了
+      result = await sql`
+        UPDATE "HealthRecord" SET 
+          period_flow = ${body.periodFlow},
+          symptoms = ${JSON.stringify(body.symptoms)},
+          mood = ${body.mood},
+          sleep_hours = ${body.sleepHours},
+          stress_level = ${body.stressLevel},
+          notes = ${body.notes},
+          updated_at = ${new Date()}
+        WHERE id = ${body.id} AND "userId" = ${userId}
+        RETURNING *
+      `;
+    } else {
+      // 只更新提供的字段
+      let updateQuery = sql`UPDATE "HealthRecord" SET `;
+      let isFirst = true;
+      
+      if (body.periodFlow !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} period_flow = ${body.periodFlow}`
+          : sql`${updateQuery}, period_flow = ${body.periodFlow}`;
+        isFirst = false;
+      }
+      
+      if (body.symptoms !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} symptoms = ${JSON.stringify(body.symptoms)}`
+          : sql`${updateQuery}, symptoms = ${JSON.stringify(body.symptoms)}`;
+        isFirst = false;
+      }
+      
+      if (body.mood !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} mood = ${body.mood}`
+          : sql`${updateQuery}, mood = ${body.mood}`;
+        isFirst = false;
+      }
+      
+      if (body.sleepHours !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} sleep_hours = ${body.sleepHours}`
+          : sql`${updateQuery}, sleep_hours = ${body.sleepHours}`;
+        isFirst = false;
+      }
+      
+      if (body.stressLevel !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} stress_level = ${body.stressLevel}`
+          : sql`${updateQuery}, stress_level = ${body.stressLevel}`;
+        isFirst = false;
+      }
+      
+      if (body.notes !== undefined) {
+        updateQuery = isFirst 
+          ? sql`${updateQuery} notes = ${body.notes}`
+          : sql`${updateQuery}, notes = ${body.notes}`;
+        isFirst = false;
+      }
+      
+      // 添加更新时间
+      updateQuery = isFirst 
+        ? sql`${updateQuery} updated_at = ${new Date()}`
+        : sql`${updateQuery}, updated_at = ${new Date()}`;
+      
+      // 添加WHERE条件和RETURNING
+      updateQuery = sql`${updateQuery} WHERE id = ${body.id} AND "userId" = ${userId} RETURNING *`;
+      
+      result = await updateQuery;
     }
     
-    if (body.symptoms !== undefined) {
-      updateFields.push(`symptoms = $${paramIndex}`);
-      params.push(JSON.stringify(body.symptoms));
-      paramIndex++;
-    }
-    
-    if (body.mood !== undefined) {
-      updateFields.push(`mood = $${paramIndex}`);
-      params.push(body.mood);
-      paramIndex++;
-    }
-    
-    if (body.sleepHours !== undefined) {
-      updateFields.push(`sleep_hours = $${paramIndex}`);
-      params.push(body.sleepHours);
-      paramIndex++;
-    }
-    
-    if (body.stressLevel !== undefined) {
-      updateFields.push(`stress_level = $${paramIndex}`);
-      params.push(body.stressLevel);
-      paramIndex++;
-    }
-    
-    if (body.notes !== undefined) {
-      updateFields.push(`notes = $${paramIndex}`);
-      params.push(body.notes);
-      paramIndex++;
-    }
-    
-    updateFields.push(`updated_at = $${paramIndex}`);
-    params.push(new Date());
-    
-    const result = await sql.query(
-      `UPDATE "HealthRecord" SET ${updateFields.join(", ")} 
-       WHERE id = $1 AND "userId" = $2 RETURNING *`,
-      params
-    );
-    
-    return NextResponse.json({ success: true, data: result.rows[0] });
+    return NextResponse.json({ success: true, data: result[0] });
   } catch (error) {
     console.error("Error updating health record:", error);
     return NextResponse.json({ error: "Failed to update health record" }, { status: 500 });
@@ -199,19 +213,17 @@ export async function DELETE(req: NextRequest) {
     const userId = token.id as string;
     
     // Check if record exists and belongs to the user
-    const check = await sql.query(
-      `SELECT * FROM "HealthRecord" WHERE id = $1 AND "userId" = $2`,
-      [id, userId]
-    );
+    const check = await sql`
+      SELECT * FROM "HealthRecord" WHERE id = ${id} AND "userId" = ${userId}
+    `;
     
-    if (check.rows.length === 0) {
+    if (check.length === 0) {
       return NextResponse.json({ error: "Record not found or unauthorized" }, { status: 404 });
     }
     
-    await sql.query(
-      `DELETE FROM "HealthRecord" WHERE id = $1 AND "userId" = $2`,
-      [id, userId]
-    );
+    await sql`
+      DELETE FROM "HealthRecord" WHERE id = ${id} AND "userId" = ${userId}
+    `;
     
     return NextResponse.json({ success: true });
   } catch (error) {
