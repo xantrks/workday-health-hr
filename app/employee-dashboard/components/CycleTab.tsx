@@ -128,9 +128,9 @@ export default function CycleTab({ userId }: CycleTabProps) {
   
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Column - Calendar */}
-        <Card className="bg-white shadow-sm border-neutral-100 md:w-7/12">
+        <Card className="bg-white shadow-sm border-neutral-100 lg:col-span-2">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
@@ -167,9 +167,10 @@ export default function CycleTab({ userId }: CycleTabProps) {
           </CardContent>
         </Card>
 
-        {/* Right Column - Analysis & Symptoms */}
-        <div className="flex flex-col gap-4 md:w-5/12">
-          <Card className="bg-white shadow-sm border-neutral-100">
+        {/* Right Column - Analysis & Symptoms Combined */}
+        <div className="lg:col-span-1">
+          {/* Cycle Analysis Card */}
+          <Card className="bg-white shadow-sm border-neutral-100 mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">Cycle Analysis</CardTitle>
             </CardHeader>
@@ -200,7 +201,8 @@ export default function CycleTab({ userId }: CycleTabProps) {
             </CardContent>
           </Card>
           
-          <Card className="bg-white shadow-sm border-neutral-100 flex-1">
+          {/* Common Symptoms Card */}
+          <Card className="bg-white shadow-sm border-neutral-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">Common Symptoms</CardTitle>
             </CardHeader>
@@ -208,17 +210,17 @@ export default function CycleTab({ userId }: CycleTabProps) {
               {frequentSymptoms.length > 0 ? (
                 <div className="space-y-2.5">
                   {frequentSymptoms.map((symptom, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <p className="text-xs font-medium">{symptom.label}</p>
-                      <div className="flex items-center">
-                        <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div key={index} className="flex items-center">
+                      <p className="text-xs font-medium w-20">{symptom.label}</p>
+                      <div className="flex-1 mx-2">
+                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
                           <div 
                             className="h-full bg-primary" 
                             style={{ width: `${symptom.percentage}%` }}
                           ></div>
                         </div>
-                        <span className="ml-2 text-xs text-muted-foreground">{symptom.percentage}%</span>
                       </div>
+                      <span className="text-xs text-muted-foreground w-8 text-right">{symptom.percentage}%</span>
                     </div>
                   ))}
                 </div>
