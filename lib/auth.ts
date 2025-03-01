@@ -1,9 +1,23 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { NextAuthConfig } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+
 import { getUser } from "@/db/queries";
 
-export const authOptions: NextAuthOptions = {
+// 扩展DbUser类型以包含role属性
+interface DbUser {
+  id: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  role?: string;
+  agreed_to_terms: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export const authOptions: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -11,29 +25,37 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials: Record<string, unknown>) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const [user] = await getUser(credentials.email);
+        try {
+          const [user] = await getUser(credentials.email as string);
 
-        if (!user) {
+          if (!user) {
+            return null;
+          }
+
+          const passwordValid = await bcrypt.compare(
+            credentials.password as string, 
+            user.password as string
+          );
+
+          if (!passwordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.first_name} ${user.last_name}`,
+            role: (user as any).role || "employee"
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
           return null;
         }
-
-        const passwordValid = await bcrypt.compare(credentials.password, user.password);
-
-        if (!passwordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.first_name} ${user.last_name}`,
-          role: user.role || "employee"
-        };
       }
     })
   ],
