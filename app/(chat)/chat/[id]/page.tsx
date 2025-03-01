@@ -7,7 +7,7 @@ import { getChatById, saveChat } from "@/db/queries";
 import { Chat } from "@/db/schema";
 import { convertToUIMessages } from "@/lib/utils";
 
-// 定义消息角色类型，确保符合系统要求
+// Define message role types to ensure system compatibility
 type MessageRole = "system" | "user" | "assistant" | "function" | "data" | "tool";
 
 export default async function Page({ 
@@ -30,9 +30,9 @@ export default async function Page({
   const chatFromDb = await getChatById({ id });
 
   if (!chatFromDb) {
-    // 如果是新的聊天，创建一个包含系统消息和欢迎消息的初始聊天
+    // If it's a new chat, create an initial chat with system message and welcome message
     if (systemMessage) {
-      // 构建初始消息数组
+      // Build initial messages array
       const initialMessages = [
         {
           id: "1",
@@ -41,7 +41,7 @@ export default async function Page({
         }
       ];
       
-      // 如果提供了欢迎消息，添加一条助手消息
+      // If welcome message is provided, add an assistant message
       if (welcomeMessage) {
         initialMessages.push({
           id: "2",
@@ -50,7 +50,7 @@ export default async function Page({
         });
       }
       
-      // 保存新聊天到数据库
+      // Save new chat to database
       await saveChat({
         id,
         messages: initialMessages,
@@ -67,13 +67,13 @@ export default async function Page({
       return notFound();
     }
   } else {
-    // 使用现有聊天
+    // Use existing chat
     chat = {
       ...chatFromDb,
       messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
     };
 
-    // 验证用户权限
+    // Verify user permissions
     if (session.user.id !== chat.userId) {
       return notFound();
     }

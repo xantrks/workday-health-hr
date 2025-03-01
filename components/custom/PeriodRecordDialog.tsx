@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { z } from "zod";
+import { CalendarIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar } from "@/components/ui/calendar";
+
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -30,18 +37,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { PeriodRecord } from "./PeriodCalendar";
 
 const formSchema = z.object({
   date: z.date({
-    required_error: "请选择日期",
+    required_error: "Please select a date",
   }),
   periodFlow: z.number().min(0).max(5).optional(),
   symptoms: z.array(z.string()).optional(),
@@ -49,21 +51,21 @@ const formSchema = z.object({
 });
 
 const symptoms = [
-  { id: "cramps", label: "腹痛" },
-  { id: "headache", label: "头痛" },
-  { id: "bloating", label: "腹胀" },
-  { id: "fatigue", label: "疲劳" },
-  { id: "mood", label: "情绪波动" },
-  { id: "appetite", label: "食欲变化" },
-  { id: "swelling", label: "水肿" },
+  { id: "cramps", label: "Cramps" },
+  { id: "headache", label: "Headache" },
+  { id: "bloating", label: "Bloating" },
+  { id: "fatigue", label: "Fatigue" },
+  { id: "mood", label: "Mood Swings" },
+  { id: "appetite", label: "Appetite Changes" },
+  { id: "swelling", label: "Swelling" },
 ];
 
 const flowLevels = [
-  { value: 1, label: "轻微" },
-  { value: 2, label: "较轻" },
-  { value: 3, label: "中等" },
-  { value: 4, label: "较重" },
-  { value: 5, label: "严重" },
+  { value: 1, label: "Light" },
+  { value: 2, label: "Moderate Light" },
+  { value: 3, label: "Moderate" },
+  { value: 4, label: "Moderate Heavy" },
+  { value: 5, label: "Heavy" },
 ];
 
 interface PeriodRecordDialogProps {
@@ -101,18 +103,18 @@ export function PeriodRecordDialog({
     },
   });
 
-  // 当选中日期或记录变更时更新表单值
+  // Update form values when selected date or record changes
   useEffect(() => {
     console.log("PeriodRecordDialog - useEffect - selectedDate:", selectedDate ? format(selectedDate, "yyyy-MM-dd") : null);
     console.log("PeriodRecordDialog - useEffect - record:", record);
     
     if (selectedDate) {
-      // 确保日期不受时区影响 - 使用UTC日期
+      // Ensure date is not affected by timezone - use UTC date
       const year = selectedDate.getFullYear();
       const month = selectedDate.getMonth();
       const day = selectedDate.getDate();
       
-      // 创建一个新的日期对象，保留原始日期的年月日
+      // Create a new date object, preserving the original date's year, month, and day
       const localDate = new Date(year, month, day);
       localDate.setHours(0, 0, 0, 0);
       
@@ -121,7 +123,7 @@ export function PeriodRecordDialog({
     }
 
     if (record) {
-      // 确保 periodFlow 有效，如果为 null 或 undefined，则设置为 0
+      // Ensure periodFlow is valid, if null or undefined, set to 0
       const periodFlow = record.periodFlow !== null && record.periodFlow !== undefined 
         ? record.periodFlow 
         : 0;
@@ -129,17 +131,17 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Setting periodFlow:", periodFlow);
       form.setValue("periodFlow", periodFlow);
       
-      // 确保 symptoms 有效
+      // Ensure symptoms are valid
       const symptoms = record.symptoms || [];
       console.log("PeriodRecordDialog - Setting symptoms:", symptoms);
       form.setValue("symptoms", symptoms);
       
-      // 确保 notes 有效
+      // Ensure notes are valid
       const notes = record.notes || "";
       console.log("PeriodRecordDialog - Setting notes:", notes);
       form.setValue("notes", notes);
     } else {
-      // 如果没有记录，重置表单值
+      // If no record, reset form values
       console.log("PeriodRecordDialog - Resetting form values");
       form.setValue("periodFlow", 0);
       form.setValue("symptoms", []);
@@ -150,12 +152,12 @@ export function PeriodRecordDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log("PeriodRecordDialog - onSubmit - values:", values);
     
-    // 确保日期格式一致，不受时区影响
+    // Ensure date format is consistent, not affected by timezone
     const year = values.date.getFullYear();
     const month = values.date.getMonth();
     const day = values.date.getDate();
     
-    // 格式化为YYYY-MM-DD
+    // Format as YYYY-MM-DD
     const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
     const newRecord: PeriodRecord = {
@@ -175,7 +177,7 @@ export function PeriodRecordDialog({
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>
-            {record ? "编辑经期记录" : "添加经期记录"}
+            {record ? "Edit Period Record" : "Add Period Record"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -185,7 +187,7 @@ export function PeriodRecordDialog({
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>日期</FormLabel>
+                  <FormLabel>Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -199,7 +201,7 @@ export function PeriodRecordDialog({
                           {field.value ? (
                             format(field.value, "yyyy-MM-dd")
                           ) : (
-                            <span>选择日期</span>
+                            <span>Select date</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -224,7 +226,7 @@ export function PeriodRecordDialog({
               name="periodFlow"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>经期流量</FormLabel>
+                  <FormLabel>Period Flow</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(Number(value))}
                     defaultValue={field.value?.toString()}
@@ -232,11 +234,11 @@ export function PeriodRecordDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="选择流量级别" />
+                        <SelectValue placeholder="Select flow level" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="0">无</SelectItem>
+                      <SelectItem value="0">None</SelectItem>
                       {flowLevels.map((level) => (
                         <SelectItem
                           key={level.value}
@@ -254,13 +256,51 @@ export function PeriodRecordDialog({
 
             <FormField
               control={form.control}
+              name="symptoms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Symptoms</FormLabel>
+                  <div className="grid grid-cols-2 gap-2">
+                    {symptoms.map((symptom) => (
+                      <Button
+                        key={symptom.id}
+                        type="button"
+                        variant={
+                          field.value?.includes(symptom.id)
+                            ? "default"
+                            : "outline"
+                        }
+                        className={cn(
+                          "justify-start",
+                          field.value?.includes(symptom.id) &&
+                            "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => {
+                          const currentValues = field.value || [];
+                          const newValues = currentValues.includes(symptom.id)
+                            ? currentValues.filter((id) => id !== symptom.id)
+                            : [...currentValues, symptom.id];
+                          field.onChange(newValues);
+                        }}
+                      >
+                        {symptom.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>备注</FormLabel>
+                  <FormLabel>Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="添加任何额外信息..."
+                      placeholder="Add any additional notes here"
                       className="resize-none"
                       {...field}
                     />
@@ -270,40 +310,42 @@ export function PeriodRecordDialog({
               )}
             />
 
-            <DialogFooter className="flex justify-between items-center">
-              <div className="flex space-x-2">
-                {record?.id && onDelete && (
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    删除
-                  </Button>
-                )}
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  取消
+            <DialogFooter className="gap-2 sm:gap-0">
+              {record?.id && onDelete && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    if (showDeleteConfirm) {
+                      onDelete(record.id as string);
+                    } else {
+                      setShowDeleteConfirm(true);
+                    }
+                  }}
+                  className="mr-auto"
+                >
+                  {showDeleteConfirm ? "Confirm Delete" : "Delete"}
                 </Button>
-              </div>
-              <Button type="submit">保存</Button>
+              )}
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
       
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       {record?.id && onDelete && (
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>确认删除</DialogTitle>
+              <DialogTitle>Confirm Delete</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <p>您确定要删除这条经期记录吗？此操作无法撤销。</p>
+              <p>Are you sure you want to delete this period record? This operation cannot be undone.</p>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
-                取消
+                Cancel
               </Button>
               <Button 
                 variant="destructive" 
@@ -313,7 +355,7 @@ export function PeriodRecordDialog({
                   onOpenChange(false);
                 }}
               >
-                删除
+                Delete
               </Button>
             </DialogFooter>
           </DialogContent>

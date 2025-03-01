@@ -36,38 +36,38 @@ export default function CycleTab({ userId }: CycleTabProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedRecord, setSelectedRecord] = useState<PeriodRecord | undefined>(undefined);
   
-  // 加载组件时获取经期记录
+  // Load period records when component mounts
   useEffect(() => {
     console.log("CycleTab - Fetching period records...");
     fetchPeriodRecords();
   }, []);
   
-  // 监听 periodRecords 变化
+  // Monitor periodRecords changes
   useEffect(() => {
     console.log("CycleTab - Period records updated:", periodRecords);
   }, [periodRecords]);
   
-  // 选择日期
+  // Select date
   const handleDateSelect = (date: Date) => {
     console.log("CycleTab - Date selected:", date.toISOString());
     
-    // 找到选中日期的记录
+    // Find record for selected date
     const formattedDate = format(date, "yyyy-MM-dd");
-    console.log("选中日期:", formattedDate);
-    console.log("所有记录:", periodRecords);
+    console.log("Selected date:", formattedDate);
+    console.log("All records:", periodRecords);
     
     const matchingRecords = periodRecords.filter(record => {
       const recordDate = typeof record.date === 'string' 
         ? record.date 
         : format(new Date(record.date), "yyyy-MM-dd");
       
-      console.log("比较:", recordDate, formattedDate, recordDate === formattedDate);
+      console.log("Comparing:", recordDate, formattedDate, recordDate === formattedDate);
       return recordDate === formattedDate;
     });
     
-    console.log("匹配的记录:", matchingRecords);
+    console.log("Matching records:", matchingRecords);
     
-    // 确保选中的日期不受时区影响
+    // Ensure selected date is not affected by timezone
     const localDate = new Date(date);
     localDate.setHours(0, 0, 0, 0);
     setSelectedDate(localDate);
@@ -76,7 +76,7 @@ export default function CycleTab({ userId }: CycleTabProps) {
       setSelectedRecord(matchingRecords[0]);
       setShowPeriodDialog(true);
     } else {
-      // 如果没有找到记录，创建一个新的记录
+      // If no record found, create a new one
       setSelectedRecord({
         id: "",
         date: formattedDate,
@@ -88,36 +88,36 @@ export default function CycleTab({ userId }: CycleTabProps) {
     }
   };
   
-  // 保存经期记录
+  // Save period record
   const handleSavePeriodRecord = async (record: PeriodRecord) => {
     console.log("CycleTab - Saving period record:", record);
     const success = await savePeriodRecord(record);
     console.log("CycleTab - Save result:", success);
     if (success) {
       setShowPeriodDialog(false);
-      // 重新获取记录
+      // Refresh records
       await fetchPeriodRecords();
     }
   };
 
-  // 处理删除记录
+  // Handle record deletion
   const handleDeleteRecord = async (recordId: string) => {
     if (!recordId) return;
     
     try {
       await deletePeriodRecord(recordId);
       setShowPeriodDialog(false);
-      console.log("记录已成功删除");
-      // 显示成功消息
-      alert("经期记录已成功删除");
+      console.log("Record successfully deleted");
+      // Show success message
+      alert("Period record successfully deleted");
     } catch (error) {
-      console.error("删除记录失败:", error);
-      // 显示错误消息
-      alert("无法删除经期记录，请稍后再试");
+      console.error("Failed to delete record:", error);
+      // Show error message
+      alert("Unable to delete period record, please try again later");
     }
   };
 
-  // 获取演示数据
+  // Get demo data
   const periodStats = getPeriodStats();
   const frequentSymptoms = getFrequentSymptoms();
   
@@ -125,15 +125,15 @@ export default function CycleTab({ userId }: CycleTabProps) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>经期日历</CardTitle>
+          <CardTitle>Period Calendar</CardTitle>
           <CardDescription>
-            跟踪和预测您的月经周期
+            Track and predict your menstrual cycle
           </CardDescription>
         </CardHeader>
         <CardContent className="h-auto border-t pt-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-72">
-              <p>加载中...</p>
+              <p>Loading...</p>
             </div>
           ) : (
             <div className="mb-6">
@@ -154,38 +154,38 @@ export default function CycleTab({ userId }: CycleTabProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>周期分析</CardTitle>
+            <CardTitle>Cycle Analysis</CardTitle>
           </CardHeader>
           <CardContent className="h-60 flex items-center justify-center border-t pt-4">
             {periodStats ? (
               <div className="w-full space-y-4">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">平均周期长度</p>
-                    <p className="text-2xl font-bold">{periodStats.avgCycleLength || '--'} 天</p>
+                    <p className="text-sm text-muted-foreground">Average Cycle Length</p>
+                    <p className="text-2xl font-bold">{periodStats.avgCycleLength || '--'} days</p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">平均经期长度</p>
-                    <p className="text-2xl font-bold">{periodStats.avgPeriodLength || '--'} 天</p>
+                    <p className="text-sm text-muted-foreground">Average Period Length</p>
+                    <p className="text-2xl font-bold">{periodStats.avgPeriodLength || '--'} days</p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">预计下次开始</p>
+                    <p className="text-sm text-muted-foreground">Next Period Expected</p>
                     <p className="text-2xl font-bold">{periodStats.nextPeriodDate || '--'}</p>
                   </div>
                 </div>
                 <div className="text-center text-sm text-muted-foreground">
-                  <p>最后一次经期开始于 <span className="font-medium">{periodStats.lastPeriodDate || '--'}</span></p>
+                  <p>Last period started on <span className="font-medium">{periodStats.lastPeriodDate || '--'}</span></p>
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground text-center">添加更多经期记录以查看周期分析</p>
+              <p className="text-muted-foreground text-center">Add more period records to see cycle analysis</p>
             )}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>常见症状</CardTitle>
+            <CardTitle>Common Symptoms</CardTitle>
           </CardHeader>
           <CardContent className="h-60 flex flex-col space-y-4 border-t pt-4">
             {frequentSymptoms.length > 0 ? (
@@ -205,7 +205,7 @@ export default function CycleTab({ userId }: CycleTabProps) {
               ))
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground text-center">添加经期记录以跟踪症状</p>
+                <p className="text-muted-foreground text-center">Add period records to track symptoms</p>
               </div>
             )}
           </CardContent>

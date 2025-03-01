@@ -23,45 +23,45 @@ export function OverviewTab({ userId, userName }: OverviewTabProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">下次经期预测</CardTitle>
+            <CardTitle className="text-sm font-medium">Next Period Prediction</CardTitle>
             <CalendarIcon className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3月 15日</div>
-            <p className="text-xs text-muted-foreground">距今7天</p>
+            <div className="text-2xl font-bold">March 15</div>
+            <p className="text-xs text-muted-foreground">7 days from now</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">情绪状态</CardTitle>
+            <CardTitle className="text-sm font-medium">Mood Status</CardTitle>
             <Heart className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">良好</div>
-            <p className="text-xs text-muted-foreground">最近7天平均</p>
+            <div className="text-2xl font-bold">Good</div>
+            <p className="text-xs text-muted-foreground">Last 7 days average</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">即将到来的预约</CardTitle>
+            <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
             <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">3月10日 - 妇科检查</p>
+            <p className="text-xs text-muted-foreground">March 10 - Gynecological Exam</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">健康活动</CardTitle>
+            <CardTitle className="text-sm font-medium">Health Activities</CardTitle>
             <Activity className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">健康指数</p>
+            <p className="text-xs text-muted-foreground">Health Index</p>
           </CardContent>
         </Card>
       </div>
@@ -69,24 +69,24 @@ export function OverviewTab({ userId, userName }: OverviewTabProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="col-span-2">
           <CardHeader>
-            <CardTitle>月度健康概览</CardTitle>
+            <CardTitle>Monthly Health Overview</CardTitle>
           </CardHeader>
           <CardContent className="h-80 flex items-center justify-center border-t pt-4">
-            <p className="text-muted-foreground text-center">健康数据图表将显示在这里</p>
+            <p className="text-muted-foreground text-center">Health data chart will be displayed here</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader>
-            <CardTitle>最近通知</CardTitle>
+            <CardTitle>Recent Notifications</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-start gap-4 rounded-lg border p-3">
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">经期提醒</p>
+                  <p className="text-sm font-medium">Period Reminder</p>
                   <p className="text-sm text-muted-foreground">
-                    您的下一次经期预计将在7天后开始
+                    Your next period is expected to start in 7 days
                   </p>
                 </div>
                 <CalendarIcon className="h-5 w-5 text-primary" />
@@ -94,9 +94,9 @@ export function OverviewTab({ userId, userName }: OverviewTabProps) {
               
               <div className="flex items-start gap-4 rounded-lg border p-3">
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">预约确认</p>
+                  <p className="text-sm font-medium">Appointment Confirmation</p>
                   <p className="text-sm text-muted-foreground">
-                    您的妇科检查预约已确认
+                    Your gynecological exam appointment has been confirmed
                   </p>
                 </div>
                 <Clock className="h-5 w-5 text-accent" />

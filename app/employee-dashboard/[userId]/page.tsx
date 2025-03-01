@@ -34,7 +34,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
 
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg">加载中...</div>
+      <div className="text-lg">Loading...</div>
     </div>;
   }
 
@@ -44,8 +44,8 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-primary">员工健康仪表盘</h1>
-          <p className="text-muted-foreground mt-1">欢迎回来, {session.user.name}</p>
+          <h1 className="text-3xl font-bold text-primary">Employee Health Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome back, {session.user.name}</p>
         </div>
         <Button 
           className="mt-4 md:mt-0"
@@ -53,16 +53,16 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
           onClick={() => router.push(`/chat/new?userId=${params.userId}&role=employee`)}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
-          咨询 Sani 助手
+          Consult Sani Assistant
         </Button>
       </div>
       
       <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 mb-8">
-          <TabsTrigger value="overview">总览</TabsTrigger>
-          <TabsTrigger value="cycle">经期追踪</TabsTrigger>
-          <TabsTrigger value="health">健康状态</TabsTrigger>
-          <TabsTrigger value="appointments">医疗预约</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="cycle">Period Tracking</TabsTrigger>
+          <TabsTrigger value="health">Health Status</TabsTrigger>
+          <TabsTrigger value="appointments">Medical Appointments</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
