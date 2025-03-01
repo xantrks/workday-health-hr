@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    // 验证管理员权限
+    // Verify admin permissions
     const token = await getToken({ 
       req, 
       secret: process.env.NEXTAUTH_SECRET 
@@ -12,23 +12,23 @@ export async function POST(req: NextRequest) {
     
     if (!token) {
       return NextResponse.json(
-        { message: "未授权访问" },
+        { message: "Unauthorized access" },
         { status: 401 }
       );
     }
     
-    // 解析请求体
+    // Parse request body
     const body = await req.json();
     const { email } = body;
     
     if (!email) {
       return NextResponse.json(
-        { message: "必须提供用户邮箱" },
+        { message: "User email is required" },
         { status: 400 }
       );
     }
     
-    // 查找用户
+    // Find user
     const users = await sql`
       SELECT id, email, role FROM "User" 
       WHERE email = ${email}
@@ -36,30 +36,30 @@ export async function POST(req: NextRequest) {
     
     if (!users || users.length === 0) {
       return NextResponse.json(
-        { message: "未找到该用户" },
+        { message: "User not found" },
         { status: 404 }
       );
     }
     
-    // 更新用户角色为HR
+    // Update user role to HR
     await sql`
       UPDATE "User"
       SET role = 'hr'
       WHERE email = ${email}
     `;
     
-    // 返回成功响应
+    // Return success response
     return NextResponse.json({
-      message: "用户角色已更新为HR",
+      message: "User role has been updated to HR",
       user: {
         email,
         role: 'hr'
       }
     });
   } catch (error: any) {
-    console.error("设置HR角色时出错:", error);
+    console.error("Error setting HR role:", error);
     return NextResponse.json(
-      { message: "处理请求时出错", error: error.message },
+      { message: "Error processing request", error: error.message },
       { status: 500 }
     );
   }

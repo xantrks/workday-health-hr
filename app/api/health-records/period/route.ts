@@ -4,38 +4,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getPeriodRecordsByUserId, createHealthRecord, updateHealthRecord } from "@/db/queries";
 
-// 辅助函数：解析日期字符串，保留原始日期而不受时区影响
+// Helper function: Parse date string, preserving original date without timezone effects
 function parseDate(dateString: string): Date {
-  // 确保日期格式为 YYYY-MM-DD
+  // Ensure date format is YYYY-MM-DD
   const normalizedDateString = dateString.includes('T') 
     ? dateString.split('T')[0] 
     : dateString;
   
-  // 使用parseISO解析日期，然后创建一个新的日期对象，保留年月日
+  // Use parseISO to parse the date, then create a new date object preserving year, month, day
   const parsed = parseISO(normalizedDateString);
   const year = parsed.getFullYear();
   const month = parsed.getMonth();
   const day = parsed.getDate();
   
-  // 创建一个UTC日期，避免时区转换
+  // Create a UTC date to avoid timezone conversion
   const utcDate = new Date(Date.UTC(year, month, day));
   
-  console.log(`解析日期: ${dateString} -> ${format(utcDate, 'yyyy-MM-dd')}`);
+  console.log(`Parsed date: ${dateString} -> ${format(utcDate, 'yyyy-MM-dd')}`);
   return utcDate;
 }
 
-// 辅助函数：格式化日期为YYYY-MM-DD字符串
+// Helper function: Format date to YYYY-MM-DD string
 function formatDate(date: Date | string): string {
   if (typeof date === 'string') {
-    // 如果已经是字符串，确保格式正确
+    // If already a string, ensure correct format
     if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
       return date;
     }
-    // 否则解析并格式化
+    // Otherwise parse and format
     return format(parseDate(date), 'yyyy-MM-dd');
   }
   
-  // 如果是Date对象，直接格式化
+  // If it's a Date object, just format it
   return format(date, 'yyyy-MM-dd');
 }
 
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     
     if (endDateParam) {
       endDate = parseDate(endDateParam);
-      // 设置为当天的结束时间
+      // Set to end of day
       endDate.setUTCHours(23, 59, 59, 999);
     }
     
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
     
     console.log("GET /api/health-records/period - records:", records);
     
-    // 确保返回的记录格式正确
+    // Ensure returned records are in correct format
     const formattedRecords = records.map(record => {
       return {
         id: record.id,
@@ -110,17 +110,17 @@ export async function POST(req: NextRequest) {
     console.log("POST /api/health-records/period - userId:", userId);
     console.log("POST /api/health-records/period - body:", body);
     
-    // 验证请求数据
+    // Validate request data
     if (!body.date) {
       return NextResponse.json({ error: "Date is required" }, { status: 400 });
     }
     
-    // 解析日期，保留用户选择的原始日期
+    // Parse date, preserving user-selected original date
     const recordDate = parseDate(body.date);
-    console.log("POST /api/health-records/period - 用户选择的日期:", body.date);
-    console.log("POST /api/health-records/period - 解析后的日期:", format(recordDate, 'yyyy-MM-dd'));
+    console.log("POST /api/health-records/period - User selected date:", body.date);
+    console.log("POST /api/health-records/period - Parsed date:", format(recordDate, 'yyyy-MM-dd'));
     
-    // 检查是否已存在同一日期的记录
+    // Check if record already exists for the same date
     const existingRecords = await getPeriodRecordsByUserId({
       userId,
       startDate: recordDate,
@@ -131,9 +131,9 @@ export async function POST(req: NextRequest) {
     
     let result;
     
-    // 如果已存在记录，则更新记录
+    // If record exists, update record
     if (existingRecords.length > 0) {
-      // 如果提供了 ID，则更新指定 ID 的记录
+      // If ID is provided, update specified ID record
       if (body.id) {
         console.log("POST /api/health-records/period - Updating existing record with id:", body.id);
         
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
           notes: body.notes
         });
         
-        // 获取更新后的记录
+        // Get updated record
         const updatedRecords = await getPeriodRecordsByUserId({
           userId,
           startDate: recordDate,
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         
         result = updatedRecords.find(r => r.id === body.id) || updatedRecords[0];
       } else {
-        // 如果没有提供 ID，则更新该日期的第一条有效记录
+        // If no ID is provided, update the first valid record for that date
         const validRecord = existingRecords.find(r => r.period_flow !== null && r.period_flow !== undefined && r.period_flow > 0);
         const recordToUpdate = validRecord || existingRecords[0];
         
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
           notes: body.notes
         });
         
-        // 获取更新后的记录
+        // Get updated record
         const updatedRecords = await getPeriodRecordsByUserId({
           userId,
           startDate: recordDate,
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
         result = updatedRecords.find(r => r.id === recordToUpdate.id) || updatedRecords[0];
       }
     } else {
-      // 否则创建新记录
+      // Otherwise create new record
       console.log("POST /api/health-records/period - Creating new record");
       
       result = await createHealthRecord({
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
     
     console.log("POST /api/health-records/period - result:", result);
     
-    // 返回格式化的记录，确保日期格式正确
+    // Return formatted record, ensuring date format is correct
     const formattedRecord = {
       id: result.id,
       date: formatDate(result.date),

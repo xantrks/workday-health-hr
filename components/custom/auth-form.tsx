@@ -35,7 +35,7 @@ export function AuthForm({
 
   return (
     <form action={action} className="space-y-4">
-      {/* 只在注册表单中显示头像上传 */}
+      {/* Only show avatar upload in registration form */}
       {variant === "register" && (
         <div className="flex flex-col items-center gap-2 mb-6">
           <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary">

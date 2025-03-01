@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, isSameDay } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
+import React, { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 export interface PeriodRecord {
   id?: string;
@@ -29,30 +30,30 @@ export function PeriodCalendar({
   const [date, setDate] = useState<Date>(new Date());
   const [localRecords, setLocalRecords] = useState<PeriodRecord[]>([]);
 
-  // 将日期格式化为 ISO 字符串，便于比较
+  // Format date to ISO string for comparison
   const formatDateToISO = (date: Date) => {
     return format(date, "yyyy-MM-dd");
   };
 
-  // 记录组件挂载时的记录数据
+  // Record the data when component mounts
   useEffect(() => {
     console.log("PeriodCalendar records:", records);
     setLocalRecords(records);
   }, [records]);
 
-  // 查找特定日期是否有记录，如果有多条记录，返回最新的一条
+  // Find if a specific date has a record, if multiple records exist, return the latest one
   const getRecordForDate = (date: Date): PeriodRecord | undefined => {
     const formattedDate = formatDateToISO(date);
     console.log(`PeriodCalendar - getRecordForDate - Looking for records on ${formattedDate}`);
     
-    // 找出所有匹配该日期的记录
+    // Find all records matching this date
     const matchingRecords = localRecords.filter(record => {
-      // 确保记录日期格式一致
+      // Ensure record date format is consistent
       const recordDate = typeof record.date === 'string' 
         ? record.date 
         : formatDateToISO(record.date as unknown as Date);
       
-      // 直接比较字符串格式的日期，避免时区问题
+      // Compare string dates directly to avoid timezone issues
       const isMatch = recordDate === formattedDate;
       console.log(`PeriodCalendar - Comparing record date ${recordDate} with ${formattedDate}: ${isMatch}`);
       return isMatch;
@@ -65,8 +66,8 @@ export function PeriodCalendar({
       return undefined;
     }
     
-    // 如果有多条记录，返回 periodFlow 不为 null 的记录
-    // 如果都是 null 或都不是 null，则返回第一条（假设最新的记录在前面）
+    // If multiple records exist, return the one with non-null periodFlow
+    // If all are null or all are non-null, return the first one (assuming newest records are first)
     const validRecord = matchingRecords.find(r => r.periodFlow !== null && r.periodFlow !== undefined && r.periodFlow > 0);
     
     if (validRecord) {
@@ -78,7 +79,7 @@ export function PeriodCalendar({
     return matchingRecords[0];
   };
 
-  // 自定义日期修饰符
+  // Custom date modifiers
   const modifiersStyles = {
     periodLight: {
       color: "inherit",
@@ -94,7 +95,7 @@ export function PeriodCalendar({
     }
   };
 
-  // 创建日期修饰符
+  // Create date modifiers
   const modifiers = {
     periodLight: (date: Date) => {
       const record = getRecordForDate(date);
@@ -148,7 +149,7 @@ export function PeriodCalendar({
         onClick={onAddRecord}
       >
         <Plus className="h-4 w-4 mr-1" />
-        <span>添加记录</span>
+        <span>Add Record</span>
       </Button>
     </div>
   );

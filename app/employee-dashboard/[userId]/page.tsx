@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// 导入拆分后的组件
+// Import split components
 import { AppointmentsTab } from "../components/AppointmentsTab";
 import CycleTab from "../components/CycleTab";
 import { HealthTab } from "../components/HealthTab";
@@ -25,7 +25,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // 检查用户ID是否匹配
+  // Check if user ID matches
   useEffect(() => {
     if (session?.user && session.user.id !== params.userId) {
       router.replace(`/employee-dashboard/${session.user.id}`);

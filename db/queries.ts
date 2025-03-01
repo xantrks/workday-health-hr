@@ -16,7 +16,7 @@ import { user, chat, User, reservation, healthRecord } from "./schema";
 let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
 let db = drizzle(client);
 
-// 定义用户类型
+// Define user types
 interface DbUser {
   id: string;
   email: string;
@@ -75,7 +75,7 @@ export async function createUser(userData: {
   profileImage?: File;
 }) {
   try {
-    // 使用参数化查询
+    // Use parameterized query
     const result = await sql`
       INSERT INTO "User" (
         first_name,
@@ -98,7 +98,7 @@ export async function createUser(userData: {
 
     const newUser = result[0];
 
-    // 如果提供了头像，处理头像上传
+    // If avatar is provided, handle avatar upload
     if (userData.profileImage) {
       try {
         const { url } = await put(
@@ -233,7 +233,7 @@ export async function updateReservation({
     .where(eq(reservation.id, id));
 }
 
-// 健康记录相关查询函数
+// Health record related query functions
 export async function createHealthRecord({
   userId,
   date,
@@ -256,7 +256,7 @@ export async function createHealthRecord({
   notes?: string;
 }) {
   try {
-    // 确保日期格式正确，使用UTC日期避免时区问题
+    // Ensure date format is correct, use UTC date to avoid timezone issues
     const formattedDate = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
     
     console.log("Creating health record with data:", {
@@ -271,7 +271,7 @@ export async function createHealthRecord({
       notes
     });
     
-    // 使用原始 SQL 查询来插入记录
+    // Use raw SQL query to insert record
     const result = await sql`
       INSERT INTO "HealthRecord" (
         "userId",

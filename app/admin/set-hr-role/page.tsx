@@ -6,11 +6,20 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
 
-// 设置HR角色的服务器动作
-async function setHrRole(email: string) {
+import { auth } from "@/app/(auth)/auth";
+import { Label } from "@/components/ui/label";
+
+// Server action to set HR role
+export async function setHrRole(formData: FormData) {
+  'use server';
+  
+  const email = formData.get('email') as string;
+  
   try {
-    const response = await fetch('/api/admin/set-hr-role', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/set-hr-role`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -18,98 +27,73 @@ async function setHrRole(email: string) {
       body: JSON.stringify({ email }),
     });
     
+    const data = await response.json();
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.message || '操作失败');
+      throw new Error(data.message || 'Operation failed');
     }
     
-    return await response.json();
+    return { success: true, email };
   } catch (error: any) {
-    throw new Error(error.message || '操作失败');
+    throw new Error(error.message || 'Operation failed');
   }
 }
 
-export default function SetHrRolePage() {
-  const { data: session, status } = useSession({
-    required: true,
-  });
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+export default async function SetHrRolePage() {
+  const session = await auth();
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-    
-    try {
-      const result = await setHrRole(email);
-      setMessage({
-        type: 'success',
-        text: `${email} 已成功设置为HR角色`
-      });
-      setEmail('');
-    } catch (error: any) {
-      setMessage({
-        type: 'error',
-        text: error.message
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">加载中...</div>
-      </div>
-    );
+  // Check if user is admin
+  if (!session?.user || session.user.role !== 'admin') {
+    redirect('/unauthorized');
   }
   
   return (
-    <div className="container mx-auto py-10">
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>设置HR角色</CardTitle>
-          <CardDescription>
-            使用此工具将用户设置为HR角色，允许他们访问HR仪表盘
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  用户邮箱
-                </label>
-                <Input
-                  id="email"
-                  placeholder="输入用户邮箱"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Set HR Role</h1>
+        
+        <form 
+          action={async (formData) => {
+            'use server';
+            try {
+              const result = await setHrRole(formData);
+              if (result.success) {
+                toast.success({
+                  text: `${result.email} has been successfully set as HR role`
+                });
+              }
+            } catch (error: any) {
+              toast.error({
+                text: error.message
+              });
+            }
+          }}
+        >
+          <div className="space-y-4">
+            {session.user.role !== 'admin' ? (
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="text-lg">Loading...</div>
               </div>
-              
-              {message && (
-                <div className={`p-3 rounded-md ${
-                  message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {message.text}
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">User Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="Enter user email" 
+                    required 
+                  />
                 </div>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={loading || !email}>
-              {loading ? '处理中...' : '设置为HR角色'}
-            </Button>
-          </CardFooter>
+                
+                <Button type="submit" className="w-full">
+                  Set as HR
+                </Button>
+              </>
+            )}
+          </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 } 

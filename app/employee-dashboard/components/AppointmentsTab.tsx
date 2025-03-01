@@ -12,16 +12,16 @@ interface AppointmentsTabProps {
 
 export function AppointmentsTab({ userId }: AppointmentsTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>医疗预约</CardTitle>
+          <CardTitle>Medical Appointments</CardTitle>
           <CardDescription>
-            管理您的医疗预约
+            Manage your medical appointments
           </CardDescription>
         </CardHeader>
         <CardContent className="h-96 flex items-center justify-center border-t pt-4">
-          <p className="text-muted-foreground text-center">医疗预约功能即将推出</p>
+          <p className="text-muted-foreground text-center">Medical appointments feature coming soon</p>
         </CardContent>
       </Card>
     </div>

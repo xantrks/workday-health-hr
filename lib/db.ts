@@ -2,16 +2,16 @@ import { neon } from '@neondatabase/serverless';
 import { Redis } from '@upstash/redis';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-// 检查环境变量
+// Check environment variables
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not defined');
 }
 
 if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
   throw new Error(
-    '缺少 Redis 配置。请确保设置了 UPSTASH_REDIS_REST_URL 和 UPSTASH_REDIS_REST_TOKEN 环境变量。' +
-    '如果您在本地开发，请检查 .env.local 文件；' +
-    '如果在 Vercel 上部署，请在项目设置中添加这些环境变量。'
+    'Missing Redis configuration. Please ensure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables are set. ' +
+    'If you are developing locally, check your .env.local file; ' +
+    'if deploying on Vercel, add these environment variables in your project settings.'
   );
 }
 
@@ -25,7 +25,7 @@ export const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN
 });
 
-// 添加连接测试
+// Add connection test
 async function testConnection() {
   try {
     const result = await sql`SELECT 1`;
@@ -35,7 +35,7 @@ async function testConnection() {
   }
 }
 
-// 只在开发环境下测试连接
+// Only test connection in development environment
 if (process.env.NODE_ENV === 'development') {
   testConnection();
 }

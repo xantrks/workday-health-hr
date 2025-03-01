@@ -12,16 +12,16 @@ interface HealthTabProps {
 
 export function HealthTab({ userId }: HealthTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>健康状态跟踪</CardTitle>
+          <CardTitle>Health Status Tracking</CardTitle>
           <CardDescription>
-            跟踪您的睡眠、压力和整体健康状况
+            Track your sleep, stress, and overall health
           </CardDescription>
         </CardHeader>
         <CardContent className="h-96 flex items-center justify-center border-t pt-4">
-          <p className="text-muted-foreground text-center">健康状态跟踪功能即将推出</p>
+          <p className="text-muted-foreground text-center">Health status tracking feature coming soon</p>
         </CardContent>
       </Card>
     </div>

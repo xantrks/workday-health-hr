@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { sql } from "@/lib/db";
 
-// 获取健康记录
+// Get health records
 export async function GET(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// 创建健康记录
+// Create health record
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     
     const body = await req.json();
     
-    // 验证请求数据
+    // Validate request data
     if (!body.date || !body.recordType) {
       return NextResponse.json({ error: "Date and record type are required" }, { status: 400 });
     }
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// 更新健康记录
+// Update health record
 export async function PUT(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest) {
     
     const userId = token.id as string;
     
-    // 检查记录是否存在并属于该用户
+    // Check if record exists and belongs to the user
     const check = await sql.query(
       `SELECT * FROM "HealthRecord" WHERE id = $1 AND "userId" = $2`,
       [body.id, userId]
@@ -123,9 +123,9 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Record not found or unauthorized" }, { status: 404 });
     }
     
-    // 构建更新语句
+    // Build update statement
     let updateFields = [];
-    let params = [body.id, userId]; // id 和 userId 是第一个和第二个参数
+    let params = [body.id, userId]; // id and userId are the first and second parameters
     let paramIndex = 3;
     
     if (body.periodFlow !== undefined) {
@@ -180,7 +180,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// 删除健康记录
+// Delete health record
 export async function DELETE(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -198,7 +198,7 @@ export async function DELETE(req: NextRequest) {
     
     const userId = token.id as string;
     
-    // 检查记录是否存在并属于该用户
+    // Check if record exists and belongs to the user
     const check = await sql.query(
       `SELECT * FROM "HealthRecord" WHERE id = $1 AND "userId" = $2`,
       [id, userId]

@@ -7,7 +7,7 @@ import {
   deleteHealthRecord 
 } from "@/db/queries";
 
-// 获取单个经期记录
+// Get a single period record
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -28,12 +28,12 @@ export async function GET(
       return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
     
-    // 验证记录是否属于当前用户
+    // Verify record belongs to current user
     if (record.userId !== session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // 格式化日期
+    // Format date
     let formattedDate;
     if (typeof record.date === 'string') {
       formattedDate = record.date;
@@ -42,7 +42,7 @@ export async function GET(
       formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
     }
     
-    // 格式化记录
+    // Format record
     const formattedRecord = {
       id: record.id,
       date: formattedDate,
@@ -60,7 +60,7 @@ export async function GET(
   }
 }
 
-// 更新单个经期记录
+// Update a single period record
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -78,19 +78,19 @@ export async function PUT(
     console.log("PUT /api/health-records/period/[id] - recordId:", recordId);
     console.log("PUT /api/health-records/period/[id] - body:", body);
     
-    // 获取记录以验证所有权
+    // Get record to verify ownership
     const existingRecord = await getHealthRecordById(recordId);
     
     if (!existingRecord) {
       return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
     
-    // 验证记录是否属于当前用户
+    // Verify record belongs to current user
     if (existingRecord.userId !== session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // 更新记录
+    // Update record
     await updateHealthRecord({
       id: recordId,
       periodFlow: body.periodFlow,
@@ -98,10 +98,10 @@ export async function PUT(
       notes: body.notes
     });
     
-    // 获取更新后的记录
+    // Get updated record
     const updatedRecord = await getHealthRecordById(recordId);
     
-    // 格式化日期
+    // Format date
     let formattedDate;
     if (typeof updatedRecord.date === 'string') {
       formattedDate = updatedRecord.date;
@@ -110,7 +110,7 @@ export async function PUT(
       formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
     }
     
-    // 格式化记录
+    // Format record
     const formattedRecord = {
       id: updatedRecord.id,
       date: formattedDate,
@@ -128,7 +128,7 @@ export async function PUT(
   }
 }
 
-// 删除单个经期记录
+// Delete a single period record
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -143,19 +143,19 @@ export async function DELETE(
     const recordId = params.id;
     console.log("DELETE /api/health-records/period/[id] - recordId:", recordId);
     
-    // 获取记录以验证所有权
+    // Get record to verify ownership
     const existingRecord = await getHealthRecordById(recordId);
     
     if (!existingRecord) {
       return NextResponse.json({ error: "Record not found" }, { status: 404 });
     }
     
-    // 验证记录是否属于当前用户
+    // Verify record belongs to current user
     if (existingRecord.userId !== session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // 删除记录
+    // Delete record
     await deleteHealthRecord(recordId);
     
     return NextResponse.json({ success: true, message: "Record deleted successfully" });

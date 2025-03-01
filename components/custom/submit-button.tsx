@@ -26,7 +26,7 @@ export function SubmitButton({ children, className = "", loading = false }: Subm
       )}
       {children}
       <span aria-live="polite" className="sr-only" role="status">
-        {pending ? "加载中" : "提交表单"}
+        {pending ? "Loading" : "Submit Form"}
       </span>
     </Button>
   );

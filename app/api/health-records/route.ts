@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     
     const body = await req.json();
     
-    // 验证请求数据
+    // Validate request data
     if (!body.date || !body.recordType) {
       return NextResponse.json({ error: "Date and record type are required" }, { status: 400 });
     }
