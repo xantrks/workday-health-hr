@@ -1,0 +1,47 @@
+erDiagram
+    User {
+        uuid id PK "Primary Key"
+        string firstName "First Name"
+        string lastName "Last Name"
+        string email "Email (Unique)"
+        string password "Hashed Password"
+        boolean agreedToTerms "Terms Agreement"
+        string profileImageUrl "Profile Image"
+        timestamp createdAt "Creation Timestamp"
+        timestamp updatedAt "Last Update Timestamp"
+        string role "User Role (employee, admin, hr)"
+    }
+    
+    Chat {
+        uuid id PK "Primary Key"
+        timestamp createdAt "Creation Timestamp"
+        json messages "Chat Message History"
+        uuid userId FK "Foreign Key to User"
+    }
+    
+    Reservation {
+        uuid id PK "Primary Key"
+        timestamp createdAt "Creation Timestamp"
+        json details "Reservation Details"
+        boolean hasCompletedPayment "Payment Status"
+        uuid userId FK "Foreign Key to User"
+    }
+    
+    HealthRecord {
+        uuid id PK "Primary Key"
+        date date "Record Date"
+        string recordType "Record Type (period, symptom, mood)"
+        integer periodFlow "Period Flow (1-5 scale)"
+        json symptoms "Symptoms Data (pain levels, location)"
+        string mood "Mood (happy, sad, anxious)"
+        integer sleepHours "Hours of Sleep"
+        integer stressLevel "Stress Level (1-5 scale)"
+        string notes "Additional Notes"
+        timestamp createdAt "Creation Timestamp"
+        timestamp updatedAt "Last Update Timestamp"
+        uuid userId FK "Foreign Key to User"
+    }
+    
+    User ||--o{ Chat : "has many"
+    User ||--o{ Reservation : "makes many"
+    User ||--o{ HealthRecord : "has many"
