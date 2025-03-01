@@ -424,15 +424,20 @@ export async function updateHealthRecord({
 }) {
   try {
     const updateData: any = {
-      updatedAt: new Date()
+      updated_at: new Date()
     };
     
-    if (periodFlow !== undefined) updateData.periodFlow = periodFlow;
+    if (periodFlow !== undefined) updateData.period_flow = periodFlow;
     if (symptoms !== undefined) updateData.symptoms = JSON.stringify(symptoms);
     if (mood !== undefined) updateData.mood = mood;
-    if (sleepHours !== undefined) updateData.sleepHours = sleepHours;
-    if (stressLevel !== undefined) updateData.stressLevel = stressLevel;
+    if (sleepHours !== undefined) updateData.sleep_hours = sleepHours;
+    if (stressLevel !== undefined) updateData.stress_level = stressLevel;
     if (notes !== undefined) updateData.notes = notes;
+    
+    console.log("Updating health record with data:", {
+      id,
+      updateData
+    });
     
     return await db
       .update(healthRecord)

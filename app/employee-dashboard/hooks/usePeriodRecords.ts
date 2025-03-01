@@ -6,6 +6,9 @@ export interface PeriodRecord {
   date: string;
   periodFlow?: number;
   symptoms?: string[];
+  mood?: string;
+  sleepHours?: number;
+  stressLevel?: number;
   notes?: string;
 }
 
@@ -49,6 +52,23 @@ export function usePeriodRecords() {
             ? (typeof record.symptoms === 'string' ? JSON.parse(record.symptoms) : record.symptoms) 
             : [];
           
+          // Ensure mood is valid
+          const mood = record.mood || "none";
+          
+          // Ensure sleepHours is valid - 检查API返回的字段名
+          const sleepHours = (record.sleepHours !== null && record.sleepHours !== undefined)
+            ? record.sleepHours
+            : (record.sleep_hours !== null && record.sleep_hours !== undefined)
+              ? record.sleep_hours
+              : 0;
+          
+          // Ensure stressLevel is valid - 检查API返回的字段名
+          const stressLevel = (record.stressLevel !== null && record.stressLevel !== undefined)
+            ? record.stressLevel
+            : (record.stress_level !== null && record.stress_level !== undefined)
+              ? record.stress_level
+              : 0;
+          
           // Ensure notes are valid
           const notes = record.notes || "";
           
@@ -57,6 +77,9 @@ export function usePeriodRecords() {
             date: formattedDate,
             periodFlow,
             symptoms,
+            mood,
+            sleepHours,
+            stressLevel,
             notes
           });
           
@@ -65,6 +88,9 @@ export function usePeriodRecords() {
             date: formattedDate,
             periodFlow,
             symptoms,
+            mood,
+            sleepHours,
+            stressLevel,
             notes
           };
         });

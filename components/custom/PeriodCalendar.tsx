@@ -13,6 +13,9 @@ export interface PeriodRecord {
   date: string;
   periodFlow?: number;
   symptoms?: string[];
+  mood?: string;
+  sleepHours?: number;
+  stressLevel?: number;
   notes?: string;
 }
 

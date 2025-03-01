@@ -50,6 +50,9 @@ export async function GET(
       symptoms: record.symptoms ? 
         (typeof record.symptoms === 'string' ? JSON.parse(record.symptoms) : record.symptoms) 
         : [],
+      mood: record.mood || "none",
+      sleepHours: record.sleep_hours || 0,
+      stressLevel: record.stress_level || 0,
       notes: record.notes
     };
     
@@ -95,6 +98,9 @@ export async function PUT(
       id: recordId,
       periodFlow: body.periodFlow,
       symptoms: body.symptoms,
+      mood: body.mood,
+      sleepHours: body.sleepHours,
+      stressLevel: body.stressLevel,
       notes: body.notes
     });
     
@@ -118,6 +124,9 @@ export async function PUT(
       symptoms: updatedRecord.symptoms ? 
         (typeof updatedRecord.symptoms === 'string' ? JSON.parse(updatedRecord.symptoms) : updatedRecord.symptoms) 
         : [],
+      mood: updatedRecord.mood || "none",
+      sleepHours: updatedRecord.sleep_hours || 0,
+      stressLevel: updatedRecord.stress_level || 0,
       notes: updatedRecord.notes
     };
     

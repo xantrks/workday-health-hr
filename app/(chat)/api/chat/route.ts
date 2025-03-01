@@ -18,32 +18,32 @@ import {
 } from "@/db/queries";
 import { generateUUID } from "@/lib/utils";
 
-// 用于检测语言的函数
+// Function to detect language
 function detectLanguage(text: string): string {
-  // 中文字符范围检测
+  // Chinese character range detection
   const chinesePattern = /[\u4e00-\u9fa5]/;
   
-  // 如果包含中文字符，认为是中文
+  // If contains Chinese characters, consider it as Chinese
   if (chinesePattern.test(text)) {
     return 'chinese';
   }
   
-  // 西班牙语特有字符检测
+  // Spanish specific character detection
   const spanishPattern = /[áéíóúüñ¿¡]/i;
   if (spanishPattern.test(text)) {
     return 'spanish';
   }
   
-  // 默认返回英语
+  // Default to English
   return 'english';
 }
 
-// 根据聊天历史和用户角色生成系统提示
+// Generate system prompt based on chat history and user role
 function generateSystemPrompt(messages: Array<Message>, userId: string): string {
-  // 检查是否为HR角色用户
-  const isHR = userId.includes('hr'); // 简化的检测逻辑，实际应基于用户数据库中的角色字段
+  // Check if user is HR role
+  const isHR = userId.includes('hr'); // Simplified detection logic, should be based on user role field in database
   
-  // 确定用户使用的语言
+  // Determine user language
   let userLanguage = 'english';
   const userMessages = messages.filter(msg => msg.role === 'user');
   if (userMessages.length > 0) {
@@ -53,11 +53,11 @@ function generateSystemPrompt(messages: Array<Message>, userId: string): string 
     }
   }
   
-  // 构建基础系统提示
+  // Build base system prompt
   let basePrompt = '';
   
   if (isHR) {
-    // HR角色的系统提示
+    // System prompt for HR role
     basePrompt = `You are Sani Assistant, an HR support consultant specialized in workplace health management.
 
 Your capabilities include:
@@ -75,7 +75,7 @@ Remember to:
 
 Current date: ${new Date().toLocaleDateString()}`;
   } else {
-    // 员工角色的系统提示
+    // System prompt for employee role
     basePrompt = `You are Sani Assistant, a personal health advisor specialized in women's workplace health.
 
 Your capabilities include:
@@ -94,7 +94,7 @@ Remember to:
 Current date: ${new Date().toLocaleDateString()}`;
   }
   
-  // 根据检测到的语言添加语言指示
+  // Add language instructions based on detected language
   if (userLanguage === 'chinese') {
     basePrompt += "\n\nThe user is writing in Chinese. Please respond in Chinese.";
   } else if (userLanguage === 'spanish') {

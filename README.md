@@ -57,24 +57,24 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 系统包含两个定制化的AI助手，分别针对不同角色用户：
 
-1. **员工健康顾问**
-   - 专注于提供经期健康、工作场所健康和医疗咨询服务
-   - 根据员工需求提供个性化健康建议
-   - 支持多语言对话，默认英语，自动检测并响应中文和西班牙语
+1. **Employee Health Advisor**
+   - Focused on providing menstrual health, workplace health, and medical consultation services
+   - Provides personalized health advice based on employee needs
+   - Supports multilingual conversations, default in English, automatically detects and responds in Chinese and Spanish
 
-2. **HR健康管理顾问**
-   - 专注于工作场所健康管理、请假分析和员工关怀
-   - 提供基于匿名数据的趋势分析和建议
-   - 支持多语言对话，默认英语，自动检测并响应中文和西班牙语
+2. **HR Health Management Advisor**
+   - Focused on workplace health management, leave analysis, and employee care
+   - Provides trend analysis and recommendations based on anonymized data
+   - Supports multilingual conversations, default in English, automatically detects and responds in Chinese and Spanish
 
-### 主要特性
+### Key Features
 
-- **智能语言检测**：自动识别用户输入语言，提供相应语言的回复
-- **角色定制化提示**：根据用户角色提供不同的AI指导和专业知识
-- **健康数据安全**：严格保护用户隐私和健康信息
-- **循证医学建议**：所有健康建议基于科学证据和最佳实践
+- **Intelligent Language Detection**: Automatically recognizes user input language and provides responses in the corresponding language
+- **Role-Customized Prompts**: Provides different AI guidance and expertise based on user role
+- **Health Data Security**: Strictly protects user privacy and health information
+- **Evidence-Based Medical Advice**: All health recommendations are based on scientific evidence and best practices
 
-## 使用说明
+## Usage Instructions
 
 ```bash
 pnpm install

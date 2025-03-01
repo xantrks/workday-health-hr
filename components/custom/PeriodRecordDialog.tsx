@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -37,8 +38,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
 import { cn } from "@/lib/utils";
+
 import { PeriodRecord } from "./PeriodCalendar";
 
 const formSchema = z.object({
@@ -47,6 +48,9 @@ const formSchema = z.object({
   }),
   periodFlow: z.number().min(0).max(5).optional(),
   symptoms: z.array(z.string()).optional(),
+  mood: z.string().optional(),
+  sleepHours: z.number().min(0).max(24).optional(),
+  stressLevel: z.number().min(0).max(10).optional(),
   notes: z.string().optional(),
 });
 
@@ -99,6 +103,9 @@ export function PeriodRecordDialog({
       date: selectedDate || new Date(),
       periodFlow: 0,
       symptoms: [],
+      mood: "none",
+      sleepHours: 0,
+      stressLevel: 0,
       notes: "",
     },
   });
@@ -136,6 +143,25 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Setting symptoms:", symptoms);
       form.setValue("symptoms", symptoms);
       
+      // 设置mood值
+      const mood = record.mood || "none";
+      console.log("PeriodRecordDialog - Setting mood:", mood);
+      form.setValue("mood", mood);
+      
+      // 设置sleepHours值
+      const sleepHours = record.sleepHours !== null && record.sleepHours !== undefined 
+        ? record.sleepHours 
+        : 0;
+      console.log("PeriodRecordDialog - Setting sleepHours:", sleepHours);
+      form.setValue("sleepHours", sleepHours);
+      
+      // 设置stressLevel值
+      const stressLevel = record.stressLevel !== null && record.stressLevel !== undefined 
+        ? record.stressLevel 
+        : 0;
+      console.log("PeriodRecordDialog - Setting stressLevel:", stressLevel);
+      form.setValue("stressLevel", stressLevel);
+      
       // Ensure notes are valid
       const notes = record.notes || "";
       console.log("PeriodRecordDialog - Setting notes:", notes);
@@ -145,6 +171,9 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Resetting form values");
       form.setValue("periodFlow", 0);
       form.setValue("symptoms", []);
+      form.setValue("mood", "none");
+      form.setValue("sleepHours", 0);
+      form.setValue("stressLevel", 0);
       form.setValue("notes", "");
     }
   }, [selectedDate, record, form]);
@@ -165,6 +194,9 @@ export function PeriodRecordDialog({
       date: formattedDate,
       periodFlow: values.periodFlow,
       symptoms: values.symptoms,
+      mood: values.mood,
+      sleepHours: values.sleepHours,
+      stressLevel: values.stressLevel,
       notes: values.notes,
     };
 
@@ -174,14 +206,14 @@ export function PeriodRecordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {record ? "Edit Period Record" : "Add Period Record"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
               control={form.control}
               name="date"
@@ -239,20 +271,96 @@ export function PeriodRecordDialog({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="0">None</SelectItem>
-                      {flowLevels.map((level) => (
-                        <SelectItem
-                          key={level.value}
-                          value={level.value.toString()}
-                        >
-                          {level.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="1">Light</SelectItem>
+                      <SelectItem value="2">Moderate Light</SelectItem>
+                      <SelectItem value="3">Moderate</SelectItem>
+                      <SelectItem value="4">Moderate Heavy</SelectItem>
+                      <SelectItem value="5">Heavy</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="mood"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mood</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select mood status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="happy">Happy</SelectItem>
+                          <SelectItem value="calm">Calm</SelectItem>
+                          <SelectItem value="sad">Sad</SelectItem>
+                          <SelectItem value="anxious">Anxious</SelectItem>
+                          <SelectItem value="irritable">Irritable</SelectItem>
+                          <SelectItem value="tired">Tired</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sleepHours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sleep Duration (hours)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="24"
+                        step="0.5"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="stressLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stress Level (0-10)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="1"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -310,7 +418,7 @@ export function PeriodRecordDialog({
               )}
             />
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
               {record?.id && onDelete && (
                 <Button
                   type="button"
@@ -336,12 +444,12 @@ export function PeriodRecordDialog({
       {/* Delete confirmation dialog */}
       {record?.id && onDelete && (
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Confirm Delete</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <p>Are you sure you want to delete this period record? This operation cannot be undone.</p>
+              <p>Are you sure you want to delete this period record? This action cannot be undone.</p>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>

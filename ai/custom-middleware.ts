@@ -1,26 +1,26 @@
 import { CoreMessage, Experimental_LanguageModelV1Middleware, Message } from "ai";
 
-// 用于检测语言的简单函数
+// Simple function to detect language
 function detectLanguage(text: string): string {
-  // 中文字符范围检测
+  // Chinese character range detection
   const chinesePattern = /[\u4e00-\u9fa5]/;
   
-  // 如果包含中文字符，认为是中文
+  // If contains Chinese characters, consider it as Chinese
   if (chinesePattern.test(text)) {
     return 'chinese';
   }
   
-  // 西班牙语特有字符检测
+  // Spanish specific character detection
   const spanishPattern = /[áéíóúüñ¿¡]/i;
   if (spanishPattern.test(text)) {
     return 'spanish';
   }
   
-  // 其他语言可以根据需要添加更多检测逻辑
+  // Additional detection logic for other languages can be added as needed
   
-  // 默认返回英语
+  // Default to English
   return 'english';
 }
 
-// 定义空的中间件对象，在API路由中手动处理语言检测
+// Define empty middleware object, language detection is handled manually in API routes
 export const customMiddleware: Experimental_LanguageModelV1Middleware = {};

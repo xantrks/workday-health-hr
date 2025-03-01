@@ -83,6 +83,9 @@ export async function GET(req: NextRequest) {
         symptoms: record.symptoms ? 
           (typeof record.symptoms === 'string' ? JSON.parse(record.symptoms) : record.symptoms) 
           : [],
+        mood: record.mood || "none",
+        sleepHours: record.sleep_hours || 0,
+        stressLevel: record.stress_level || 0,
         notes: record.notes
       };
     });
@@ -141,6 +144,9 @@ export async function POST(req: NextRequest) {
           id: body.id,
           periodFlow: body.periodFlow,
           symptoms: body.symptoms,
+          mood: body.mood,
+          sleepHours: body.sleepHours,
+          stressLevel: body.stressLevel,
           notes: body.notes
         });
         
@@ -163,6 +169,9 @@ export async function POST(req: NextRequest) {
           id: recordToUpdate.id,
           periodFlow: body.periodFlow,
           symptoms: body.symptoms,
+          mood: body.mood,
+          sleepHours: body.sleepHours,
+          stressLevel: body.stressLevel,
           notes: body.notes
         });
         
@@ -185,6 +194,9 @@ export async function POST(req: NextRequest) {
         recordType: 'period',
         periodFlow: body.periodFlow,
         symptoms: body.symptoms,
+        mood: body.mood,
+        sleepHours: body.sleepHours,
+        stressLevel: body.stressLevel,
         notes: body.notes
       });
     }
@@ -199,6 +211,9 @@ export async function POST(req: NextRequest) {
       symptoms: result.symptoms ? 
         (typeof result.symptoms === 'string' ? JSON.parse(result.symptoms) : result.symptoms) 
         : [],
+      mood: result.mood || "none",
+      sleepHours: result.sleep_hours || 0,
+      stressLevel: result.stress_level || 0,
       notes: result.notes
     };
     
