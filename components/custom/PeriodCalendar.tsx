@@ -1,10 +1,15 @@
 "use client";
 
-import { format, parseISO, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
-import React, { useState, useEffect } from "react";
+// 外部依赖
+import { format, parseISO } from "date-fns";
+import { CalendarApi } from "@fullcalendar/core";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import React, { useState, useEffect, useRef } from "react";
+import { createRoot } from "react-dom/client";
 
-import { Calendar } from "@/components/ui/calendar";
+// 内部依赖
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -30,9 +35,11 @@ export function PeriodCalendar({
   onSelectDate, 
   onAddRecord 
 }: PeriodCalendarProps) {
-  const [date, setDate] = useState<Date>(new Date());
+  const calendarRef = useRef<FullCalendar>(null);
   const [localRecords, setLocalRecords] = useState<PeriodRecord[]>([]);
-
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth());
+  
   // Format date to ISO string for comparison
   const formatDateToISO = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -40,14 +47,12 @@ export function PeriodCalendar({
 
   // Record the data when component mounts
   useEffect(() => {
-    console.log("PeriodCalendar records:", records);
     setLocalRecords(records);
   }, [records]);
 
-  // Find if a specific date has a record, if multiple records exist, return the latest one
+  // Find record for a given date
   const getRecordForDate = (date: Date): PeriodRecord | undefined => {
     const formattedDate = formatDateToISO(date);
-    console.log(`PeriodCalendar - getRecordForDate - Looking for records on ${formattedDate}`);
     
     // Find all records matching this date
     const matchingRecords = localRecords.filter(record => {
@@ -57,89 +62,96 @@ export function PeriodCalendar({
         : formatDateToISO(record.date as unknown as Date);
       
       // Compare string dates directly to avoid timezone issues
-      const isMatch = recordDate === formattedDate;
-      console.log(`PeriodCalendar - Comparing record date ${recordDate} with ${formattedDate}: ${isMatch}`);
-      return isMatch;
+      return recordDate === formattedDate;
     });
     
-    console.log(`PeriodCalendar - Found ${matchingRecords.length} matching records for date ${formattedDate}:`, matchingRecords);
-    
     if (matchingRecords.length === 0) {
-      console.log(`PeriodCalendar - No records found for date ${formattedDate}`);
       return undefined;
     }
     
     // If multiple records exist, return the one with non-null periodFlow
-    // If all are null or all are non-null, return the first one (assuming newest records are first)
     const validRecord = matchingRecords.find(r => r.periodFlow !== null && r.periodFlow !== undefined && r.periodFlow > 0);
     
     if (validRecord) {
-      console.log(`PeriodCalendar - Found valid record for date ${formattedDate}:`, validRecord);
       return validRecord;
     }
     
-    console.log(`PeriodCalendar - Using first record for date ${formattedDate}:`, matchingRecords[0]);
     return matchingRecords[0];
   };
 
-  // Create date modifiers
-  const modifiers = {
-    periodLight: (date: Date) => {
-      const record = getRecordForDate(date);
-      const result = record?.periodFlow !== undefined && record.periodFlow > 0 && record.periodFlow <= 1;
-      if (result) {
-        console.log(`Date ${formatDateToISO(date)} has light flow`);
-      }
-      return result;
-    },
-    periodMedium: (date: Date) => {
-      const record = getRecordForDate(date);
-      const result = record?.periodFlow !== undefined && record.periodFlow > 1 && record.periodFlow <= 3;
-      if (result) {
-        console.log(`Date ${formatDateToISO(date)} has medium flow`);
-      }
-      return result;
-    },
-    periodHeavy: (date: Date) => {
-      const record = getRecordForDate(date);
-      const result = record?.periodFlow !== undefined && record.periodFlow > 3;
-      if (result) {
-        console.log(`Date ${formatDateToISO(date)} has heavy flow`);
-      }
-      return result;
-    },
-    hasSymptoms: (date: Date) => {
-      const record = getRecordForDate(date);
-      return record?.symptoms !== undefined && record.symptoms.length > 0;
-    }
+  // Handle date click
+  const handleDateClick = (info: any) => {
+    const date = new Date(info.date);
+    onSelectDate(date);
   };
 
-  // Get calendar day content to show tooltips
-  const getDayContent = (day: Date) => {
-    const record = getRecordForDate(day);
-    if (!record) return null;
+  // Custom date cell render
+  const dayCellDidMount = (info: any) => {
+    const { date, el } = info;
+    const record = getRecordForDate(date);
     
-    let tooltipContent = "";
+    // If no record, return
+    if (!record) return;
+    
+    // Add base styles for period days
     if (record.periodFlow && record.periodFlow > 0) {
-      const flowLevel = record.periodFlow <= 1 ? "Light" : 
-                       record.periodFlow <= 3 ? "Medium" : "Heavy";
-      tooltipContent += `Flow: ${flowLevel}\n`;
+      el.classList.add('period-day');
+      el.classList.add('bg-red-50');
+      
+      // Add indicator dot based on flow level
+      const dot = document.createElement('div');
+      dot.classList.add('absolute', 'bottom-1', 'left-1/2', '-translate-x-1/2', 'w-1.5', 'h-1.5', 'rounded-full');
+      
+      if (record.periodFlow <= 1) {
+        dot.classList.add('bg-red-200');
+      } else if (record.periodFlow <= 3) {
+        dot.classList.add('bg-red-300');
+      } else {
+        dot.classList.add('bg-red-500');
+      }
+      
+      el.appendChild(dot);
     }
     
+    // Add symptoms indicator
     if (record.symptoms && record.symptoms.length > 0) {
-      tooltipContent += `Symptoms: ${record.symptoms.join(", ")}\n`;
+      const symptomDot = document.createElement('div');
+      symptomDot.classList.add('absolute', 'top-1', 'right-1', 'w-1', 'h-1', 'rounded-full', 'bg-blue-400');
+      el.appendChild(symptomDot);
     }
     
-    if (record.mood && record.mood !== "none") {
-      tooltipContent += `Mood: ${record.mood}\n`;
-    }
-    
-    if (record.notes) {
-      tooltipContent += `Notes: ${record.notes}`;
-    }
-    
-    if (tooltipContent) {
-      return (
+    // Add tooltip with information
+    if (record.periodFlow || (record.symptoms && record.symptoms.length > 0) || record.mood || record.notes) {
+      const tooltipContainer = document.createElement('div');
+      tooltipContainer.classList.add('period-tooltip-container', 'absolute', 'inset-0', 'z-10');
+      
+      // Create React tooltip component
+      const tooltipElement = document.createElement('div');
+      tooltipContainer.appendChild(tooltipElement);
+      el.appendChild(tooltipContainer);
+      
+      // Generate tooltip content
+      let tooltipContent = "";
+      if (record.periodFlow && record.periodFlow > 0) {
+        const flowLevel = record.periodFlow <= 1 ? "Light" : 
+                         record.periodFlow <= 3 ? "Medium" : "Heavy";
+        tooltipContent += `Flow: ${flowLevel}\n`;
+      }
+      
+      if (record.symptoms && record.symptoms.length > 0) {
+        tooltipContent += `Symptoms: ${record.symptoms.join(", ")}\n`;
+      }
+      
+      if (record.mood && record.mood !== "none") {
+        tooltipContent += `Mood: ${record.mood}\n`;
+      }
+      
+      if (record.notes) {
+        tooltipContent += `Notes: ${record.notes}`;
+      }
+      
+      // Render React tooltip
+      const tooltip = (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -151,65 +163,59 @@ export function PeriodCalendar({
           </Tooltip>
         </TooltipProvider>
       );
+      
+      // Use createRoot to render tooltip
+      const root = createRoot(tooltipElement);
+      root.render(tooltip);
+      
+      // Store root reference for cleanup
+      (tooltipElement as any)._root = root;
     }
-    
-    return null;
+  };
+  
+  // Clean up tooltips when cell unmounts
+  const dayCellWillUnmount = (info: any) => {
+    const { el } = info;
+    const tooltipContainer = el.querySelector('.period-tooltip-container');
+    if (tooltipContainer) {
+      const tooltipElement = tooltipContainer.firstChild;
+      if (tooltipElement && (tooltipElement as any)._root) {
+        (tooltipElement as any)._root.unmount();
+      }
+    }
+  };
+  
+  // Change month handler
+  const handleDatesSet = (arg: any) => {
+    const calendarApi: CalendarApi = arg.view.calendar;
+    const currentDate = calendarApi.getDate();
+    setYear(currentDate.getFullYear());
+    setMonth(currentDate.getMonth());
   };
 
   return (
     <div className="relative">
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={(selectedDate) => {
-          if (selectedDate) {
-            setDate(selectedDate);
-            onSelectDate(selectedDate);
-          }
+      <FullCalendar
+        ref={calendarRef}
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
         }}
-        className="rounded-md border shadow-sm"
-        modifiers={modifiers}
-        modifiersClassNames={{
-          periodLight: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-200",
-          periodMedium: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-300",
-          periodHeavy: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-500",
-          hasSymptoms: "before:absolute before:top-1 before:right-1 before:w-1 before:h-1 before:rounded-full before:bg-blue-400"
-        }}
-        components={{
-          DayContent: ({ date }) => (
-            <div className="relative flex h-8 w-8 items-center justify-center p-0">
-              <div className="absolute inset-0 flex items-center justify-center">
-                {date.getDate()}
-              </div>
-              {getDayContent(date)}
-            </div>
-          )
-        }}
-        classNames={{
-          month: "space-y-2",
-          caption: "flex items-center justify-between px-2 py-1",
-          caption_label: "flex items-center gap-2 font-medium text-sm",
-          nav: "space-x-1 flex items-center",
-          nav_button: "p-1 rounded-full hover:bg-gray-100 transition-colors",
-          nav_button_previous: "h-4 w-4 text-gray-500",
-          nav_button_next: "h-4 w-4 text-gray-500",
-          table: "w-full border-collapse",
-          head_row: "flex",
-          head_cell: "w-9 font-normal text-[0.8rem] text-muted-foreground",
-          row: "flex w-full mt-1",
-          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
-          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
-          day_range_end: "day-range-end",
-          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-          day_today: "bg-accent text-accent-foreground",
-          day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-          day_disabled: "text-muted-foreground opacity-50",
-          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-          day_hidden: "invisible",
-        }}
-        fromYear={2020}
-        toYear={2030}
+        dayMaxEvents={true}
+        dateClick={handleDateClick}
+        datesSet={handleDatesSet}
+        dayCellDidMount={dayCellDidMount}
+        dayCellWillUnmount={dayCellWillUnmount}
+        height="auto"
+        contentHeight="auto"
+        fixedWeekCount={false}
+        showNonCurrentDates={true}
+        dayHeaderFormat={{ weekday: 'short' }}
       />
+      
       <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-200"></span>
@@ -228,6 +234,38 @@ export function PeriodCalendar({
           <span>Symptoms</span>
         </div>
       </div>
+      
+      <style jsx global>{`
+        .fc-day {
+          position: relative;
+          min-height: 48px !important;
+        }
+        
+        .fc-day-today {
+          background-color: rgba(var(--accent) / 0.3) !important;
+        }
+        
+        .fc-day-number {
+          padding: 5px !important;
+        }
+        
+        .period-day .fc-daygrid-day-number {
+          color: #f56565 !important;
+        }
+        
+        .fc-event {
+          border: none !important;
+          border-radius: 4px !important;
+        }
+        
+        .fc-header-toolbar {
+          margin-bottom: 0.5rem !important;
+        }
+        
+        .fc-daygrid-day-frame {
+          padding: 4px !important;
+        }
+      `}</style>
     </div>
   );
 } 
