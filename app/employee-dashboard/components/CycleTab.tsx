@@ -84,6 +84,9 @@ export default function CycleTab({ userId }: CycleTabProps) {
         date: formattedDate,
         periodFlow: 0,
         symptoms: [],
+        mood: "none",
+        sleepHours: 0,
+        stressLevel: 0,
         notes: ""
       });
       setShowPeriodDialog(true);
