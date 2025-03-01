@@ -13,6 +13,71 @@ import { createRoot } from "react-dom/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+// 症状图标映射
+const SYMPTOM_ICONS: Record<string, { icon: string; label: string; color: string }> = {
+  cramps: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M8 13V9l-2 1"></path><path d="m2 7 4 2"></path><path d="M14 13V9l2 1"></path><path d="m22 7-4 2"></path><path d="M8 17a4 4 0 0 1 8 0"></path><path d="M17 12a5 5 0 0 0-10 0"></path></svg>`,
+    label: "Cramps",
+    color: "text-red-500 bg-red-100"
+  },
+  headache: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="8" r="6"></circle><path d="M12 14v8"></path><path d="M8 22h8"></path></svg>`,
+    label: "Headache",
+    color: "text-orange-500 bg-orange-100"
+  },
+  bloating: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M6.8 21.7a2.4 2.4 0 0 1 0-3.4l4.6-4.6a1 1 0 0 1 1.4 0l2.4 2.4a1 1 0 0 1 0 1.4l-4.6 4.6a2.4 2.4 0 0 1-3.4 0Z"></path><path d="m14.1 7.1 2.9 2.9"></path><path d="m21 2-6 6"></path><path d="M11.5 11.5 3 3"></path></svg>`,
+    label: "Bloating",
+    color: "text-blue-500 bg-blue-100"
+  },
+  fatigue: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M8 15h8"></path><path d="M9 9h.01"></path><path d="M15 9h.01"></path></svg>`,
+    label: "Fatigue",
+    color: "text-purple-500 bg-purple-100"
+  },
+  default: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>`,
+    label: "Symptoms",
+    color: "text-indigo-500 bg-indigo-100"
+  }
+};
+
+// 情绪图标映射
+const MOOD_ICONS: Record<string, { icon: string; label: string; color: string }> = {
+  happy: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>`,
+    label: "Happy",
+    color: "text-green-500 bg-green-100"
+  },
+  sad: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>`,
+    label: "Sad",
+    color: "text-blue-500 bg-blue-100"
+  },
+  irritated: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M8 15h8"></path><line x1="15" y1="9" x2="15.01" y2="9"></line><line x1="9" y1="9" x2="9.01" y2="9"></line></svg>`,
+    label: "Irritated",
+    color: "text-amber-500 bg-amber-100"
+  },
+  anxious: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="15" x2="16" y2="15"></line><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line><path d="M12 12v.01"></path></svg>`,
+    label: "Anxious",
+    color: "text-purple-500 bg-purple-100"
+  },
+  default: {
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>`,
+    label: "Mood",
+    color: "text-yellow-500 bg-yellow-100"
+  }
+};
+
+// 流量级别定义
+const FLOW_LEVELS = [
+  { value: 1, label: "Light Flow", color: "rgba(254, 226, 226, 0.8)", dotClass: "bg-red-400" },
+  { value: 3, label: "Medium Flow", color: "rgba(254, 202, 202, 0.8)", dotClass: "bg-red-500" },
+  { value: 5, label: "Heavy Flow", color: "rgba(252, 165, 165, 0.8)", dotClass: "bg-red-600" }
+];
+
 export interface PeriodRecord {
   id?: string;
   date: string;
@@ -40,7 +105,7 @@ export function PeriodCalendar({
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [month, setMonth] = useState<number>(new Date().getMonth());
   const [initialized, setInitialized] = useState<boolean>(false);
-  
+
   // Format date to ISO string for comparison
   const formatDateToISO = (date: Date) => {
     return format(date, "yyyy-MM-dd");
@@ -91,6 +156,35 @@ export function PeriodCalendar({
     }
   }, [localRecords, initialized]);
 
+  // 获取一个症状数组的主要症状
+  const getPrimarySymptom = (symptoms?: string[]): string => {
+    if (!symptoms || symptoms.length === 0) return 'default';
+    
+    // 按优先级排序症状
+    const prioritySymptoms = ['cramps', 'headache', 'bloating', 'fatigue'];
+    
+    for (const priority of prioritySymptoms) {
+      if (symptoms.includes(priority)) {
+        return priority;
+      }
+    }
+    
+    return symptoms[0] || 'default';
+  };
+
+  // 获取指定经期流量级别的样式
+  const getFlowLevelStyle = (flowLevel?: number) => {
+    if (!flowLevel || flowLevel <= 0) return null;
+    
+    if (flowLevel <= 1) {
+      return FLOW_LEVELS[0];
+    } else if (flowLevel <= 3) {
+      return FLOW_LEVELS[1];
+    } else {
+      return FLOW_LEVELS[2];
+    }
+  };
+
   // 将样式应用逻辑抽离为独立函数以便复用
   const applyRecordStyles = (el: HTMLElement, record: PeriodRecord) => {
     // 找到日期单元格内的具体内容容器
@@ -98,7 +192,7 @@ export function PeriodCalendar({
     const dayContentEl = el.querySelector('.fc-daygrid-day-frame');
     
     // 清除可能已存在的指示器，避免重复添加
-    const existingIndicators = el.querySelectorAll('.flow-indicator, .symptom-indicator, .mood-indicator');
+    const existingIndicators = el.querySelectorAll('.flow-indicator, .symptom-indicator, .mood-indicator, .data-indicator');
     existingIndicators.forEach(indicator => indicator.remove());
     
     // 添加经期背景色 - 整个单元格
@@ -106,91 +200,84 @@ export function PeriodCalendar({
       // 添加基本样式类
       el.classList.add('period-day');
       
-      // 根据经期流量设置不同的背景色
-      if (record.periodFlow <= 1) {
-        el.style.backgroundColor = 'rgba(254, 226, 226, 0.6)'; // 浅红色 bg-red-100 with opacity
-      } else if (record.periodFlow <= 3) {
-        el.style.backgroundColor = 'rgba(254, 202, 202, 0.6)'; // 中红色 bg-red-200 with opacity
-      } else {
-        el.style.backgroundColor = 'rgba(252, 165, 165, 0.6)'; // 深红色 bg-red-300 with opacity
-      }
-      
-      // 为日期数字添加明显的样式
-      if (dayNumberEl) {
-        dayNumberEl.classList.add('font-medium');
+      // 获取流量级别样式
+      const flowStyle = getFlowLevelStyle(record.periodFlow);
+      if (flowStyle) {
+        // 添加背景色
+        el.style.backgroundColor = flowStyle.color;
         
-        const dateNum = dayNumberEl.querySelector('a');
-        if (dateNum) {
-          dateNum.style.color = '#e11d48'; // text-rose-600
+        // 为日期数字添加明显的样式
+        if (dayNumberEl) {
+          dayNumberEl.classList.add('font-medium');
+          
+          const dateNum = dayNumberEl.querySelector('a');
+          if (dateNum) {
+            dateNum.style.color = '#e11d48'; // text-rose-600
+          }
         }
-      }
-      
-      // 添加流量指示图标
-      const flowIndicator = document.createElement('div');
-      flowIndicator.className = 'flow-indicator absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center justify-center';
-      
-      let flowDots = '';
-      const dotBase = '<span class="inline-block w-1.5 h-1.5 rounded-full mx-0.5 bg-red-500"></span>';
-      
-      if (record.periodFlow <= 1) {
-        flowDots = dotBase;
-      } else if (record.periodFlow <= 3) {
-        flowDots = dotBase + dotBase;
-      } else {
-        flowDots = dotBase + dotBase + dotBase;
-      }
-      
-      flowIndicator.innerHTML = flowDots;
-      
-      if (dayContentEl) {
-        dayContentEl.appendChild(flowIndicator);
+        
+        // 创建流量指示器容器
+        const dataIndicator = document.createElement('div');
+        dataIndicator.className = 'data-indicator absolute bottom-1 left-0 right-0 flex items-center justify-center gap-1';
+        
+        // 添加流量指示点
+        let dots = '';
+        const dotCount = Math.min(Math.ceil(record.periodFlow), 3);
+        for (let i = 0; i < dotCount; i++) {
+          dots += `<span class="inline-block w-1.5 h-1.5 rounded-full ${flowStyle.dotClass}"></span>`;
+        }
+        
+        dataIndicator.innerHTML = dots;
+        
+        if (dayContentEl) {
+          dayContentEl.appendChild(dataIndicator);
+        }
       }
     }
     
-    // 添加症状图标 - 使用实际图标替代点
+    // 添加顶部数据指示栏
+    const topIndicator = document.createElement('div');
+    topIndicator.className = 'absolute top-1 right-1 flex items-center justify-end gap-1';
+    
+    let hasIndicators = false;
+    
+    // 添加症状图标
     if (record.symptoms && record.symptoms.length > 0) {
-      const symptomIndicator = document.createElement('div');
-      symptomIndicator.className = 'symptom-indicator absolute top-1 right-1 flex items-center justify-center';
+      const primarySymptom = getPrimarySymptom(record.symptoms);
+      const symptomInfo = SYMPTOM_ICONS[primarySymptom] || SYMPTOM_ICONS.default;
       
       // 创建症状图标
       const symptomIcon = document.createElement('div');
-      symptomIcon.className = 'w-4 h-4 flex items-center justify-center rounded-full bg-blue-100 text-blue-500';
-      symptomIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-        <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zm0 4a1 1 0 011 1v1H9V7a1 1 0 011-1z" />
-      </svg>`;
+      symptomIcon.className = `symptom-indicator w-5 h-5 flex items-center justify-center rounded-full ${symptomInfo.color}`;
+      symptomIcon.setAttribute('title', `Symptoms: ${record.symptoms.join(', ')}`);
+      symptomIcon.innerHTML = symptomInfo.icon;
       
-      symptomIndicator.appendChild(symptomIcon);
-      el.appendChild(symptomIndicator);
+      topIndicator.appendChild(symptomIcon);
+      hasIndicators = true;
     }
     
     // 添加情绪指示图标
     if (record.mood && record.mood !== "none") {
-      const moodIndicator = document.createElement('div');
-      moodIndicator.className = 'mood-indicator absolute top-1 left-1 flex items-center justify-center';
-      
-      // 情绪图标映射
-      const moodIcons: Record<string, string> = {
-        happy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clip-rule="evenodd" />
-        </svg>`,
-        sad: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clip-rule="evenodd" />
-        </svg>`,
-        angry: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clip-rule="evenodd" />
-        </svg>`,
-        default: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clip-rule="evenodd" />
-        </svg>`
-      };
+      const moodInfo = MOOD_ICONS[record.mood] || MOOD_ICONS.default;
       
       // 创建情绪图标
       const moodIcon = document.createElement('div');
-      moodIcon.className = 'w-4 h-4 flex items-center justify-center rounded-full bg-amber-100 text-amber-500';
-      moodIcon.innerHTML = moodIcons[record.mood] || moodIcons.default;
+      moodIcon.className = `mood-indicator w-5 h-5 flex items-center justify-center rounded-full ${moodInfo.color}`;
+      moodIcon.setAttribute('title', `Mood: ${moodInfo.label}`);
+      moodIcon.innerHTML = moodInfo.icon;
       
-      moodIndicator.appendChild(moodIcon);
-      el.appendChild(moodIndicator);
+      topIndicator.appendChild(moodIcon);
+      hasIndicators = true;
+    }
+    
+    // 只有存在指示器时才添加到DOM
+    if (hasIndicators) {
+      el.appendChild(topIndicator);
+    }
+    
+    // 为单元格添加强调效果
+    if (record.periodFlow || record.symptoms?.length || (record.mood && record.mood !== "none")) {
+      el.classList.add('has-data');
     }
     
     // 重新添加工具提示
@@ -222,17 +309,29 @@ export function PeriodCalendar({
       // Generate tooltip content
       let tooltipContent = "";
       if (record.periodFlow && record.periodFlow > 0) {
-        const flowLevel = record.periodFlow <= 1 ? "Light" : 
-                         record.periodFlow <= 3 ? "Medium" : "Heavy";
-        tooltipContent += `Flow: ${flowLevel}\n`;
+        const flowStyle = getFlowLevelStyle(record.periodFlow);
+        tooltipContent += `Flow: ${flowStyle?.label || 'Light'}\n`;
       }
       
       if (record.symptoms && record.symptoms.length > 0) {
-        tooltipContent += `Symptoms: ${record.symptoms.join(", ")}\n`;
+        const symptomLabels = record.symptoms.map(s => {
+          const symptom = SYMPTOM_ICONS[s] || SYMPTOM_ICONS.default;
+          return symptom.label;
+        });
+        tooltipContent += `Symptoms: ${symptomLabels.join(", ")}\n`;
       }
       
       if (record.mood && record.mood !== "none") {
-        tooltipContent += `Mood: ${record.mood}\n`;
+        const moodInfo = MOOD_ICONS[record.mood] || MOOD_ICONS.default;
+        tooltipContent += `Mood: ${moodInfo.label}\n`;
+      }
+      
+      if (record.sleepHours) {
+        tooltipContent += `Sleep: ${record.sleepHours} hours\n`;
+      }
+      
+      if (record.stressLevel) {
+        tooltipContent += `Stress Level: ${record.stressLevel}/5\n`;
       }
       
       if (record.notes) {
@@ -246,8 +345,19 @@ export function PeriodCalendar({
             <TooltipTrigger asChild>
               <div className="h-full w-full"></div>
             </TooltipTrigger>
-            <TooltipContent className="max-w-xs whitespace-pre-line">
-              <p className="text-xs">{tooltipContent}</p>
+            <TooltipContent className="max-w-xs whitespace-pre-line period-tooltip">
+              <div className="text-xs space-y-1">
+                <h3 className="font-medium text-sm">{format(new Date(record.date), "MMMM d, yyyy")}</h3>
+                <p className="whitespace-pre-line">{tooltipContent}</p>
+                {record.id && (
+                  <button 
+                    onClick={() => onSelectDate(new Date(record.date))}
+                    className="text-xs text-primary hover:underline mt-1 font-medium"
+                  >
+                    View Details
+                  </button>
+                )}
+              </div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -305,6 +415,9 @@ export function PeriodCalendar({
         id: record.id || record.date,
         start: record.date,
         allDay: true,
+        display: 'background',
+        classNames: ['period-event'],
+        backgroundColor: getFlowLevelStyle(record.periodFlow)?.color || 'rgba(254, 226, 226, 0.4)',
         extendedProps: {
           periodFlow: record.periodFlow,
           symptoms: record.symptoms,
@@ -316,20 +429,7 @@ export function PeriodCalendar({
 
   // 自定义事件渲染
   const eventContent = (eventInfo: any) => {
-    const { periodFlow } = eventInfo.event.extendedProps;
-    let bgColorClass = 'bg-red-100';
-    
-    if (periodFlow <= 1) {
-      bgColorClass = 'bg-red-100';
-    } else if (periodFlow <= 3) {
-      bgColorClass = 'bg-red-200';
-    } else {
-      bgColorClass = 'bg-red-300';
-    }
-    
-    return {
-      html: `<div class="w-full h-full ${bgColorClass} rounded opacity-70"></div>`
-    };
+    return null; // 使用背景事件，不需要内容
   };
 
   // Custom date cell render
@@ -366,6 +466,14 @@ export function PeriodCalendar({
 
   return (
     <div className="relative">
+      {/* 添加标题和帮助文本 */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground">Period Calendar</h2>
+        <div className="text-sm text-muted-foreground">
+          Click on a day to add or edit period data
+              </div>
+            </div>
+      
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
@@ -389,37 +497,87 @@ export function PeriodCalendar({
         eventContent={eventContent}
       />
       
-      <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-200"></span>
-          <span>Light Flow</span>
+      {/* 重新设计的图例区域 */}
+      <div className="mt-6 rounded-md border border-border bg-card p-4 shadow-sm">
+        <h3 className="mb-3 text-sm font-medium text-foreground">Calendar Legend</h3>
+        
+        <div className="space-y-4">
+          {/* 流量图例 */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2">Period Flow</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {FLOW_LEVELS.map((level, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded flex items-center justify-center`} style={{ backgroundColor: level.color }}>
+                    {[...Array(idx + 1)].map((_, i) => (
+                      <span key={i} className={`inline-block w-1 h-1 rounded-full mx-px ${level.dotClass}`}></span>
+                    ))}
+                  </div>
+                  <span className="text-xs">{level.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* 症状图例 */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2">Common Symptoms</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(SYMPTOM_ICONS)
+                .filter(([key]) => key !== 'default')
+                .map(([key, info]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${info.color}`} 
+                         dangerouslySetInnerHTML={{ __html: info.icon }}></div>
+                    <span className="text-xs">{info.label}</span>
+                  </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* 情绪图例 */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2">Mood Indicators</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(MOOD_ICONS)
+                .filter(([key]) => key !== 'default')
+                .map(([key, info]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${info.color}`} 
+                         dangerouslySetInnerHTML={{ __html: info.icon }}></div>
+                    <span className="text-xs">{info.label}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-300"></span>
-          <span>Medium Flow</span>
+              ))}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500"></span>
-          <span>Heavy Flow</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-          <span>Symptoms</span>
         </div>
       </div>
       
       <style jsx global>{`
         .fc-day {
           position: relative;
-          min-height: 48px !important;
+          min-height: 54px !important;
+          transition: transform 0.15s ease;
         }
         
         .fc-day-today {
-          background-color: rgba(var(--accent) / 0.3) !important;
+          background-color: rgba(var(--accent) / 0.15) !important;
+        }
+        
+        .has-data {
+          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+          z-index: 5;
         }
         
         .fc-day-number {
           padding: 5px !important;
+        }
+        
+        .fc-day:hover {
+          transform: scale(1.02);
+          z-index: 10;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          cursor: pointer;
         }
         
         .period-day {
@@ -433,21 +591,20 @@ export function PeriodCalendar({
         
         .fc-event {
           border: none !important;
-          border-radius: 4px !important;
           background: transparent !important;
         }
         
         .fc-header-toolbar {
-          margin-bottom: 0.5rem !important;
+          margin-bottom: 1rem !important;
         }
         
         .fc-daygrid-day-frame {
           padding: 4px !important;
-          min-height: 45px !important;
+          min-height: 54px !important;
         }
         
-        .flow-indicator {
-          z-index: 10;
+        .data-indicator {
+          z-index: 2;
         }
         
         /* 提高日历单元格中内容的可见性 */
@@ -456,16 +613,23 @@ export function PeriodCalendar({
           padding-top: 4px;
         }
         
-        /* 确保背景色在事件后面 */
-        .fc .fc-daygrid-day-events {
-          z-index: 2;
-          position: relative;
+        /* 自定义组件样式 */
+        .period-tooltip {
+          border-radius: 0.5rem;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        /* 确保图标不被其他元素覆盖 */
-        .fc .fc-daygrid-day-frame {
-          position: relative;
-          z-index: 1;
+        /* 为小屏幕优化显示 */
+        @media (max-width: 640px) {
+          .fc-header-toolbar {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          
+          .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+          }
         }
       `}</style>
     </div>
