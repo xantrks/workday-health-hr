@@ -1,5 +1,5 @@
 <div align="center">
- <h1><img src="public/images/sanicle_logo.svg" width="80px"><br/><small>女性职场健康管理平台</small></h1>
+ <h1><img src="public/images/sanicle_logo.svg" width="200px"><br/><small>女性职场健康管理平台</small></h1>
  <img src="https://img.shields.io/badge/next.js-%23000000.svg?style=for-the-badge&logo=next.js&logoColor=white"/>
  <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB"/>
  <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white"/>
