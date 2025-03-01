@@ -7,6 +7,8 @@ import {
   json,
   uuid,
   boolean,
+  date,
+  integer,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("User", {
@@ -48,3 +50,22 @@ export const reservation = pgTable("Reservation", {
 });
 
 export type Reservation = InferSelectModel<typeof reservation>;
+
+export const healthRecord = pgTable("HealthRecord", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  date: date("date").notNull(),
+  recordType: varchar("record_type", { length: 20 }).notNull(), // period, symptom, mood, etc.
+  periodFlow: integer("period_flow"), // 1-5 scale for period flow
+  symptoms: json("symptoms"), // pain levels, location, etc.
+  mood: varchar("mood", { length: 20 }), // happy, sad, anxious, etc.
+  sleepHours: integer("sleep_hours"), 
+  stressLevel: integer("stress_level"), // 1-5 scale
+  notes: varchar("notes", { length: 500 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id),
+});
+
+export type HealthRecord = InferSelectModel<typeof healthRecord>;

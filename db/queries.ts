@@ -1,14 +1,14 @@
 import "server-only";
 
 import { genSaltSync, hashSync } from "bcryptjs";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { put } from "@vercel/blob";
 import { sql } from '@/lib/db';
 import { redis } from '@/lib/db';
 
-import { user, chat, User, reservation } from "./schema";
+import { user, chat, User, reservation, healthRecord } from "./schema";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -231,4 +231,225 @@ export async function updateReservation({
       hasCompletedPayment,
     })
     .where(eq(reservation.id, id));
+}
+
+// 健康记录相关查询函数
+export async function createHealthRecord({
+  userId,
+  date,
+  recordType,
+  periodFlow,
+  symptoms,
+  mood,
+  sleepHours,
+  stressLevel,
+  notes
+}: {
+  userId: string;
+  date: Date;
+  recordType: string;
+  periodFlow?: number;
+  symptoms?: any;
+  mood?: string;
+  sleepHours?: number;
+  stressLevel?: number;
+  notes?: string;
+}) {
+  try {
+    // 确保日期格式正确，使用UTC日期避免时区问题
+    const formattedDate = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+    
+    console.log("Creating health record with data:", {
+      userId,
+      date: formattedDate,
+      recordType,
+      periodFlow,
+      symptoms: symptoms ? JSON.stringify(symptoms) : null,
+      mood,
+      sleepHours,
+      stressLevel,
+      notes
+    });
+    
+    // 使用原始 SQL 查询来插入记录
+    const result = await sql`
+      INSERT INTO "HealthRecord" (
+        "userId",
+        "date",
+        "record_type",
+        "period_flow",
+        "symptoms",
+        "mood",
+        "sleep_hours",
+        "stress_level",
+        "notes",
+        "created_at",
+        "updated_at"
+      )
+      VALUES (
+        ${userId},
+        ${formattedDate},
+        ${recordType},
+        ${periodFlow || null},
+        ${symptoms ? JSON.stringify(symptoms) : null},
+        ${mood || null},
+        ${sleepHours || null},
+        ${stressLevel || null},
+        ${notes || null},
+        NOW(),
+        NOW()
+      )
+      RETURNING *
+    `;
+    
+    console.log("Created health record result:", result);
+    return result[0];
+  } catch (error) {
+    console.error("Failed to create health record:", error);
+    throw error;
+  }
+}
+
+export async function getHealthRecordsByUserId({ 
+  userId, 
+  startDate, 
+  endDate 
+}: { 
+  userId: string; 
+  startDate?: Date; 
+  endDate?: Date; 
+}) {
+  try {
+    let query = db
+      .select()
+      .from(healthRecord)
+      .where(eq(healthRecord.userId, userId));
+    
+    if (startDate && endDate) {
+      query = query.where(
+        and(
+          gte(healthRecord.date, startDate),
+          lte(healthRecord.date, endDate)
+        )
+      );
+    }
+    
+    return await query.orderBy(desc(healthRecord.date));
+  } catch (error) {
+    console.error("Failed to get health records:", error);
+    throw error;
+  }
+}
+
+export async function getPeriodRecordsByUserId({ 
+  userId, 
+  startDate, 
+  endDate 
+}: { 
+  userId: string; 
+  startDate?: Date; 
+  endDate?: Date; 
+}) {
+  try {
+    console.log("Getting period records for userId:", userId);
+    
+    let sqlQuery;
+    
+    if (startDate && endDate) {
+      console.log("With date range:", { 
+        startDate: startDate.toISOString(), 
+        endDate: endDate.toISOString() 
+      });
+      
+      sqlQuery = sql`
+        SELECT * FROM "HealthRecord"
+        WHERE "userId" = ${userId}
+        AND "record_type" = 'period'
+        AND "date" >= ${startDate.toISOString().split('T')[0]}
+        AND "date" <= ${endDate.toISOString().split('T')[0]}
+        ORDER BY "date" DESC
+      `;
+    } else {
+      sqlQuery = sql`
+        SELECT * FROM "HealthRecord"
+        WHERE "userId" = ${userId}
+        AND "record_type" = 'period'
+        ORDER BY "date" DESC
+      `;
+    }
+    
+    const records = await sqlQuery;
+    console.log("Found period records:", records);
+    return records;
+  } catch (error) {
+    console.error("Failed to get period records:", error);
+    throw error;
+  }
+}
+
+export async function getHealthRecordById(id: string) {
+  try {
+    console.log("Getting health record by id:", id);
+    
+    const record = await sql`
+      SELECT * FROM "HealthRecord"
+      WHERE "id" = ${id}
+      LIMIT 1
+    `;
+    
+    console.log("Found health record:", record[0]);
+    return record[0];
+  } catch (error) {
+    console.error("Failed to get health record by id:", error);
+    throw error;
+  }
+}
+
+export async function updateHealthRecord({
+  id,
+  periodFlow,
+  symptoms,
+  mood,
+  sleepHours,
+  stressLevel,
+  notes
+}: {
+  id: string;
+  periodFlow?: number;
+  symptoms?: any;
+  mood?: string;
+  sleepHours?: number;
+  stressLevel?: number;
+  notes?: string;
+}) {
+  try {
+    const updateData: any = {
+      updatedAt: new Date()
+    };
+    
+    if (periodFlow !== undefined) updateData.periodFlow = periodFlow;
+    if (symptoms !== undefined) updateData.symptoms = JSON.stringify(symptoms);
+    if (mood !== undefined) updateData.mood = mood;
+    if (sleepHours !== undefined) updateData.sleepHours = sleepHours;
+    if (stressLevel !== undefined) updateData.stressLevel = stressLevel;
+    if (notes !== undefined) updateData.notes = notes;
+    
+    return await db
+      .update(healthRecord)
+      .set(updateData)
+      .where(eq(healthRecord.id, id));
+  } catch (error) {
+    console.error("Failed to update health record:", error);
+    throw error;
+  }
+}
+
+export async function deleteHealthRecord(id: string) {
+  try {
+    console.log("Deleting health record with id:", id);
+    return await db.delete(healthRecord).where(eq(healthRecord.id, id));
+  } catch (error) {
+    console.error("Failed to delete health record:", error);
+    throw error;
+  }
 }
