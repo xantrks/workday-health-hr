@@ -1,42 +1,18 @@
 'use client';
 
-import { useState } from "react";
+import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { redirect } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { auth } from "@/app/(auth)/auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Server action to set HR role
-export async function setHrRole(formData: FormData) {
-  'use server';
-  
-  const email = formData.get('email') as string;
-  
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/set-hr-role`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-    
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || 'Operation failed');
-    }
-    
-    return { success: true, email };
-  } catch (error: any) {
-    throw new Error(error.message || 'Operation failed');
-  }
-}
+import { setHrRole } from "./actions";
 
 export default async function SetHrRolePage() {
   const session = await auth();
@@ -53,18 +29,13 @@ export default async function SetHrRolePage() {
         
         <form 
           action={async (formData) => {
-            'use server';
             try {
               const result = await setHrRole(formData);
               if (result.success) {
-                toast.success({
-                  text: `${result.email} has been successfully set as HR role`
-                });
+                toast.success(`${result.email} has been successfully set as HR role`);
               }
             } catch (error: any) {
-              toast.error({
-                text: error.message
-              });
+              toast.error(error.message);
             }
           }}
         >
