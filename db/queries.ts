@@ -1,10 +1,11 @@
 import "server-only";
 
+import { put } from "@vercel/blob";
 import { genSaltSync, hashSync } from "bcryptjs";
 import { desc, eq, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { put } from "@vercel/blob";
+
 import { sql } from '@/lib/db';
 import { redis } from '@/lib/db';
 
@@ -325,15 +326,19 @@ export async function getHealthRecordsByUserId({
       .from(healthRecord)
       .where(eq(healthRecord.userId, userId));
     
+    // 如果有日期范围，使用SQL直接查询
     if (startDate && endDate) {
-      query = query.where(
-        and(
-          gte(healthRecord.date, startDate),
-          lte(healthRecord.date, endDate)
-        )
-      );
+      const result = await sql`
+        SELECT * FROM "HealthRecord"
+        WHERE "userId" = ${userId}
+          AND date >= ${startDate}
+          AND date <= ${endDate}
+        ORDER BY date DESC
+      `;
+      return result;
     }
     
+    // 否则使用Drizzle ORM
     return await query.orderBy(desc(healthRecord.date));
   } catch (error) {
     console.error("Failed to get health records:", error);
