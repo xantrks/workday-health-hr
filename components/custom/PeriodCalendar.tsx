@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { format, parseISO, isSameDay } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -156,36 +156,6 @@ export function PeriodCalendar({
     return null;
   };
 
-  // Custom header for the calendar
-  const CustomHeader = ({ date, decreaseMonth, increaseMonth, ...props }: any) => {
-    const monthYear = format(date, 'MMMM yyyy');
-    
-    return (
-      <div className="flex items-center justify-between px-2 py-1">
-        <button
-          onClick={decreaseMonth}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Previous month"
-        >
-          <ChevronLeft className="h-4 w-4 text-gray-500" />
-        </button>
-        
-        <div className="flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4 text-primary" />
-          <span className="font-medium text-sm">{monthYear}</span>
-        </div>
-        
-        <button
-          onClick={increaseMonth}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Next month"
-        >
-          <ChevronRight className="h-4 w-4 text-gray-500" />
-        </button>
-      </div>
-    );
-  };
-
   return (
     <div className="relative">
       <Calendar
@@ -213,17 +183,16 @@ export function PeriodCalendar({
               </div>
               {getDayContent(date)}
             </div>
-          ),
-          Header: CustomHeader
+          )
         }}
         classNames={{
           month: "space-y-2",
-          caption: "flex relative items-center justify-center",
-          caption_label: "hidden", // Hide the default caption
+          caption: "flex items-center justify-between px-2 py-1",
+          caption_label: "flex items-center gap-2 font-medium text-sm",
           nav: "space-x-1 flex items-center",
-          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-          nav_button_previous: "absolute left-1",
-          nav_button_next: "absolute right-1",
+          nav_button: "p-1 rounded-full hover:bg-gray-100 transition-colors",
+          nav_button_previous: "h-4 w-4 text-gray-500",
+          nav_button_next: "h-4 w-4 text-gray-500",
           table: "w-full border-collapse",
           head_row: "flex",
           head_cell: "w-9 font-normal text-[0.8rem] text-muted-foreground",
