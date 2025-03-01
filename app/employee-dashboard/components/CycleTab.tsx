@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { TrendingUp } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 import { PeriodCalendar } from "@/components/custom/PeriodCalendar";
 import { PeriodRecordDialog } from "@/components/custom/PeriodRecordDialog";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -123,93 +125,108 @@ export default function CycleTab({ userId }: CycleTabProps) {
   
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Period Calendar</CardTitle>
-          <CardDescription>
-            Track and predict your menstrual cycle
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="h-auto border-t pt-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-72">
-              <p>Loading...</p>
+      <div className="flex flex-col md:flex-row gap-4">
+        {/* Left Column - Calendar */}
+        <Card className="bg-white shadow-sm border-neutral-100 md:w-7/12">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-bold">Period Calendar</CardTitle>
+                <CardDescription className="text-muted-foreground mt-0.5">
+                  Track and predict your menstrual cycle
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="px-3 flex items-center gap-1 text-xs bg-primary/5 text-primary border-primary/20">
+                <TrendingUp className="h-3 w-3" />
+                <span>Next Period: {periodStats.nextPeriodDate || '--'}</span>
+              </Badge>
             </div>
-          ) : (
-            <div className="mb-6">
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-72 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <p>Loading calendar data...</p>
+                </div>
+              </div>
+            ) : (
               <PeriodCalendar
                 records={periodRecords}
                 onSelectDate={handleDateSelect}
                 onAddRecord={() => {
-                  setSelectedDate(new Date());
-                  setSelectedRecord(undefined);
-                  setShowPeriodDialog(true);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  handleDateSelect(today);
                 }}
               />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Cycle Analysis</CardTitle>
-          </CardHeader>
-          <CardContent className="h-60 flex items-center justify-center border-t pt-4">
-            {periodStats ? (
-              <div className="w-full space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Average Cycle Length</p>
-                    <p className="text-2xl font-bold">{periodStats.avgCycleLength || '--'} days</p>
-                  </div>
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Average Period Length</p>
-                    <p className="text-2xl font-bold">{periodStats.avgPeriodLength || '--'} days</p>
-                  </div>
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Next Period Expected</p>
-                    <p className="text-2xl font-bold">{periodStats.nextPeriodDate || '--'}</p>
-                  </div>
-                </div>
-                <div className="text-center text-sm text-muted-foreground">
-                  <p>Last period started on <span className="font-medium">{periodStats.lastPeriodDate || '--'}</span></p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-center">Add more period records to see cycle analysis</p>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Common Symptoms</CardTitle>
-          </CardHeader>
-          <CardContent className="h-60 flex flex-col space-y-4 border-t pt-4">
-            {frequentSymptoms.length > 0 ? (
-              frequentSymptoms.map((symptom, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <p>{symptom.label}</p>
-                  <div className="flex">
-                    <div className="w-32 h-2 rounded-full bg-gray-200 overflow-hidden">
-                      <div 
-                        className="h-full bg-primary" 
-                        style={{ width: `${symptom.percentage}%` }}
-                      ></div>
+        {/* Right Column - Analysis & Symptoms */}
+        <div className="flex flex-col gap-4 md:w-5/12">
+          <Card className="bg-white shadow-sm border-neutral-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Cycle Analysis</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {periodStats ? (
+                <div className="w-full space-y-3">
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Average Cycle</p>
+                      <p className="text-xl font-bold">{periodStats.avgCycleLength || '--'} <span className="text-xs font-normal">days</span></p>
                     </div>
-                    <span className="ml-2 text-xs">{symptom.percentage}%</span>
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Period Length</p>
+                      <p className="text-xl font-bold">{periodStats.avgPeriodLength || '--'} <span className="text-xs font-normal">days</span></p>
+                    </div>
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Fertility Window</p>
+                      <p className="text-sm font-semibold pt-0.5">Mar 3 - Mar 8</p>
+                    </div>
+                  </div>
+                  <div className="text-center text-xs text-muted-foreground mt-1">
+                    <p>Last period started on <span className="font-medium text-foreground">{periodStats.lastPeriodDate || '--'}</span></p>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground text-center">Add period records to track symptoms</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                <p className="text-muted-foreground text-center text-sm py-2">Add more period records to see cycle analysis</p>
+              )}
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white shadow-sm border-neutral-100 flex-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Common Symptoms</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {frequentSymptoms.length > 0 ? (
+                <div className="space-y-2.5">
+                  {frequentSymptoms.map((symptom, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <p className="text-xs font-medium">{symptom.label}</p>
+                      <div className="flex items-center">
+                        <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                          <div 
+                            className="h-full bg-primary" 
+                            style={{ width: `${symptom.percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="ml-2 text-xs text-muted-foreground">{symptom.percentage}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-4">
+                  <p className="text-muted-foreground text-center text-sm">Add period records to track symptoms</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
       
       <PeriodRecordDialog

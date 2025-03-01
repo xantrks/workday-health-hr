@@ -1,11 +1,11 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { format, parseISO, isSameDay } from "date-fns";
-import { Plus } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export interface PeriodRecord {
@@ -14,8 +14,8 @@ export interface PeriodRecord {
   periodFlow?: number;
   symptoms?: string[];
   mood?: string;
-  sleepHours?: number;
-  stressLevel?: number;
+  sleepHours: number;
+  stressLevel: number;
   notes?: string;
 }
 
@@ -82,22 +82,6 @@ export function PeriodCalendar({
     return matchingRecords[0];
   };
 
-  // Custom date modifiers
-  const modifiersStyles = {
-    periodLight: {
-      color: "inherit",
-      position: "relative",
-    },
-    periodMedium: {
-      color: "inherit",
-      position: "relative",
-    },
-    periodHeavy: {
-      color: "inherit",
-      position: "relative",
-    }
-  };
-
   // Create date modifiers
   const modifiers = {
     periodLight: (date: Date) => {
@@ -123,11 +107,87 @@ export function PeriodCalendar({
         console.log(`Date ${formatDateToISO(date)} has heavy flow`);
       }
       return result;
+    },
+    hasSymptoms: (date: Date) => {
+      const record = getRecordForDate(date);
+      return record?.symptoms !== undefined && record.symptoms.length > 0;
     }
   };
 
+  // Get calendar day content to show tooltips
+  const getDayContent = (day: Date) => {
+    const record = getRecordForDate(day);
+    if (!record) return null;
+    
+    let tooltipContent = "";
+    if (record.periodFlow && record.periodFlow > 0) {
+      const flowLevel = record.periodFlow <= 1 ? "Light" : 
+                       record.periodFlow <= 3 ? "Medium" : "Heavy";
+      tooltipContent += `Flow: ${flowLevel}\n`;
+    }
+    
+    if (record.symptoms && record.symptoms.length > 0) {
+      tooltipContent += `Symptoms: ${record.symptoms.join(", ")}\n`;
+    }
+    
+    if (record.mood && record.mood !== "none") {
+      tooltipContent += `Mood: ${record.mood}\n`;
+    }
+    
+    if (record.notes) {
+      tooltipContent += `Notes: ${record.notes}`;
+    }
+    
+    if (tooltipContent) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="h-full w-full"></div>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs whitespace-pre-line">
+              <p className="text-xs">{tooltipContent}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    return null;
+  };
+
+  // Custom header for the calendar
+  const CustomHeader = ({ date, decreaseMonth, increaseMonth, ...props }: any) => {
+    const monthYear = format(date, 'MMMM yyyy');
+    
+    return (
+      <div className="flex items-center justify-between px-2 py-1">
+        <button
+          onClick={decreaseMonth}
+          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Previous month"
+        >
+          <ChevronLeft className="h-4 w-4 text-gray-500" />
+        </button>
+        
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-4 w-4 text-primary" />
+          <span className="font-medium text-sm">{monthYear}</span>
+        </div>
+        
+        <button
+          onClick={increaseMonth}
+          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Next month"
+        >
+          <ChevronRight className="h-4 w-4 text-gray-500" />
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="relative p-1">
+    <div className="relative">
       <Calendar
         mode="single"
         selected={date}
@@ -137,23 +197,68 @@ export function PeriodCalendar({
             onSelectDate(selectedDate);
           }
         }}
-        className="rounded-md border"
+        className="rounded-md border shadow-sm"
         modifiers={modifiers}
         modifiersClassNames={{
-          periodLight: "after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-200",
-          periodMedium: "after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-300",
-          periodHeavy: "after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-500"
+          periodLight: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-200",
+          periodMedium: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-300",
+          periodHeavy: "bg-red-50 relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-500",
+          hasSymptoms: "before:absolute before:top-1 before:right-1 before:w-1 before:h-1 before:rounded-full before:bg-blue-400"
         }}
+        components={{
+          DayContent: ({ date }) => (
+            <div className="relative flex h-8 w-8 items-center justify-center p-0">
+              <div className="absolute inset-0 flex items-center justify-center">
+                {date.getDate()}
+              </div>
+              {getDayContent(date)}
+            </div>
+          ),
+          Header: CustomHeader
+        }}
+        classNames={{
+          month: "space-y-2",
+          caption: "flex relative items-center justify-center",
+          caption_label: "hidden", // Hide the default caption
+          nav: "space-x-1 flex items-center",
+          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+          nav_button_previous: "absolute left-1",
+          nav_button_next: "absolute right-1",
+          table: "w-full border-collapse",
+          head_row: "flex",
+          head_cell: "w-9 font-normal text-[0.8rem] text-muted-foreground",
+          row: "flex w-full mt-1",
+          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+          day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+          day_range_end: "day-range-end",
+          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          day_today: "bg-accent text-accent-foreground",
+          day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+          day_disabled: "text-muted-foreground opacity-50",
+          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+          day_hidden: "invisible",
+        }}
+        fromYear={2020}
+        toYear={2030}
       />
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="absolute top-2 right-2" 
-        onClick={onAddRecord}
-      >
-        <Plus className="h-4 w-4 mr-1" />
-        <span>Add Record</span>
-      </Button>
+      <div className="mt-2 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-200"></span>
+          <span>Light Flow</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-300"></span>
+          <span>Medium Flow</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500"></span>
+          <span>Heavy Flow</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+          <span>Symptoms</span>
+        </div>
+      </div>
     </div>
   );
 } 

@@ -7,8 +7,8 @@ export interface PeriodRecord {
   periodFlow?: number;
   symptoms?: string[];
   mood?: string;
-  sleepHours?: number;
-  stressLevel?: number;
+  sleepHours: number;
+  stressLevel: number;
   notes?: string;
 }
 
@@ -111,13 +111,20 @@ export function usePeriodRecords() {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Saving period record:", record);
+      // 确保sleepHours和stressLevel字段即使是0也能正确传递
+      const recordToSave = {
+        ...record,
+        sleepHours: record.sleepHours !== undefined ? record.sleepHours : 0,
+        stressLevel: record.stressLevel !== undefined ? record.stressLevel : 0
+      };
+      
+      console.log("Saving period record:", recordToSave);
       const response = await fetch('/api/health-records/period', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(record),
+        body: JSON.stringify(recordToSave),
       });
       
       const responseData = await response.json();

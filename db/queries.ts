@@ -260,6 +260,10 @@ export async function createHealthRecord({
     // Ensure date format is correct, use UTC date to avoid timezone issues
     const formattedDate = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
     
+    // 确保即使值为0也能正确处理
+    const sleepHoursValue = sleepHours !== undefined ? sleepHours : null;
+    const stressLevelValue = stressLevel !== undefined ? stressLevel : null;
+    
     console.log("Creating health record with data:", {
       userId,
       date: formattedDate,
@@ -267,8 +271,8 @@ export async function createHealthRecord({
       periodFlow,
       symptoms: symptoms ? JSON.stringify(symptoms) : null,
       mood,
-      sleepHours,
-      stressLevel,
+      sleepHours: sleepHoursValue,
+      stressLevel: stressLevelValue,
       notes
     });
     
@@ -291,11 +295,11 @@ export async function createHealthRecord({
         ${userId},
         ${formattedDate},
         ${recordType},
-        ${periodFlow || null},
+        ${periodFlow !== undefined ? periodFlow : null},
         ${symptoms ? JSON.stringify(symptoms) : null},
         ${mood || null},
-        ${sleepHours || null},
-        ${stressLevel || null},
+        ${sleepHoursValue},
+        ${stressLevelValue},
         ${notes || null},
         NOW(),
         NOW()
@@ -428,6 +432,7 @@ export async function updateHealthRecord({
   notes?: string;
 }) {
   try {
+    // 构建更新数据对象，用于日志记录
     const updateData: any = {
       updated_at: new Date()
     };
@@ -444,10 +449,23 @@ export async function updateHealthRecord({
       updateData
     });
     
-    return await db
-      .update(healthRecord)
-      .set(updateData)
-      .where(eq(healthRecord.id, id));
+    // 使用原始SQL查询而不是ORM
+    const result = await sql`
+      UPDATE "HealthRecord"
+      SET 
+        "updated_at" = NOW(),
+        "period_flow" = ${periodFlow !== undefined ? periodFlow : sql`"period_flow"`},
+        "symptoms" = ${symptoms !== undefined ? JSON.stringify(symptoms) : sql`"symptoms"`},
+        "mood" = ${mood !== undefined ? mood : sql`"mood"`},
+        "sleep_hours" = ${sleepHours !== undefined ? sleepHours : sql`"sleep_hours"`},
+        "stress_level" = ${stressLevel !== undefined ? stressLevel : sql`"stress_level"`},
+        "notes" = ${notes !== undefined ? notes : sql`"notes"`}
+      WHERE "id" = ${id}
+      RETURNING *
+    `;
+    
+    console.log("Updated health record result:", result);
+    return result[0];
   } catch (error) {
     console.error("Failed to update health record:", error);
     throw error;

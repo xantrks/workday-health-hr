@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
       if (body.id) {
         console.log("POST /api/health-records/period - Updating existing record with id:", body.id);
         
-        await updateHealthRecord({
+        const updatedRecord = await updateHealthRecord({
           id: body.id,
           periodFlow: body.periodFlow,
           symptoms: body.symptoms,
@@ -150,14 +150,8 @@ export async function POST(req: NextRequest) {
           notes: body.notes
         });
         
-        // Get updated record
-        const updatedRecords = await getPeriodRecordsByUserId({
-          userId,
-          startDate: recordDate,
-          endDate: recordDate
-        });
-        
-        result = updatedRecords.find(r => r.id === body.id) || updatedRecords[0];
+        console.log("POST /api/health-records/period - Updated record:", updatedRecord);
+        result = updatedRecord;
       } else {
         // If no ID is provided, update the first valid record for that date
         const validRecord = existingRecords.find(r => r.period_flow !== null && r.period_flow !== undefined && r.period_flow > 0);
@@ -165,7 +159,7 @@ export async function POST(req: NextRequest) {
         
         console.log("POST /api/health-records/period - Updating existing record without id:", recordToUpdate.id);
         
-        await updateHealthRecord({
+        const updatedRecord = await updateHealthRecord({
           id: recordToUpdate.id,
           periodFlow: body.periodFlow,
           symptoms: body.symptoms,
@@ -175,14 +169,8 @@ export async function POST(req: NextRequest) {
           notes: body.notes
         });
         
-        // Get updated record
-        const updatedRecords = await getPeriodRecordsByUserId({
-          userId,
-          startDate: recordDate,
-          endDate: recordDate
-        });
-        
-        result = updatedRecords.find(r => r.id === recordToUpdate.id) || updatedRecords[0];
+        console.log("POST /api/health-records/period - Updated record:", updatedRecord);
+        result = updatedRecord;
       }
     } else {
       // Otherwise create new record

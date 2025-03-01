@@ -49,8 +49,8 @@ const formSchema = z.object({
   periodFlow: z.number().min(0).max(5).optional(),
   symptoms: z.array(z.string()).optional(),
   mood: z.string().optional(),
-  sleepHours: z.number().min(0).max(24).optional(),
-  stressLevel: z.number().min(0).max(10).optional(),
+  sleepHours: z.number().min(0).max(24).default(0),
+  stressLevel: z.number().min(0).max(10).default(0),
   notes: z.string().optional(),
 });
 
@@ -148,16 +148,16 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Setting mood:", mood);
       form.setValue("mood", mood);
       
-      // 设置sleepHours值
+      // 设置sleepHours值 - 确保即使为null或undefined也能正确处理
       const sleepHours = record.sleepHours !== null && record.sleepHours !== undefined 
-        ? record.sleepHours 
+        ? Number(record.sleepHours) 
         : 0;
       console.log("PeriodRecordDialog - Setting sleepHours:", sleepHours);
       form.setValue("sleepHours", sleepHours);
       
-      // 设置stressLevel值
+      // 设置stressLevel值 - 确保即使为null或undefined也能正确处理
       const stressLevel = record.stressLevel !== null && record.stressLevel !== undefined 
-        ? record.stressLevel 
+        ? Number(record.stressLevel) 
         : 0;
       console.log("PeriodRecordDialog - Setting stressLevel:", stressLevel);
       form.setValue("stressLevel", stressLevel);
@@ -189,14 +189,21 @@ export function PeriodRecordDialog({
     // Format as YYYY-MM-DD
     const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
+    // 确保即使值为undefined也能正确处理，明确设置为0而不是undefined
+    const sleepHours = values.sleepHours !== undefined ? values.sleepHours : 0;
+    const stressLevel = values.stressLevel !== undefined ? values.stressLevel : 0;
+    
+    console.log("PeriodRecordDialog - onSubmit - sleepHours:", sleepHours);
+    console.log("PeriodRecordDialog - onSubmit - stressLevel:", stressLevel);
+    
     const newRecord: PeriodRecord = {
       id: record?.id,
       date: formattedDate,
       periodFlow: values.periodFlow,
       symptoms: values.symptoms,
       mood: values.mood,
-      sleepHours: values.sleepHours,
-      stressLevel: values.stressLevel,
+      sleepHours: sleepHours,
+      stressLevel: stressLevel,
       notes: values.notes,
     };
 
@@ -329,8 +336,11 @@ export function PeriodRecordDialog({
                         min="0"
                         max="24"
                         step="0.5"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        value={field.value}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -352,8 +362,11 @@ export function PeriodRecordDialog({
                         min="0"
                         max="10"
                         step="1"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        value={field.value}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseInt(e.target.value);
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
