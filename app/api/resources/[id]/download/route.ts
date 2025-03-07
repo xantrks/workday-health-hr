@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
@@ -26,7 +27,7 @@ export async function POST(
     const resource = await db
       .select()
       .from(resourceFile)
-      .where({ id: resourceId })
+      .where(eq(resourceFile.id, resourceId))
       .limit(1);
     
     if (resource.length === 0) {
@@ -39,7 +40,7 @@ export async function POST(
       .set({ 
         downloadCount: resource[0].downloadCount + 1 
       })
-      .where({ id: resourceId })
+      .where(eq(resourceFile.id, resourceId))
       .returning();
     
     return NextResponse.json({ 

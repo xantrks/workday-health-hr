@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
@@ -151,7 +152,9 @@ export async function DELETE(request: Request) {
   
   try {
     // 删除资源
-    const deleted = await db.delete(resourceFile).where({ id }).returning();
+    const deleted = await db.delete(resourceFile)
+      .where(eq(resourceFile.id, id))
+      .returning();
     
     if (deleted.length === 0) {
       return NextResponse.json({ error: "资源不存在" }, { status: 404 });
