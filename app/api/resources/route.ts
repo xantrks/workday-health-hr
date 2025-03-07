@@ -6,48 +6,48 @@ import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
 import { resourceFile } from "@/db/schema";
 
-// 资源文件验证schema
+// Resource file validation schema
 const ResourceFileSchema = z.object({
-  title: z.string().min(1, "标题不能为空"),
+  title: z.string().min(1, "Title cannot be empty"),
   description: z.string().optional(),
-  fileUrl: z.string().url("文件URL格式无效"),
-  fileType: z.string().min(1, "文件类型不能为空"),
-  category: z.string().min(1, "分类不能为空"),
+  fileUrl: z.string().url("Invalid file URL format"),
+  fileType: z.string().min(1, "File type cannot be empty"),
+  category: z.string().min(1, "Category cannot be empty"),
   tags: z.array(z.string()).optional(),
-  createdById: z.string().uuid("创建者ID无效"),
+  createdById: z.string().uuid("Invalid creator ID"),
 });
 
-// 验证文件是否存在
+// Verify if file exists
 async function fileExists(url: string): Promise<boolean> {
   try {
     const response = await fetch(url, { method: 'HEAD' });
     return response.ok;
   } catch (error) {
-    console.error('检查文件存在性失败:', error);
+    console.error('Failed to check file existence:', error);
     return false;
   }
 }
 
-// GET - 获取所有资源文件或按条件筛选
+// GET - Retrieve all resource files or filter by criteria
 export async function GET(request: Request) {
   const session = await auth();
   const url = new URL(request.url);
   
-  // 检查是否是HR角色或管理员，只有HR和管理员可以看到所有资源
+  // Check if user has HR role or admin, only HR and admin can see all resources
   const isAuthorized = session?.user?.role === "hr" || session?.user?.role === "admin";
   
   if (!session) {
-    return NextResponse.json({ error: "未授权" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
   try {
-    // 从查询参数中获取筛选条件
+    // Get filter criteria from query parameters
     const category = url.searchParams.get("category");
     const fileType = url.searchParams.get("fileType");
     const limitParam = url.searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam) : undefined;
     
-    // 构建查询条件
+    // Build query conditions
     let whereClause = {};
     
     if (category) {
@@ -58,15 +58,15 @@ export async function GET(request: Request) {
       whereClause = { ...whereClause, fileType };
     }
     
-    // 执行查询
+    // Execute query
     let resources = await db.select().from(resourceFile).orderBy(resourceFile.createdAt);
     
-    // 应用限制
+    // Apply limit
     if (limit && limit > 0) {
       resources = resources.slice(0, limit);
     }
     
-    // 验证文件是否存在
+    // Verify file existence
     const validatedResources = await Promise.all(
       resources.map(async (resource) => {
         const exists = await fileExists(resource.fileUrl);
@@ -74,29 +74,29 @@ export async function GET(request: Request) {
       })
     );
     
-    // 只返回存在的文件
+    // Return only existing files
     const existingResources = validatedResources.filter(r => r.fileExists);
     
-    // 从结果中移除fileExists字段
+    // Remove fileExists field from results
     const cleanedResources = existingResources.map(({ fileExists, ...rest }) => rest);
     
     return NextResponse.json(cleanedResources);
   } catch (error) {
-    console.error("获取资源文件失败:", error);
+    console.error("Failed to fetch resource files:", error);
     return NextResponse.json(
-      { error: "获取资源文件失败" },
+      { error: "Failed to fetch resource files" },
       { status: 500 },
     );
   }
 }
 
-// POST - 创建新的资源文件记录
+// POST - Create new resource file record
 export async function POST(request: Request) {
   const session = await auth();
   
-  // 只有HR角色或管理员可以上传资源
+  // Only HR role or admin can upload resources
   if (!session || (session.user.role !== "hr" && session.user.role !== "admin")) {
-    return NextResponse.json({ error: "未授权，只有HR或管理员可以上传资源" }, { status: 403 });
+    return NextResponse.json({ error: "Unauthorized, only HR or admin can upload resources" }, { status: 403 });
   }
   
   try {
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     
     const { title, description, fileUrl, fileType, category, tags, createdById } = validatedData.data;
     
-    // 插入数据库
+    // Insert into database
     const newResource = await db.insert(resourceFile).values({
       title,
       description: description || null,
@@ -127,44 +127,44 @@ export async function POST(request: Request) {
     
     return NextResponse.json(newResource[0]);
   } catch (error) {
-    console.error("创建资源文件失败:", error);
+    console.error("Failed to create resource file:", error);
     return NextResponse.json(
-      { error: "创建资源文件失败" },
+      { error: "Failed to create resource file" },
       { status: 500 },
     );
   }
 }
 
-// DELETE - 删除资源文件
+// DELETE - Delete resource file
 export async function DELETE(request: Request) {
   const session = await auth();
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   
-  // 只有HR角色或管理员可以删除资源
+  // Only HR role or admin can delete resources
   if (!session || (session.user.role !== "hr" && session.user.role !== "admin")) {
-    return NextResponse.json({ error: "未授权，只有HR或管理员可以删除资源" }, { status: 403 });
+    return NextResponse.json({ error: "Unauthorized, only HR or admin can delete resources" }, { status: 403 });
   }
   
   if (!id) {
-    return NextResponse.json({ error: "缺少资源ID" }, { status: 400 });
+    return NextResponse.json({ error: "Missing resource ID" }, { status: 400 });
   }
   
   try {
-    // 删除资源
+    // Delete resource
     const deleted = await db.delete(resourceFile)
       .where(eq(resourceFile.id, id))
       .returning();
     
     if (deleted.length === 0) {
-      return NextResponse.json({ error: "资源不存在" }, { status: 404 });
+      return NextResponse.json({ error: "Resource does not exist" }, { status: 404 });
     }
     
-    return NextResponse.json({ message: "资源已成功删除" });
+    return NextResponse.json({ message: "Resource deleted successfully" });
   } catch (error) {
-    console.error("删除资源文件失败:", error);
+    console.error("Failed to delete resource file:", error);
     return NextResponse.json(
-      { error: "删除资源文件失败" },
+      { error: "Failed to delete resource file" },
       { status: 500 },
     );
   }

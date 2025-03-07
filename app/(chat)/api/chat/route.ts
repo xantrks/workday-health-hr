@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     (message) => message.content.length > 0,
   );
 
-  // 生成针对用户角色和使用语言的系统提示
+  // Generate system prompt based on user role and language
   const systemPrompt = generateSystemPrompt(messages, session.user.id);
 
   const result = await streamText({

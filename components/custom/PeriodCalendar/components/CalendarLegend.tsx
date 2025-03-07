@@ -10,7 +10,7 @@ export const CalendarLegend: React.FC = () => {
       <h3 className="mb-3 text-sm font-medium text-foreground">Calendar Legend</h3>
       
       <div className="space-y-4">
-        {/* 流量图例 */}
+        {/* Flow legend */}
         <div>
           <h4 className="text-xs font-medium text-muted-foreground mb-2">Period Flow</h4>
           <div className="grid grid-cols-3 gap-2">
@@ -27,7 +27,7 @@ export const CalendarLegend: React.FC = () => {
           </div>
         </div>
         
-        {/* 症状图例 */}
+        {/* Symptoms legend */}
         <div>
           <h4 className="text-xs font-medium text-muted-foreground mb-2">Common Symptoms</h4>
           <div className="grid grid-cols-3 gap-2">
@@ -43,7 +43,7 @@ export const CalendarLegend: React.FC = () => {
           </div>
         </div>
         
-        {/* 情绪图例 */}
+        {/* Mood legend */}
         <div>
           <h4 className="text-xs font-medium text-muted-foreground mb-2">Mood Indicators</h4>
           <div className="grid grid-cols-3 gap-2">

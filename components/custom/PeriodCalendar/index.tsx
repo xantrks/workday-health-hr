@@ -1,6 +1,6 @@
 "use client";
 
-// 外部依赖
+// External dependencies
 import { CalendarApi } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -8,7 +8,7 @@ import FullCalendar from "@fullcalendar/react";
 import { format } from "date-fns";
 import React, { useState, useEffect, useRef } from "react";
 
-// 内部依赖
+// Internal dependencies
 import { CalendarLegend } from "./components/CalendarLegend";
 import { CalendarStyles } from "./components/CalendarStyles";
 import { renderTooltip } from "./components/CalendarTooltip";
@@ -31,33 +31,33 @@ export function PeriodCalendar({
   const [month, setMonth] = useState<number>(new Date().getMonth());
   const [initialized, setInitialized] = useState<boolean>(false);
 
-  // 记录数据变更时更新本地记录
+  // Update local records when record data changes
   useEffect(() => {
     setLocalRecords(records);
   }, [records]);
 
-  // 在数据变更或组件挂载后强制刷新日历
+  // Force refresh calendar after data changes or component mount
   useEffect(() => {
-    // 确保日历引用存在且数据已加载
+    // Ensure calendar reference exists and data is loaded
     if (calendarRef.current && localRecords.length > 0) {
-      // 获取日历API
+      // Get calendar API
       const calendarApi = calendarRef.current.getApi();
       
-      // 使用setTimeout让初始渲染完成
+      // Use setTimeout to ensure initial rendering is complete
       setTimeout(() => {
-        // 只有当日历已经初始化并显示时才执行
+        // Only execute if calendar is already initialized and displayed
         if (calendarApi) {
-          // 先切换到前一个月再切回来，强制重新渲染单元格
+          // First switch to previous month and then switch back, forcing re-rendering of cells
           if (!initialized) {
             calendarApi.prev();
             calendarApi.next();
             setInitialized(true);
           } else {
-            // 对于后续的数据更新，只需要调用refetchEvents
+            // For subsequent data updates, just call refetchEvents
             calendarApi.refetchEvents();
           }
           
-          // 额外处理：手动触发所有当前可见日期单元格的样式应用
+          // Additional processing: manually trigger application of styles for all currently visible date cells
           const dateElements = document.querySelectorAll('.fc-daygrid-day');
           if (dateElements.length > 0) {
             dateElements.forEach(el => {
@@ -90,7 +90,7 @@ export function PeriodCalendar({
     // If no record, return
     if (!record) return;
     
-    // 应用样式
+    // Apply styles
     applyRecordStyles(el, record, onSelectDate, renderTooltip);
   };
   
@@ -114,14 +114,14 @@ export function PeriodCalendar({
     setMonth(currentDate.getMonth());
   };
 
-  // 自定义事件渲染
+  // Custom event rendering
   const eventContent = () => {
-    return null; // 使用背景事件，不需要内容
+    return null; // Use background events, no content needed
   };
 
   return (
     <div className="relative">
-      {/* 添加标题和帮助文本 */}
+      {/* Add title and help text */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">Period Calendar</h2>
         <div className="text-sm text-muted-foreground">
@@ -152,10 +152,10 @@ export function PeriodCalendar({
         eventContent={eventContent}
       />
       
-      {/* 图例组件 */}
+      {/* Legend component */}
       <CalendarLegend />
       
-      {/* 应用样式 */}
+      {/* Apply styles */}
       <CalendarStyles />
     </div>
   );

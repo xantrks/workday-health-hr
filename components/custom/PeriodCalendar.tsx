@@ -1,5 +1,5 @@
 "use client";
 
-// 从重构的组件目录中导出
+// Export from restructured component directory
 export { PeriodCalendar } from "./PeriodCalendar/index";
 export type { PeriodRecord } from "./PeriodCalendar/types"; 

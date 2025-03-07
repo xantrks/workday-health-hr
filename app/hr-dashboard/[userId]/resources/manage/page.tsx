@@ -13,7 +13,8 @@ import {
   Search,
   Filter,
   ArrowUpDown,
-  Eye
+  Eye,
+  Upload
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
-// 资源类型定义
+// Resource type definition
 interface Resource {
   id: string;
   title: string;
@@ -102,20 +103,20 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null);
 
-  // 获取资源列表
+  // Get resource list
   const fetchResources = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch('/api/resources');
       if (!response.ok) {
-        throw new Error('获取资源失败');
+        throw new Error('Failed to fetch resources');
       }
       const data = await response.json();
       setResources(data);
     } catch (error) {
-      console.error('获取资源出错:', error);
-      setError('获取资源列表失败，请重试');
+      console.error('Error fetching resources:', error);
+      setError('Failed to fetch resource list, please try again');
     } finally {
       setLoading(false);
     }
@@ -125,7 +126,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
     fetchResources();
   }, []);
 
-  // 删除资源
+  // Delete resource
   const deleteResource = async () => {
     if (!resourceToDelete) return;
     
@@ -135,33 +136,33 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
       });
       
       if (!response.ok) {
-        throw new Error('删除资源失败');
+        throw new Error('Failed to delete resource');
       }
       
-      // 删除成功，更新列表
+      // Delete successful, update list
       setResources(resources.filter(r => r.id !== resourceToDelete.id));
       setResourceToDelete(null);
     } catch (error) {
-      console.error('删除资源出错:', error);
-      setError('删除资源失败，请重试');
+      console.error('Error deleting resource:', error);
+      setError('Failed to delete resource, please try again');
     }
   };
 
-  // 筛选和排序资源
+  // Filter and sort resources
   const filteredAndSortedResources = resources
     .filter(resource => {
-      // 标题搜索
+      // Title search
       const matchesSearch = searchTerm 
         ? resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (resource.description && resource.description.toLowerCase().includes(searchTerm.toLowerCase()))
         : true;
       
-      // 分类筛选
+      // Category filter
       const matchesCategory = categoryFilter && categoryFilter !== 'all'
         ? resource.category === categoryFilter
         : true;
       
-      // 文件类型筛选
+      // File type filter
       const matchesFileType = fileTypeFilter && fileTypeFilter !== 'all'
         ? resource.fileType === fileTypeFilter
         : true;
@@ -169,7 +170,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
       return matchesSearch && matchesCategory && matchesFileType;
     })
     .sort((a, b) => {
-      // 处理不同字段类型的排序
+      // Handle sorting for different field types
       const fieldA = a[sortField];
       const fieldB = b[sortField];
       
@@ -185,13 +186,13 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
           : fieldB - fieldA;
       }
       
-      // 默认按创建时间排序
+      // Default to sorting by createdAt
       return sortDirection === 'asc'
         ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-  // 获取文件图标
+  // Get file icon
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
       case 'image':
@@ -205,7 +206,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
     }
   };
 
-  // 切换排序方向
+  // Toggle sort direction
   const toggleSort = (field: keyof Resource) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -215,20 +216,20 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
     }
   };
 
-  // 检查用户是否有HR或管理员权限
+  // Check if user has HR or admin permissions
   if (session?.user?.role !== 'hr' && session?.user?.role !== 'admin') {
     return (
       <div className="container mx-auto py-10">
         <Card>
           <CardHeader>
-            <CardTitle>未授权</CardTitle>
-            <CardDescription>您没有权限访问此页面</CardDescription>
+            <CardTitle>Unauthorized</CardTitle>
+            <CardDescription>You do not have permission to access this page</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>只有HR人员或管理员可以管理资源文件。</p>
+            <p>Only HR personnel or admins can manage resource files.</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => router.back()}>返回</Button>
+            <Button onClick={() => router.back()}>Return</Button>
           </CardFooter>
         </Card>
       </div>
@@ -240,20 +241,21 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
-            <CardTitle>资源管理</CardTitle>
-            <CardDescription>管理所有上传的公司政策和健康教育资源</CardDescription>
+            <CardTitle>Resource Management</CardTitle>
+            <CardDescription>Manage all uploaded company policies and health education resources</CardDescription>
           </div>
           <Button onClick={() => router.push(`/hr-dashboard/${params.userId}/resources/upload`)}>
-            上传新资源
+            <Upload className="mr-2 h-4 w-4" />
+            Upload New Resource
           </Button>
         </CardHeader>
         <CardContent>
-          {/* 搜索和筛选 */}
+          {/* Search and filter */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex items-center w-full md:w-1/3">
               <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索资源..."
+                placeholder="Search resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8"
@@ -267,16 +269,16 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                 <SelectTrigger className="w-full">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4" />
-                    <SelectValue placeholder="所有分类" />
+                    <SelectValue placeholder="All Categories" />
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">所有分类</SelectItem>
-                  <SelectItem value="政策文件">政策文件</SelectItem>
-                  <SelectItem value="月经健康资源">月经健康资源</SelectItem>
-                  <SelectItem value="更年期健康资源">更年期健康资源</SelectItem>
-                  <SelectItem value="研讨会材料">研讨会材料</SelectItem>
-                  <SelectItem value="其他">其他</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="policy_documents">Policy Documents</SelectItem>
+                  <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
+                  <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
+                  <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
+                  <SelectItem value="others">Others</SelectItem>
                 </SelectContent>
               </Select>
               <Select 
@@ -286,27 +288,27 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                 <SelectTrigger className="w-full">
                   <div className="flex items-center gap-2">
                     <File className="h-4 w-4" />
-                    <SelectValue placeholder="所有文件类型" />
+                    <SelectValue placeholder="All File Types" />
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">所有文件类型</SelectItem>
+                  <SelectItem value="all">All File Types</SelectItem>
                   <SelectItem value="pdf">PDF</SelectItem>
                   <SelectItem value="word">Word</SelectItem>
                   <SelectItem value="presentation">PPT</SelectItem>
                   <SelectItem value="spreadsheet">Excel</SelectItem>
-                  <SelectItem value="image">图片</SelectItem>
-                  <SelectItem value="video">视频</SelectItem>
-                  <SelectItem value="text">文本</SelectItem>
+                  <SelectItem value="image">Images</SelectItem>
+                  <SelectItem value="video">Videos</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* 资源列表 */}
+          {/* Resource list */}
           {loading ? (
             <div className="flex justify-center items-center py-10">
-              <p className="text-muted-foreground">加载中...</p>
+              <p className="text-muted-foreground">Loading...</p>
             </div>
           ) : error ? (
             <div className="flex justify-center items-center py-10">
@@ -315,7 +317,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
           ) : filteredAndSortedResources.length === 0 ? (
             <div className="flex justify-center items-center py-10">
               <p className="text-muted-foreground">
-                没有找到符合条件的资源。API已自动过滤掉不存在的文件，确保只显示有效资源。
+                No resources found matching your criteria. The API automatically filters out non-existent files to ensure only valid resources are displayed.
               </p>
             </div>
           ) : (
@@ -323,19 +325,19 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">类型</TableHead>
+                    <TableHead className="w-[100px]">Type</TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort('title')}>
                       <div className="flex items-center gap-1">
-                        标题
+                        Title
                         {sortField === 'title' && (
                           <ArrowUpDown className="h-4 w-4" />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead>分类</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort('createdAt')}>
                       <div className="flex items-center gap-1">
-                        上传日期
+                        Upload Date
                         {sortField === 'createdAt' && (
                           <ArrowUpDown className="h-4 w-4" />
                         )}
@@ -343,13 +345,13 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                     </TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort('viewCount')}>
                       <div className="flex items-center gap-1">
-                        查看
+                        Views
                         {sortField === 'viewCount' && (
                           <ArrowUpDown className="h-4 w-4" />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead>操作</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -407,7 +409,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>查看</p>
+                                <p>View</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -427,7 +429,7 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>下载</p>
+                                <p>Download</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -444,20 +446,15 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>确认删除</DialogTitle>
+                                <DialogTitle>Confirm Deletion</DialogTitle>
                                 <DialogDescription>
-                                  您确定要删除资源 &ldquo;{resourceToDelete?.title}&rdquo; 吗？此操作无法撤销。
+                                  Are you sure you want to delete the resource &ldquo;{resourceToDelete?.title}&rdquo;? This action cannot be undone.
                                 </DialogDescription>
                               </DialogHeader>
                               <DialogFooter>
-                                <DialogClose asChild>
-                                  <Button variant="outline">取消</Button>
-                                </DialogClose>
-                                <Button 
-                                  variant="destructive" 
-                                  onClick={deleteResource}
-                                >
-                                  删除
+                                <Button variant="outline" onClick={() => setResourceToDelete(null)}>Cancel</Button>
+                                <Button variant="destructive" onClick={deleteResource}>
+                                  Delete
                                 </Button>
                               </DialogFooter>
                             </DialogContent>
@@ -472,9 +469,9 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
           )}
         </CardContent>
         <CardFooter>
-          <p className="text-sm text-muted-foreground">
-            共 {filteredAndSortedResources.length} 个资源
-          </p>
+          <div className="text-sm text-muted-foreground">
+            Total {filteredAndSortedResources.length} resources
+          </div>
         </CardFooter>
       </Card>
     </div>

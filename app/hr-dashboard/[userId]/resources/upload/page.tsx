@@ -47,9 +47,9 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: '标题不能为空' }),
+  title: z.string().min(1, { message: 'Title cannot be empty' }),
   description: z.string().optional(),
-  category: z.string().min(1, { message: '请选择分类' }),
+  category: z.string().min(1, { message: 'Please select a category' }),
   tags: z.string().optional()
 });
 
@@ -79,7 +79,7 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!file) {
-      setErrorMessage('请选择要上传的文件');
+      setErrorMessage('Please select a file to upload');
       return;
     }
 
@@ -94,9 +94,9 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
       formData.append('description', values.description || '');
       formData.append('category', values.category);
       
-      // 处理标签：如果用户输入了逗号分隔的标签，转换为数组
+      // Process tags: if user enters comma-separated tags, convert to array
+      // No longer attach default JSON string, let backend handle it
       let tagsValue = values.tags || '';
-      // 不再附加默认的JSON字符串，让后端处理
       formData.append('tags', tagsValue);
 
       const response = await fetch('/api/files/upload', {
@@ -106,7 +106,7 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || '上传失败');
+        throw new Error(data.error || 'Upload failed');
       }
 
       setUploadStatus('success');
@@ -114,9 +114,9 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
         router.push(`/hr-dashboard/${params.userId}/resources/manage`);
       }, 1500);
     } catch (error) {
-      console.error('上传出错:', error);
+      console.error('Upload error:', error);
       setUploadStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : '上传失败，请重试');
+      setErrorMessage(error instanceof Error ? error.message : 'Upload failed, please try again');
     } finally {
       setUploading(false);
     }
@@ -145,20 +145,20 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
     return <File className="h-5 w-5" />;
   };
 
-  // 检查用户是否有HR或管理员权限
+  // Check if user has HR or admin permissions
   if (session?.user?.role !== 'hr' && session?.user?.role !== 'admin') {
     return (
       <div className="container mx-auto py-10">
         <Card>
           <CardHeader>
-            <CardTitle>未授权</CardTitle>
-            <CardDescription>您没有权限访问此页面</CardDescription>
+            <CardTitle>Unauthorized</CardTitle>
+            <CardDescription>You do not have permission to access this page</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>只有HR人员或管理员可以上传资源文件。</p>
+            <p>Only HR personnel or administrators can upload resource files.</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => router.back()}>返回</Button>
+            <Button onClick={() => router.back()}>Return</Button>
           </CardFooter>
         </Card>
       </div>
@@ -169,8 +169,8 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
     <div className="container mx-auto py-10">
       <Card>
         <CardHeader>
-          <CardTitle>上传新资源</CardTitle>
-          <CardDescription>上传公司政策文件、月经健康或更年期健康教育资源</CardDescription>
+          <CardTitle>Upload New Resource</CardTitle>
+          <CardDescription>Upload company policy files, menstrual health or menopause health educational resources</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -180,9 +180,9 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>资源标题</FormLabel>
+                    <FormLabel>Resource Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="输入资源标题" {...field} />
+                      <Input placeholder="Enter resource title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -194,10 +194,10 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>描述</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="输入资源描述（可选）" 
+                        placeholder="Enter resource description (optional)" 
                         className="resize-none" 
                         {...field} 
                       />
@@ -212,22 +212,22 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>分类</FormLabel>
+                    <FormLabel>Category</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="选择分类" />
+                          <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="政策文件">政策文件</SelectItem>
-                        <SelectItem value="月经健康资源">月经健康资源</SelectItem>
-                        <SelectItem value="更年期健康资源">更年期健康资源</SelectItem>
-                        <SelectItem value="研讨会材料">研讨会材料</SelectItem>
-                        <SelectItem value="其他">其他</SelectItem>
+                        <SelectItem value="policy_documents">Policy Documents</SelectItem>
+                        <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
+                        <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
+                        <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
+                        <SelectItem value="others">Others</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -240,15 +240,15 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>标签</FormLabel>
+                    <FormLabel>Tags</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="输入标签，用逗号分隔（可选）" 
+                        placeholder="Enter tags, separated by commas (optional)" 
                         {...field} 
                       />
                     </FormControl>
                     <FormDescription>
-                      例如：教育,视频,科学
+                      Example: Education,Video,Science
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -256,7 +256,7 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
               />
 
               <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="file">文件</Label>
+                <Label htmlFor="file">File</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     ref={fileInputRef}
@@ -289,7 +289,7 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                 </div>
                 {!file && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    支持PDF、Word、PPT、Excel、图片和视频文件，最大20MB
+                    Supports PDF, Word, PPT, Excel, images and video files, max 20MB
                   </p>
                 )}
                 {errorMessage && (
@@ -306,14 +306,14 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                   onClick={() => router.back()}
                   disabled={uploading}
                 >
-                  取消
+                  Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={uploading}
                   className="flex items-center gap-2"
                 >
-                  {uploading ? '上传中...' : '上传资源'}
+                  {uploading ? 'Uploading...' : 'Upload Resource'}
                   {uploadStatus === 'success' && <CheckCircle className="h-4 w-4" />}
                   {uploadStatus === 'error' && <AlertCircle className="h-4 w-4" />}
                 </Button>

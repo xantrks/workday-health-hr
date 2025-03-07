@@ -143,19 +143,20 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Setting symptoms:", symptoms);
       form.setValue("symptoms", symptoms);
       
-      // 设置mood值
-      const mood = record.mood || "none";
-      console.log("PeriodRecordDialog - Setting mood:", mood);
-      form.setValue("mood", mood);
+      // Set mood value
+      if (record.mood) {
+        console.log("PeriodRecordDialog - Setting mood:", record.mood.toString());
+        form.setValue("mood", record.mood.toString());
+      }
       
-      // 设置sleepHours值 - 确保即使为null或undefined也能正确处理
+      // Set sleepHours value - ensure correct handling even if null or undefined
       const sleepHours = record.sleepHours !== null && record.sleepHours !== undefined 
         ? Number(record.sleepHours) 
         : 0;
       console.log("PeriodRecordDialog - Setting sleepHours:", sleepHours);
       form.setValue("sleepHours", sleepHours);
       
-      // 设置stressLevel值 - 确保即使为null或undefined也能正确处理
+      // Set stressLevel value - ensure correct handling even if null or undefined
       const stressLevel = record.stressLevel !== null && record.stressLevel !== undefined 
         ? Number(record.stressLevel) 
         : 0;
@@ -189,7 +190,7 @@ export function PeriodRecordDialog({
     // Format as YYYY-MM-DD
     const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
-    // 确保即使值为undefined也能正确处理，明确设置为0而不是undefined
+    // Ensure correct handling even if the value is undefined, explicitly set to 0 instead of undefined
     const sleepHours = values.sleepHours !== undefined ? values.sleepHours : 0;
     const stressLevel = values.stressLevel !== undefined ? values.stressLevel : 0;
     

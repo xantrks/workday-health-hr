@@ -55,14 +55,14 @@ export function usePeriodRecords() {
           // Ensure mood is valid
           const mood = record.mood || "none";
           
-          // Ensure sleepHours is valid - 检查API返回的字段名
+          // Ensure sleepHours is valid - check API returned field name
           const sleepHours = (record.sleepHours !== null && record.sleepHours !== undefined)
             ? record.sleepHours
             : (record.sleep_hours !== null && record.sleep_hours !== undefined)
               ? record.sleep_hours
               : 0;
           
-          // Ensure stressLevel is valid - 检查API返回的字段名
+          // Ensure stressLevel is valid - check API returned field name
           const stressLevel = (record.stressLevel !== null && record.stressLevel !== undefined)
             ? record.stressLevel
             : (record.stress_level !== null && record.stress_level !== undefined)
@@ -111,7 +111,7 @@ export function usePeriodRecords() {
     setIsLoading(true);
     setError(null);
     try {
-      // 确保sleepHours和stressLevel字段即使是0也能正确传递
+      // Ensure sleepHours and stressLevel fields are correctly passed even if they are 0
       const recordToSave = {
         ...record,
         sleepHours: record.sleepHours !== undefined ? record.sleepHours : 0,

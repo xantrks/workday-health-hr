@@ -1,22 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { 
+  BookOpen,
+  Calendar,
+  Download,
+  ExternalLink,
+  File, 
+  FileText, 
+  Filter,
+  Image, 
+  Info,
+  Search,
+  Video,
+  Clock,
+} from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { 
-  FileText, 
-  File, 
-  Image, 
-  Video,
-  Download,
-  Search,
-  Filter,
-  BookOpen,
-  Info,
-  Calendar,
-  ExternalLink
-} from "lucide-react";
+import { useEffect, useState } from 'react';
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,20 +37,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// 资源类型定义
+// Resource type definition
 interface Resource {
   id: string;
   title: string;
@@ -80,20 +81,20 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
   const [fileTypeFilter, setFileTypeFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
 
-  // 获取资源列表
+  // Fetch resources list
   const fetchResources = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch('/api/resources');
       if (!response.ok) {
-        throw new Error('获取资源失败');
+        throw new Error('Failed to fetch resources');
       }
       const data = await response.json();
       setResources(data);
     } catch (error) {
-      console.error('获取资源出错:', error);
-      setError('获取资源列表失败，请重试');
+      console.error('Error fetching resources:', error);
+      setError('Failed to fetch resource list, please try again');
     } finally {
       setLoading(false);
     }
@@ -103,59 +104,65 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
     fetchResources();
   }, []);
 
-  // 记录资源查看
+  // Record resource view
   const trackResourceView = async (resourceId: string) => {
     try {
-      // 调用API增加查看计数
+      // Call API to increase view count
       await fetch(`/api/resources/${resourceId}/view`, { 
         method: 'POST' 
       });
     } catch (error) {
-      console.error('记录查看失败:', error);
+      console.error('Failed to record view:', error);
     }
   };
 
-  // 记录资源下载
+  // Record resource download
   const trackResourceDownload = async (resourceId: string) => {
     try {
-      // 调用API增加下载计数
+      // Call API to increase download count
       await fetch(`/api/resources/${resourceId}/download`, { 
         method: 'POST' 
       });
     } catch (error) {
-      console.error('记录下载失败:', error);
+      console.error('Failed to record download:', error);
     }
   };
 
-  // 按分类筛选资源
+  // Filter resources by category
   const getFilteredResources = () => {
     return resources.filter(resource => {
-      // 标题或描述搜索
+      // Title or description search
       const matchesSearch = searchTerm
         ? resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (resource.description && resource.description.toLowerCase().includes(searchTerm.toLowerCase()))
         : true;
       
-      // 分类筛选
+      // Category filter
       const matchesCategory = categoryFilter && categoryFilter !== 'all'
         ? resource.category === categoryFilter
         : true;
       
-      // 文件类型筛选
+      // File type filter
       const matchesFileType = fileTypeFilter && fileTypeFilter !== 'all'
         ? resource.fileType === fileTypeFilter
         : true;
       
-      // 选项卡筛选
+      // Tab filter
       const matchesTab = activeTab === 'all' 
         ? true 
-        : resource.category.includes(activeTab);
+        : activeTab === 'menstrual' 
+          ? resource.category === 'menstrual_health_resources'
+          : activeTab === 'menopause'
+            ? resource.category === 'menopause_health_resources'
+            : activeTab === 'policy'
+              ? resource.category === 'policy_documents'
+              : false;
 
       return matchesSearch && matchesCategory && matchesFileType && matchesTab;
     });
   };
 
-  // 获取文件图标和颜色
+  // Get file type icon and color
   const getFileTypeInfo = (fileType: string) => {
     switch (fileType) {
       case 'image':
@@ -175,13 +182,13 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
     }
   };
 
-  // 获取每种类型的数量
+  // Get category counts
   const getCategoryCounts = () => {
     const counts = {
       all: resources.length,
-      period: resources.filter(r => r.category.includes('月经')).length,
-      menopause: resources.filter(r => r.category.includes('更年期')).length,
-      policy: resources.filter(r => r.category.includes('政策')).length,
+      period: resources.filter(r => r.category.includes('menstrual_health_resources')).length,
+      menopause: resources.filter(r => r.category.includes('menopause_health_resources')).length,
+      policy: resources.filter(r => r.category.includes('policy_documents')).length,
     };
     return counts;
   };
@@ -193,20 +200,20 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold">健康资源库</h1>
+          <h1 className="text-3xl font-bold">Health Resource Library</h1>
           <p className="text-muted-foreground">
-            查看公司提供的健康资源和政策文件
+            View company-provided health resources and policy documents
           </p>
         </div>
 
-        {/* 搜索和筛选 */}
+        {/* Search and filter */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex items-center w-full md:w-1/2">
                 <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索资源..."
+                  placeholder="Search resources..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -220,16 +227,16 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                   <SelectTrigger className="w-full">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4" />
-                      <SelectValue placeholder="所有分类" />
+                      <SelectValue placeholder="All Categories" />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">所有分类</SelectItem>
-                    <SelectItem value="政策文件">政策文件</SelectItem>
-                    <SelectItem value="月经健康资源">月经健康资源</SelectItem>
-                    <SelectItem value="更年期健康资源">更年期健康资源</SelectItem>
-                    <SelectItem value="研讨会材料">研讨会材料</SelectItem>
-                    <SelectItem value="其他">其他</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="policy_documents">Policy Documents</SelectItem>
+                    <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
+                    <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
+                    <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
+                    <SelectItem value="others">Other</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -240,18 +247,18 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                   <SelectTrigger className="w-full">
                     <div className="flex items-center gap-2">
                       <File className="h-4 w-4" />
-                      <SelectValue placeholder="所有文件类型" />
+                      <SelectValue placeholder="All File Types" />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">所有文件类型</SelectItem>
+                    <SelectItem value="all">All File Types</SelectItem>
                     <SelectItem value="pdf">PDF</SelectItem>
                     <SelectItem value="word">Word</SelectItem>
                     <SelectItem value="presentation">PPT</SelectItem>
                     <SelectItem value="spreadsheet">Excel</SelectItem>
-                    <SelectItem value="image">图片</SelectItem>
-                    <SelectItem value="video">视频</SelectItem>
-                    <SelectItem value="text">文本</SelectItem>
+                    <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="text">Text</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -259,44 +266,44 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
           </CardContent>
         </Card>
 
-        {/* 资源选项卡 */}
+        {/* Resource tabs */}
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="all" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
-              <span>全部资源</span>
+              <span>All Resources</span>
               <Badge variant="secondary" className="ml-auto">
                 {categoryCounts.all}
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="月经" className="flex items-center gap-2">
+            <TabsTrigger value="menstrual" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>月经健康</span>
+              <span>Menstrual Health</span>
               <Badge variant="secondary" className="ml-auto">
                 {categoryCounts.period}
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="更年期" className="flex items-center gap-2">
+            <TabsTrigger value="menopause" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
-              <span>更年期健康</span>
+              <span>Menopause Health</span>
               <Badge variant="secondary" className="ml-auto">
                 {categoryCounts.menopause}
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="政策" className="flex items-center gap-2">
+            <TabsTrigger value="policy" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              <span>公司政策</span>
+              <span>Company Policy</span>
               <Badge variant="secondary" className="ml-auto">
                 {categoryCounts.policy}
               </Badge>
             </TabsTrigger>
           </TabsList>
 
-          {/* 资源内容区域 */}
+          {/* Resource content area */}
           <TabsContent value={activeTab} className="mt-0">
             {loading ? (
               <div className="flex justify-center items-center py-10">
-                <p className="text-muted-foreground">加载中...</p>
+                <p className="text-muted-foreground">Loading...</p>
               </div>
             ) : error ? (
               <div className="flex justify-center items-center py-10">
@@ -305,8 +312,8 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
             ) : filteredResources.length === 0 ? (
               <div className="flex justify-center items-center py-10">
                 <div className="text-center">
-                  <p className="text-muted-foreground mb-2">没有找到符合条件的资源</p>
-                  <p className="text-xs text-muted-foreground">系统已自动过滤掉无效资源，仅显示可访问文件</p>
+                  <p className="text-muted-foreground mb-2">No resources found matching your criteria</p>
+                  <p className="text-xs text-muted-foreground">The system has automatically filtered out invalid resources and only displays accessible files</p>
                 </div>
               </div>
             ) : (
@@ -326,7 +333,7 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                         </div>
                         <CardTitle className="mt-2 text-lg">{resource.title}</CardTitle>
                         <CardDescription>
-                          {resource.description || '暂无描述'}
+                          {resource.description || 'No description available'}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="pb-2">
@@ -339,9 +346,10 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                             ))}
                           </div>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          上传于 {new Date(resource.createdAt).toLocaleDateString('zh-CN')}
-                        </p>
+                        <div className="flex items-center text-xs text-muted-foreground gap-1">
+                          <Clock className="h-3 w-3" />
+                          Uploaded on {new Date(resource.createdAt).toLocaleDateString('en-US')}
+                        </div>
                       </CardContent>
                       <CardFooter className="flex justify-between pt-0">
                         <TooltipProvider>
@@ -355,12 +363,12 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                               >
                                 <a href={resource.fileUrl} target="_blank" rel="noopener noreferrer">
                                   <ExternalLink className="h-4 w-4 mr-2" />
-                                  查看
+                                  View
                                 </a>
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>在新窗口中打开</p>
+                              <p>Open in new window</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -381,12 +389,12 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                                   rel="noopener noreferrer"
                                 >
                                   <Download className="h-4 w-4 mr-2" />
-                                  下载
+                                  Download
                                 </a>
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>下载文件</p>
+                              <p>Download file</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

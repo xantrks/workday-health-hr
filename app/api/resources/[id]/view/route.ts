@@ -5,53 +5,51 @@ import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
 import { resourceFile } from "@/db/schema";
 
-// POST - 增加资源查看次数
+// POST - Increase resource view count
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  // 需要登录才能记录查看
   const session = await auth();
+
+  // Login required to record views
   if (!session) {
-    return NextResponse.json({ error: "未授权" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const resourceId = params.id;
-  
-  if (!resourceId) {
-    return NextResponse.json({ error: "缺少资源ID" }, { status: 400 });
+  const id = params.id;
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing resource ID" }, { status: 400 });
   }
-  
+
   try {
-    // 获取当前资源
-    const resource = await db
+    // Get current resource
+    const existingResource = await db
       .select()
       .from(resourceFile)
-      .where(eq(resourceFile.id, resourceId))
-      .limit(1);
-    
-    if (resource.length === 0) {
-      return NextResponse.json({ error: "资源不存在" }, { status: 404 });
+      .where(eq(resourceFile.id, id));
+
+    if (existingResource.length === 0) {
+      return NextResponse.json({ error: "Resource does not exist" }, { status: 404 });
     }
-    
-    // 更新查看次数
-    const updatedResource = await db
+
+    // Update view count
+    const updated = await db
       .update(resourceFile)
-      .set({ 
-        viewCount: resource[0].viewCount + 1 
+      .set({
+        viewCount: existingResource[0].viewCount + 1,
+        updatedAt: new Date(),
       })
-      .where(eq(resourceFile.id, resourceId))
+      .where(eq(resourceFile.id, id))
       .returning();
-    
-    return NextResponse.json({ 
-      success: true, 
-      viewCount: updatedResource[0].viewCount 
-    });
+
+    return NextResponse.json(updated[0]);
   } catch (error) {
-    console.error("更新资源查看次数失败:", error);
+    console.error("Failed to update resource view count:", error);
     return NextResponse.json(
-      { error: "更新资源查看次数失败" },
-      { status: 500 },
+      { error: "Failed to update resource view count" },
+      { status: 500 }
     );
   }
 } 

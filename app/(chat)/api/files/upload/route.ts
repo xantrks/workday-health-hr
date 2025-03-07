@@ -11,7 +11,7 @@ const FileSchema = z.object({
   file: z
     .instanceof(File)
     .refine((file) => file.size <= 20 * 1024 * 1024, {
-      message: "文件大小应小于20MB",
+      message: "File size should be less than 20MB",
     })
     .refine(
       (file) =>
@@ -31,7 +31,7 @@ const FileSchema = z.object({
           "text/html",
         ].includes(file.type),
       {
-        message: "文件类型应为JPEG、PNG、PDF、Word文档(DOC/DOCX)、PPT、Excel或视频文件",
+        message: "File type should be JPEG, PNG, PDF, Word document (DOC/DOCX), PPT, Excel or video file",
       },
     ),
 });
@@ -40,11 +40,11 @@ export async function POST(request: Request) {
   const session = await auth();
 
   if (!session) {
-    return NextResponse.json({ error: "未授权" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (request.body === null) {
-    return new Response("请求正文为空", { status: 400 });
+    return new Response("Request body is empty", { status: 400 });
   }
 
   try {
@@ -52,11 +52,11 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File;
     const title = formData.get("title") as string || file.name;
     const description = formData.get("description") as string || "";
-    const category = formData.get("category") as string || "未分类";
+    const category = formData.get("category") as string || "Uncategorized";
     const tagsInput = formData.get("tags") as string || "";
     
     if (!file) {
-      return NextResponse.json({ error: "未上传文件" }, { status: 400 });
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     const validatedFile = FileSchema.safeParse({ file });
@@ -91,29 +91,29 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer();
 
     try {
-      // 上传到Vercel Blob
-      const data = await put(filename, fileBuffer, {
+      // Upload to Vercel Blob
+      const blob = await put(filename, fileBuffer, {
         access: "public",
       });
 
-      // 处理标签：将逗号分隔的字符串转换为数组
+      // Process tags: Convert comma-separated string to array
       let tags = [];
       if (tagsInput && tagsInput !== '[]') {
-        // 尝试解析为JSON，如果失败则按逗号分隔
+        // Try to parse as JSON, if fails then process as comma-separated
         try {
           tags = JSON.parse(tagsInput);
         } catch (e) {
-          // 不是有效的JSON，按逗号分隔处理
+          // Not valid JSON, process as comma-separated
           tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
         }
       }
 
       try {
-        // 直接在此API中保存资源记录，避免跨API调用
+        // Save resource record directly in this API to avoid cross-API calls
         const newResource = await db.insert(resourceFile).values({
           title,
           description: description || null,
-          fileUrl: data.url,
+          fileUrl: blob.url,
           fileType,
           category,
           tags,
@@ -125,28 +125,28 @@ export async function POST(request: Request) {
         }).returning();
 
         if (!newResource || newResource.length === 0) {
-          throw new Error("资源创建失败");
+          throw new Error("Resource creation failed");
         }
 
         return NextResponse.json({
-          ...data,
+          ...blob,
           resource: newResource[0],
         });
       } catch (error) {
-        console.error("资源保存失败:", error);
+        console.error("Resource save failed:", error);
         return NextResponse.json(
-          { error: "无法保存资源文件记录" },
+          { error: "Could not save resource file record" },
           { status: 500 },
         );
       }
     } catch (error) {
-      console.error("上传失败:", error);
-      return NextResponse.json({ error: "上传失败" }, { status: 500 });
+      console.error("Upload failed:", error);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
   } catch (error) {
-    console.error("处理请求失败:", error);
+    console.error("Request processing failed:", error);
     return NextResponse.json(
-      { error: "处理请求失败" },
+      { error: "Request processing failed" },
       { status: 500 },
     );
   }

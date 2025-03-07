@@ -58,19 +58,19 @@ export const CalendarStyles: React.FC = () => {
         z-index: 2;
       }
       
-      /* 提高日历单元格中内容的可见性 */
+      /* Improve visibility of content in calendar cells */
       .fc .fc-daygrid-day-top {
         justify-content: center;
         padding-top: 4px;
       }
       
-      /* 自定义组件样式 */
+      /* Custom component styles */
       .period-tooltip {
         border-radius: 0.5rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
       
-      /* 为小屏幕优化显示 */
+      /* Optimize display for small screens */
       @media (max-width: 640px) {
         .fc-header-toolbar {
           flex-direction: column;

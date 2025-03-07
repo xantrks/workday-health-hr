@@ -38,16 +38,16 @@ export const CalendarTooltip: React.FC<TooltipRendererProps> = ({ tooltipData, o
   );
 };
 
-// 渲染工具提示的辅助函数
+// Helper function to render tooltip
 export const renderTooltip = (
   tooltipElement: HTMLElement, 
   tooltipData: TooltipData, 
   onSelectDate: (date: Date) => void
 ) => {
-  // 创建React根元素
+  // Create React root element
   const root = createRoot(tooltipElement);
   
-  // 渲染工具提示组件
+  // Render tooltip component
   root.render(
     <CalendarTooltip 
       tooltipData={tooltipData} 
@@ -55,6 +55,6 @@ export const renderTooltip = (
     />
   );
   
-  // 存储根引用以便清理
+  // Store root reference for cleanup
   (tooltipElement as any)._root = root;
 }; 

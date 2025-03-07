@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const endDateParam = url.searchParams.get("endDate");
     const recordType = url.searchParams.get("recordType");
     
-    // 使用动态构建SQL查询
+    // Use dynamically built SQL query
     let sqlQuery = sql`SELECT * FROM "HealthRecord" WHERE "userId" = ${userId}`;
     
     if (recordType) {
@@ -110,13 +110,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Record not found or unauthorized" }, { status: 404 });
     }
     
-    // 使用单独的更新语句
+    // Use separate update statement
     let result;
     
-    // 根据提供的字段构建更新语句
+    // Build update statement based on provided fields
     if (body.periodFlow !== undefined && body.symptoms !== undefined && body.mood !== undefined && 
         body.sleepHours !== undefined && body.stressLevel !== undefined && body.notes !== undefined) {
-      // 所有字段都提供了
+      // All fields are provided
       result = await sql`
         UPDATE "HealthRecord" SET 
           period_flow = ${body.periodFlow},
@@ -130,7 +130,7 @@ export async function PUT(req: NextRequest) {
         RETURNING *
       `;
     } else {
-      // 只更新提供的字段
+      // Only update provided fields
       let updateQuery = sql`UPDATE "HealthRecord" SET `;
       let isFirst = true;
       
@@ -176,12 +176,12 @@ export async function PUT(req: NextRequest) {
         isFirst = false;
       }
       
-      // 添加更新时间
+      // Add update timestamp
       updateQuery = isFirst 
         ? sql`${updateQuery} updated_at = ${new Date()}`
         : sql`${updateQuery}, updated_at = ${new Date()}`;
       
-      // 添加WHERE条件和RETURNING
+      // Add WHERE condition and RETURNING
       updateQuery = sql`${updateQuery} WHERE id = ${body.id} AND "userId" = ${userId} RETURNING *`;
       
       result = await updateQuery;
