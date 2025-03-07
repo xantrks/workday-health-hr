@@ -1,0 +1,20 @@
+---
+description: Enforce English-only content in all project files
+globs: *.js, *.jsx, *.ts, *.tsx, *.json, *.md, *.css, *.html, src/components/**/*
+alwaysApply: false
+---
+
+# English-Only Content Enforcement
+
+- All text content must be in English only
+- No Chinese characters allowed in any project files
+- This includes comments, strings, variable names, and documentation
+- Ensures code consistency and improves collaboration with international teams
+
+You can check for Chinese characters using Unicode ranges:
+- \u4E00-\u9FFF (CJK Unified Ideographs)
+- \u3400-\u4DBF (CJK Extension A)
+- \u20000-\u2A6DF (CJK Extension B)
+- \uF900-\uFAFF (CJK Compatibility Ideographs)
+
+Fix violations by translating Chinese text to English and using localization files if necessary.
