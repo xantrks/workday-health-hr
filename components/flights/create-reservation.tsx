@@ -32,7 +32,7 @@ export function CreateReservation({ reservation = SAMPLE }) {
             </span>
             {reservation.departure.cityName} to {reservation.arrival.cityName}
             <span className="no-skeleton text-foreground/50"> at </span>{" "}
-            <span className="no-skeleton text-emerald-600 font-medium">
+            <span className="no-skeleton text-primary font-medium">
               ${reservation.totalPriceInUSD} USD
               <span className="no-skeleton text-foreground/50 ">?</span>
             </span>

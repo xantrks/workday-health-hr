@@ -10,7 +10,7 @@ export const SYMPTOM_ICONS: Record<string, IconInfo> = {
   headache: {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="8" r="6"></circle><path d="M12 14v8"></path><path d="M8 22h8"></path></svg>`,
     label: "Headache",
-    color: "text-orange-500 bg-orange-100"
+    color: "text-accent bg-accent/10"
   },
   bloating: {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M6.8 21.7a2.4 2.4 0 0 1 0-3.4l4.6-4.6a1 1 0 0 1 1.4 0l2.4 2.4a1 1 0 0 1 0 1.4l-4.6 4.6a2.4 2.4 0 0 1-3.4 0Z"></path><path d="m14.1 7.1 2.9 2.9"></path><path d="m21 2-6 6"></path><path d="M11.5 11.5 3 3"></path></svg>`,
@@ -34,7 +34,7 @@ export const MOOD_ICONS: Record<string, IconInfo> = {
   happy: {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>`,
     label: "Happy",
-    color: "text-green-500 bg-green-100"
+    color: "text-primary bg-primary/10"
   },
   sad: {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>`,

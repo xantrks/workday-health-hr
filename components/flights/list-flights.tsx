@@ -136,7 +136,7 @@ export function ListFlights({
 
           <div className="flex flex-col w-32 items-end gap-0.5">
             <div className="flex flex-row gap-2">
-              <div className="text-base sm:text-base text-emerald-600 dark:text-emerald-500">
+              <div className="text-base sm:text-base text-primary">
                 ${flight.priceInUSD}
               </div>
             </div>
