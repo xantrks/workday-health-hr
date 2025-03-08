@@ -153,13 +153,12 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
   // Register for an event
   const registerForEvent = async (eventId: string) => {
     try {
-      const response = await fetch('/api/events/register', {
+      const response = await fetch(`/api/events/${eventId}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          eventId,
           userId: session?.user?.id,
         }),
       });
