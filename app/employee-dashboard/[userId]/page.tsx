@@ -95,130 +95,69 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         </TabsContent>
         
         <TabsContent value="resources">
-          <div className="grid gap-4 grid-cols-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Health Resource Library</CardTitle>
-                <CardDescription>
-                  Browse health resources and policy documents provided by the company
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-md">Menstrual Health Resources</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-muted-foreground">
-                        View educational resources and articles about menstrual health
-                      </p>
-                    </CardContent>
-                    <CardContent className="pt-0">
-                      <Link href={`/employee-dashboard/${params.userId}/resources?tab=menstrual`}>
-                        <Button variant="secondary" className="w-full">Browse Resources</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-md">Menopause Health Resources</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-muted-foreground">
-                        Learn about menopause health knowledge and support information
-                      </p>
-                    </CardContent>
-                    <CardContent className="pt-0">
-                      <Link href={`/employee-dashboard/${params.userId}/resources?tab=menopause`}>
-                        <Button variant="secondary" className="w-full">Browse Resources</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-md">Company Policies</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <p className="text-sm text-muted-foreground">
-                        Access company policies related to health benefits and leave
-                      </p>
-                    </CardContent>
-                    <CardContent className="pt-0">
-                      <Link href={`/employee-dashboard/${params.userId}/resources?tab=policy`}>
-                        <Button variant="secondary" className="w-full">Browse Policies</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="text-right mt-4">
-                  <Link href={`/employee-dashboard/${params.userId}/resources`}>
-                    <Button variant="link">View All Resources</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="text-center mb-8 max-w-md">
+              <div className="inline-flex p-3 rounded-full bg-primary/10 mb-4">
+                <FileText className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-2xl font-semibold mb-2">Resource Library</h2>
+              <p className="text-muted-foreground">
+                Access health guides, educational materials and company policies all in one place.
+              </p>
+            </div>
+            <Link href={`/employee-dashboard/${params.userId}/resources`}>
+              <Button size="lg" className="px-8">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Browse Resource Library
+              </Button>
+            </Link>
           </div>
         </TabsContent>
       </Tabs>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="col-span-2 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Resources
-            </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pt-2">
-            <Link href={`/employee-dashboard/${params.userId}/resources`}>
-              <Button className="w-full">
-                View Health Resources
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-2 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Events
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pt-2">
-            <Link href={`/employee-dashboard/${params.userId}/events`}>
-              <Button className="w-full">
-                View Health Events
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-        
-        <Card className="col-span-2 lg:col-span-4">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Share Your Feedback
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pt-2">
-            <div className="text-sm text-muted-foreground mb-3">
-              Help us improve our menstrual and menopause health support by sharing your feedback. 
-              Your input is valuable and can be submitted anonymously.
-            </div>
-            <Link href={`/employee-dashboard/${params.userId}/feedback`}>
-              <Button className="w-full">
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Submit Feedback
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      
+      {activeTab === "resources" && (
+        <div className="mt-8">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-md flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-primary" />
+                  Upcoming Health Events
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  View and register for upcoming health workshops and webinars
+                </p>
+                <Link href={`/employee-dashboard/${params.userId}/events`}>
+                  <Button variant="outline" size="sm" className="w-full">
+                    View Events Calendar
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-md flex items-center">
+                  <MessageSquare className="h-4 w-4 mr-2 text-primary" />
+                  Share Your Feedback
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Help us improve our health support by sharing your anonymous feedback
+                </p>
+                <Link href={`/employee-dashboard/${params.userId}/feedback`}>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Submit Feedback
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
