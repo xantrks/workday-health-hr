@@ -92,6 +92,12 @@ interface Event {
   registrationCount: number;
 }
 
+// Event badge color helper
+interface BadgeColorResult {
+  background: string;
+  text: string;
+}
+
 export default function ManageEventsPage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
     required: true,
@@ -211,20 +217,20 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
     }
   };
 
-  const getBadgeColor = (eventType: string) => {
+  const getBadgeColor = (eventType: string): BadgeColorResult => {
     switch (eventType) {
       case 'webinar':
-        return 'bg-blue-100 text-blue-800';
+        return { background: 'bg-blue-100', text: 'text-blue-800' };
       case 'workshop':
-        return 'bg-green-100 text-green-800';
+        return { background: 'bg-green-100', text: 'text-green-800' };
       case 'seminar':
-        return 'bg-purple-100 text-purple-800';
+        return { background: 'bg-purple-100', text: 'text-purple-800' };
       case 'training':
-        return 'bg-yellow-100 text-yellow-800';
+        return { background: 'bg-yellow-100', text: 'text-yellow-800' };
       case 'meeting':
-        return 'bg-red-100 text-red-800';
+        return { background: 'bg-red-100', text: 'text-red-800' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { background: 'bg-gray-100', text: 'text-gray-800' };
     }
   };
 
@@ -466,7 +472,7 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
               <DialogHeader>
                 <DialogTitle className="text-xl">{selectedEvent.title}</DialogTitle>
                 <DialogDescription>
-                  <Badge className={`mt-2 ${getBadgeColor(selectedEvent.eventType)}`}>
+                  <Badge className={`mt-2 ${getBadgeColor(selectedEvent.eventType).text}`}>
                     {selectedEvent.eventType.charAt(0).toUpperCase() + selectedEvent.eventType.slice(1)}
                   </Badge>
                 </DialogDescription>
