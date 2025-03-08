@@ -472,11 +472,14 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                                 <Button 
                                   variant="ghost" 
                                   size="icon"
-                                  as="a"
-                                  href={resource.fileUrl}
-                                  download
+                                  asChild
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <a 
+                                    href={resource.fileUrl}
+                                    download
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </a>
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
