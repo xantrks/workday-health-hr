@@ -95,18 +95,18 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         </TabsContent>
         
         <TabsContent value="resources">
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="text-center mb-8 max-w-md">
-              <div className="inline-flex p-3 rounded-full bg-primary/10 mb-4">
-                <FileText className="h-8 w-8 text-primary" />
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="text-center mb-10 max-w-md">
+              <div className="inline-flex p-3 rounded-full bg-primary/10 mb-6">
+                <FileText className="h-10 w-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-semibold mb-2">Resource Library</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-2xl font-semibold mb-3">Resource Library</h2>
+              <p className="text-muted-foreground px-4">
                 Access health guides, educational materials and company policies all in one place.
               </p>
             </div>
             <Link href={`/employee-dashboard/${params.userId}/resources`}>
-              <Button size="lg" className="px-8">
+              <Button size="lg" className="px-10">
                 <BookOpen className="mr-2 h-5 w-5" />
                 Browse Resource Library
               </Button>
@@ -116,9 +116,9 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
       </Tabs>
       
       {activeTab === "resources" && (
-        <div className="mt-8">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+        <div className="mt-12">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-md flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-primary" />
@@ -137,7 +137,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-md flex items-center">
                   <MessageSquare className="h-4 w-4 mr-2 text-primary" />

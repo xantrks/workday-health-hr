@@ -54,6 +54,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import DashboardLayout from "../../components/DashboardLayout";
 
 // Resource type definition
 interface Resource {
@@ -207,31 +208,12 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
   const categoryCounts = getCategoryCounts();
 
   return (
-    <div className="container mx-auto py-8">
-      {/* Header with back button */}
-      <div className="flex flex-col gap-6 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => router.push(`/employee-dashboard/${params.userId}`)}
-              className="flex items-center gap-1 text-muted-foreground hover:text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-primary">Health Resource Library</h1>
-          <p className="text-muted-foreground">
-            Access health resources, guides and policy documents to support your wellbeing
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <DashboardLayout 
+      userId={params.userId}
+      title="Health Resource Library"
+      description="Access health resources, guides and policy documents to support your wellbeing"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           {/* Search */}
@@ -573,6 +555,6 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
           </Tabs>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 } 

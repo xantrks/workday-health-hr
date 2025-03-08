@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 
 import {
   Card,
@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import DashboardLayout from "../../components/DashboardLayout";
 
 // Form validation schema
 const feedbackSchema = z.object({
@@ -98,33 +99,23 @@ export default function SubmitFeedback({ params }: { params: { userId: string } 
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <DashboardLayout
+      userId={params.userId}
+      title="Submit Feedback"
+      description="Share your thoughts and experiences about menstrual and menopause health support in the workplace."
+    >
       <div className="max-w-2xl mx-auto">
-        <Button 
-          onClick={() => router.back()}
-          className="mb-6"
-        >
-          Back to Dashboard
-        </Button>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Submit Feedback</CardTitle>
-            <CardDescription>
-              Share your thoughts and experiences about menstrual and menopause health support in the workplace.
-              Your feedback helps us improve our policies and programs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <Card className="shadow-sm">
+          <CardContent className="pt-6">
             {submitSuccess ? (
               <div className="text-center py-8">
-                <div className="text-green-500 mb-2 text-xl">Thank you for your feedback!</div>
-                <p className="text-gray-500">Your input is valuable and helps us improve our support programs.</p>
-                <p className="text-gray-500 mt-4">Redirecting to dashboard...</p>
+                <div className="text-green-500 mb-3 text-xl">Thank you for your feedback!</div>
+                <p className="text-muted-foreground">Your input is valuable and helps us improve our support programs.</p>
+                <p className="text-muted-foreground mt-4">Redirecting to dashboard...</p>
               </div>
             ) : (
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                   <FormField
                     control={form.control}
                     name="category"
@@ -214,6 +205,6 @@ export default function SubmitFeedback({ params }: { params: { userId: string } 
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 } 
