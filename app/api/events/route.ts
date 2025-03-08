@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, gte, SQL } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
@@ -36,22 +36,30 @@ export async function GET(request: Request) {
     const limitParam = url.searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam) : undefined;
     
-    // Build query
-    let query = db.select().from(event);
+    // Build conditions array
+    const conditions: SQL[] = [];
     
-    // Apply filters
+    // Apply filters to conditions
     if (eventType) {
-      query = query.where(eq(event.eventType, eventType));
+      conditions.push(eq(event.eventType, eventType));
     }
     
     // Filter for upcoming events only
     if (upcomingOnly) {
       const now = new Date();
-      query = query.where(eq(event.startDate, now));
+      conditions.push(gte(event.startDate, now));
     }
     
-    // Execute query and order by start date
-    const events = await query.orderBy(event.startDate);
+    // Execute query with conditions and order by start date
+    let events;
+    if (conditions.length > 0) {
+      events = await db.select().from(event)
+        .where(conditions[0])
+        .orderBy(event.startDate);
+    } else {
+      events = await db.select().from(event)
+        .orderBy(event.startDate);
+    }
     
     // Apply limit
     const limitedEvents = limit && limit > 0 ? events.slice(0, limit) : events;
