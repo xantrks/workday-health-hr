@@ -17,7 +17,8 @@ import {
   Info,
   Edit,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
