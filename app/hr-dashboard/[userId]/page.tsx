@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { 
@@ -54,7 +54,9 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
     },
   });
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || "overview");
 
   // Add resource states and functions
   const [recentResources, setRecentResources] = useState<Resource[]>([]);
@@ -66,6 +68,13 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
       router.replace(`/hr-dashboard/${session.user.id}`);
     }
   }, [session, params.userId, router]);
+
+  // If the tab param changes, update the active tab
+  useEffect(() => {
+    if (tabParam && ['overview', 'analytics', 'reports', 'notifications', 'resources'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   // Fetch recently uploaded resources
   const fetchRecentResources = async () => {
@@ -118,7 +127,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
         </Button>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+      <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -348,91 +357,100 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
         </TabsContent>
         
         <TabsContent value="resources" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Upload Resources
-                </CardTitle>
-                <Upload className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
+          <div className="flex flex-col space-y-8 px-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-primary">Resources Management</h2>
+              <div className="flex space-x-3">
                 <Link href={`/hr-dashboard/${params.userId}/resources/upload`}>
-                  <Button className="w-full">
+                  <Button variant="default" size="sm">
                     <Upload className="mr-2 h-4 w-4" />
                     Upload Resource
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Manage Resources
-                </CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
                 <Link href={`/hr-dashboard/${params.userId}/resources/manage`}>
-                  <Button className="w-full">
+                  <Button variant="outline" size="sm">
                     <Files className="mr-2 h-4 w-4" />
                     Manage Resources
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Create Event
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <Link href={`/hr-dashboard/${params.userId}/events/create`}>
-                  <Button className="w-full">
-                    <CalendarPlus className="mr-2 h-4 w-4" />
-                    Create New Event
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Manage Events
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <Link href={`/hr-dashboard/${params.userId}/events/manage`}>
-                  <Button className="w-full">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    View Event Calendar
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Employee Feedback
-                </CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <Link href={`/hr-dashboard/${params.userId}/feedback`}>
-                  <Button className="w-full">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    View Employee Feedback
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid gap-4 md:grid-cols-1">
-            <Card>
+              </div>
+            </div>
+            
+            <div className="grid gap-8 md:grid-cols-3">
+              <Card className="hover:shadow-md transition-all">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-md flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-primary" />
+                    Resource Library
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <p className="text-sm text-muted-foreground">
+                    Manage all company documents, guides, and policies
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Link href={`/hr-dashboard/${params.userId}/resources/manage`} className="w-full">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <Files className="mr-2 h-4 w-4" />
+                      View Library
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-all">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-md flex items-center">
+                    <Calendar className="h-5 w-5 mr-2 text-primary" />
+                    Event Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <p className="text-sm text-muted-foreground">
+                    Schedule and manage company events and activities
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0 flex space-x-2">
+                  <Link href={`/hr-dashboard/${params.userId}/events/create`} className="flex-1">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <CalendarPlus className="mr-2 h-4 w-4" />
+                      New Event
+                    </Button>
+                  </Link>
+                  <Link href={`/hr-dashboard/${params.userId}/events/manage`} className="flex-1">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Calendar
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-all">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-md flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+                    Employee Feedback
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <p className="text-sm text-muted-foreground">
+                    Review and respond to employee feedback and suggestions
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Link href={`/hr-dashboard/${params.userId}/feedback`} className="w-full">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      View Feedback
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle>Recently Uploaded Resources</CardTitle>
                 <CardDescription>

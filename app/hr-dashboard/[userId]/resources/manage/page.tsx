@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { 
   FileText, 
   File, 
@@ -14,7 +15,10 @@ import {
   Filter,
   ArrowUpDown,
   Eye,
-  Upload
+  Upload,
+  ChevronLeft,
+  X,
+  AlertCircle
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -237,175 +241,223 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <Link href={`/hr-dashboard/${params.userId}?tab=resources`}>
+          <Button variant="ghost" size="sm" className="group mb-4 pl-1 flex items-center gap-1 text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <CardTitle>Resource Management</CardTitle>
-            <CardDescription>Manage all uploaded company policies and health education resources</CardDescription>
+            <h1 className="text-2xl font-bold text-primary">Resource Management</h1>
+            <p className="text-muted-foreground mt-1">Manage all uploaded company policies and health education resources</p>
           </div>
-          <Button onClick={() => router.push(`/hr-dashboard/${params.userId}/resources/upload`)}>
+          <Button 
+            onClick={() => router.push(`/hr-dashboard/${params.userId}/resources/upload`)}
+            className="sm:self-start"
+          >
             <Upload className="mr-2 h-4 w-4" />
             Upload New Resource
           </Button>
-        </CardHeader>
-        <CardContent>
-          {/* Search and filter */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex items-center w-full md:w-1/3">
-              <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search resources..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
+        </div>
+      </div>
+
+      <Card className="shadow-sm border-muted">
+        <CardHeader className="border-b bg-muted/30 pb-5">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+            <div>
+              <CardTitle>All Resources</CardTitle>
+              <CardDescription>Browse, filter and manage uploaded resources</CardDescription>
             </div>
-            <div className="flex gap-2 w-full md:w-2/3">
-              <Select 
-                value={categoryFilter} 
-                onValueChange={setCategoryFilter}
-              >
-                <SelectTrigger className="w-full">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search resources..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-3">
+                <Select
+                  value={categoryFilter}
+                  onValueChange={setCategoryFilter}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="All Categories" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="policy_documents">Policy Documents</SelectItem>
-                  <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
-                  <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
-                  <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
-                  <SelectItem value="others">Others</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select 
-                value={fileTypeFilter} 
-                onValueChange={setFileTypeFilter}
-              >
-                <SelectTrigger className="w-full">
-                  <div className="flex items-center gap-2">
-                    <File className="h-4 w-4" />
-                    <SelectValue placeholder="All File Types" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All File Types</SelectItem>
-                  <SelectItem value="pdf">PDF</SelectItem>
-                  <SelectItem value="word">Word</SelectItem>
-                  <SelectItem value="presentation">PPT</SelectItem>
-                  <SelectItem value="spreadsheet">Excel</SelectItem>
-                  <SelectItem value="image">Images</SelectItem>
-                  <SelectItem value="video">Videos</SelectItem>
-                  <SelectItem value="text">Text</SelectItem>
-                </SelectContent>
-              </Select>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="policy_documents">Policy Documents</SelectItem>
+                    <SelectItem value="menstrual_health_resources">Menstrual Health</SelectItem>
+                    <SelectItem value="menopause_health_resources">Menopause Health</SelectItem>
+                    <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
+                    <SelectItem value="others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCategoryFilter('all');
+                    setFileTypeFilter('all');
+                  }}
+                  title="Clear filters"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-
-          {/* Resource list */}
+        </CardHeader>
+        <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center items-center py-10">
-              <p className="text-muted-foreground">Loading...</p>
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading resources...</p>
+              </div>
             </div>
           ) : error ? (
-            <div className="flex justify-center items-center py-10">
+            <div className="text-center py-16">
+              <div className="rounded-full bg-destructive/10 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
               <p className="text-destructive">{error}</p>
+              <Button 
+                variant="outline" 
+                onClick={fetchResources} 
+                className="mt-6"
+              >
+                Try Again
+              </Button>
             </div>
           ) : filteredAndSortedResources.length === 0 ? (
-            <div className="flex justify-center items-center py-10">
-              <p className="text-muted-foreground">
-                No resources found matching your criteria. The API automatically filters out non-existent files to ensure only valid resources are displayed.
-              </p>
+            <div className="text-center py-16">
+              <div className="rounded-full bg-muted p-3 w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">No resources found</p>
+              {searchTerm || categoryFilter !== 'all' || fileTypeFilter !== 'all' ? (
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCategoryFilter('all');
+                    setFileTypeFilter('all');
+                  }}
+                  className="mt-6"
+                >
+                  Clear Filters
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push(`/hr-dashboard/${params.userId}/resources/upload`)} 
+                  className="mt-6"
+                >
+                  Upload a Resource
+                </Button>
+              )}
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Type</TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort('title')}>
-                      <div className="flex items-center gap-1">
+                    <TableHead className="w-[40%] pl-6">
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium flex items-center"
+                        onClick={() => toggleSort('title')}
+                      >
                         Title
                         {sortField === 'title' && (
-                          <ArrowUpDown className="h-4 w-4" />
+                          <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
                         )}
-                      </div>
+                      </Button>
                     </TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort('createdAt')}>
-                      <div className="flex items-center gap-1">
-                        Upload Date
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium flex items-center"
+                        onClick={() => toggleSort('category')}
+                      >
+                        Category
+                        {sortField === 'category' && (
+                          <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 font-medium flex items-center"
+                        onClick={() => toggleSort('createdAt')}
+                      >
+                        Date
                         {sortField === 'createdAt' && (
-                          <ArrowUpDown className="h-4 w-4" />
+                          <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
                         )}
-                      </div>
+                      </Button>
                     </TableHead>
-                    <TableHead className="cursor-pointer" onClick={() => toggleSort('viewCount')}>
-                      <div className="flex items-center gap-1">
-                        Views
-                        {sortField === 'viewCount' && (
-                          <ArrowUpDown className="h-4 w-4" />
-                        )}
-                      </div>
-                    </TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-right pr-6">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredAndSortedResources.map((resource) => (
                     <TableRow key={resource.id}>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center justify-center">
-                                {getFileIcon(resource.fileType)}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{resource.fileType}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex flex-col">
-                          <span>{resource.title}</span>
-                          {resource.description && (
-                            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                              {resource.description}
-                            </span>
-                          )}
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {resource.tags && resource.tags.map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
+                      <TableCell className="pl-6">
+                        <div className="flex items-center gap-3">
+                          {getFileIcon(resource.fileType)}
+                          <div>
+                            <p className="font-medium">{resource.title}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {resource.tags.slice(0, 3).map((tag, i) => (
+                                <Badge key={i} variant="outline" className="text-xs py-0">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {resource.tags.length > 3 && (
+                                <Badge variant="outline" className="text-xs py-0">
+                                  +{resource.tags.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-                          {resource.category}
+                        <Badge variant="secondary" className="font-normal">
+                          {resource.category === 'policy_documents' ? 'Policy Documents' :
+                           resource.category === 'menstrual_health_resources' ? 'Menstrual Health' :
+                           resource.category === 'menopause_health_resources' ? 'Menopause Health' :
+                           resource.category === 'workshop_materials' ? 'Workshop Materials' : 
+                           'Other'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(resource.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(resource.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
                       </TableCell>
-                      <TableCell>{resource.viewCount}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <TableCell className="pr-6">
+                        <div className="flex justify-end gap-2">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" asChild>
-                                  <a href={resource.fileUrl} target="_blank" rel="noopener noreferrer">
-                                    <Eye className="h-4 w-4" />
-                                  </a>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => window.open(resource.fileUrl, '_blank')}
+                                >
+                                  <Eye className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -417,15 +469,14 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" asChild>
-                                  <a 
-                                    href={resource.fileUrl} 
-                                    download={resource.title}
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </a>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  as="a"
+                                  href={resource.fileUrl}
+                                  download
+                                >
+                                  <Download className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -434,31 +485,22 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
                             </Tooltip>
                           </TooltipProvider>
                           
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => setResourceToDelete(resource)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Confirm Deletion</DialogTitle>
-                                <DialogDescription>
-                                  Are you sure you want to delete the resource &ldquo;{resourceToDelete?.title}&rdquo;? This action cannot be undone.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <DialogFooter>
-                                <Button variant="outline" onClick={() => setResourceToDelete(null)}>Cancel</Button>
-                                <Button variant="destructive" onClick={deleteResource}>
-                                  Delete
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setResourceToDelete(resource)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -468,12 +510,39 @@ export default function ManageResourcesPage({ params }: { params: { userId: stri
             </div>
           )}
         </CardContent>
-        <CardFooter>
-          <div className="text-sm text-muted-foreground">
-            Total {filteredAndSortedResources.length} resources
-          </div>
-        </CardFooter>
       </Card>
+
+      <Dialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Resource</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this resource? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {resourceToDelete && (
+            <div className="flex items-center gap-3 p-4 my-3 border rounded-md">
+              {getFileIcon(resourceToDelete.fileType)}
+              <div>
+                <p className="font-medium">{resourceToDelete.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(resourceToDelete.createdAt).toLocaleDateString('en-US')} · {
+                    resourceToDelete.category === 'policy_documents' ? 'Policy Documents' :
+                    resourceToDelete.category === 'menstrual_health_resources' ? 'Menstrual Health' :
+                    resourceToDelete.category === 'menopause_health_resources' ? 'Menopause Health' :
+                    resourceToDelete.category === 'workshop_materials' ? 'Workshop Materials' : 
+                    'Other'
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-3">
+            <Button variant="outline" onClick={() => setResourceToDelete(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={deleteResource}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

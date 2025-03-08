@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { 
   Calendar, 
   CalendarPlus, 
@@ -11,7 +12,8 @@ import {
   Users,
   AlertCircle,
   CheckCircle,
-  MapPin
+  MapPin,
+  ChevronLeft
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -184,15 +186,26 @@ export default function CreateEventPage({ params }: { params: { userId: string }
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New Event</CardTitle>
-          <CardDescription>Schedule and promote company-sponsored events related to menstrual health and menopause health</CardDescription>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <Link href={`/hr-dashboard/${params.userId}?tab=resources`}>
+          <Button variant="ghost" size="sm" className="group mb-4 pl-1 flex items-center gap-1 text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold text-primary">Create New Event</h1>
+        <p className="text-muted-foreground mt-1">Schedule and promote company-sponsored health events and workshops</p>
+      </div>
+
+      <Card className="shadow-sm border-muted">
+        <CardHeader className="border-b bg-muted/30">
+          <CardTitle>Event Information</CardTitle>
+          <CardDescription>Fill in the details of the event you want to create</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Event Title */}
               <FormField
                 control={form.control}
@@ -208,6 +221,62 @@ export default function CreateEventPage({ params }: { params: { userId: string }
                 )}
               />
 
+              {/* Event Type */}
+              <div className="grid md:grid-cols-2 gap-8">
+                <FormField
+                  control={form.control}
+                  name="eventType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Event Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select event type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="webinar">Webinar</SelectItem>
+                          <SelectItem value="workshop">Workshop</SelectItem>
+                          <SelectItem value="seminar">Seminar</SelectItem>
+                          <SelectItem value="training">Training</SelectItem>
+                          <SelectItem value="meeting">Meeting</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Location</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            placeholder="Enter location or 'Online'" 
+                            className="pl-10"
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Enter physical location or "Online" for virtual events
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {/* Description */}
               <FormField
                 control={form.control}
@@ -218,7 +287,7 @@ export default function CreateEventPage({ params }: { params: { userId: string }
                     <FormControl>
                       <Textarea 
                         placeholder="Enter event description (optional)" 
-                        className="resize-none min-h-[100px]" 
+                        className="resize-none min-h-32" 
                         {...field} 
                       />
                     </FormControl>
@@ -227,183 +296,153 @@ export default function CreateEventPage({ params }: { params: { userId: string }
                 )}
               />
 
-              {/* Event Type */}
-              <FormField
-                control={form.control}
-                name="eventType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Type</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select event type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="webinar">Webinar</SelectItem>
-                        <SelectItem value="workshop">Workshop</SelectItem>
-                        <SelectItem value="seminar">Seminar</SelectItem>
-                        <SelectItem value="training">Training</SelectItem>
-                        <SelectItem value="meeting">Meeting</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Dates and Times */}
+              <div className="space-y-4">
+                <h3 className="text-md font-medium">Event Schedule</h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Date</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                type="date" 
+                                className="pl-10"
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              {/* Date and Time Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Start Date */}
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 h-4 w-4 opacity-70" />
-                          <Input type="date" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Time</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                type="time" 
+                                className="pl-10"
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                {/* Start Time */}
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4 opacity-70" />
-                          <Input type="time" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Date</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                type="date" 
+                                className="pl-10"
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* End Date */}
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Date</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 h-4 w-4 opacity-70" />
-                          <Input type="date" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* End Time */}
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4 opacity-70" />
-                          <Input type="time" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Time</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                type="time" 
+                                className="pl-10"
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Location */}
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <MapPin className="mr-2 h-4 w-4 opacity-70" />
-                        <Input 
-                          placeholder="Physical location or 'Online'" 
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      For online events, you can enter "Online" and provide a meeting link in the registration link field.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Registration Information */}
+              <div className="space-y-4">
+                <h3 className="text-md font-medium">Registration Details</h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="maxAttendees"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maximum Attendees</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="Enter maximum capacity or leave blank for unlimited" 
+                              className="pl-10"
+                              {...field} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          Leave empty for unlimited attendees
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Max Attendees */}
-              <FormField
-                control={form.control}
-                name="maxAttendees"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Maximum Attendees</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <Users className="mr-2 h-4 w-4 opacity-70" />
-                        <Input 
-                          type="number" 
-                          placeholder="Leave empty for unlimited" 
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      Maximum number of attendees. Leave empty for unlimited.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Registration Link */}
-              <FormField
-                control={form.control}
-                name="registrationLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>External Registration Link (Optional)</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <LinkIcon className="mr-2 h-4 w-4 opacity-70" />
-                        <Input 
-                          placeholder="https://example.com/register" 
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      Optional external registration link. If provided, employees will be directed to this link.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="registrationLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registration Link</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="Enter registration URL (optional)" 
+                              className="pl-10"
+                              {...field} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          External registration page URL (optional)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
               {/* Resource Materials */}
               <FormField
@@ -411,51 +450,54 @@ export default function CreateEventPage({ params }: { params: { userId: string }
                 name="resourceMaterials"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Resource Materials (Optional)</FormLabel>
+                    <FormLabel>Resource Materials</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Enter resource links, separated by commas" 
-                        className="resize-none" 
+                        placeholder="Enter resource links, separated by commas (optional)" 
+                        className="resize-none min-h-20" 
                         {...field} 
                       />
                     </FormControl>
                     <FormDescription>
-                      Links to materials, slides or resources for this event (comma separated).
+                      Links to slides, handouts, or other materials (comma separated)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Status messages */}
-              {submitStatus === 'error' && (
-                <div className="bg-destructive/15 p-3 rounded-md flex items-start">
-                  <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
-                  <div className="text-destructive text-sm">{errorMessage}</div>
+              {/* Form Status Messages */}
+              {errorMessage && (
+                <div className="rounded-md p-4 bg-destructive/10 flex items-center gap-3 text-destructive">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>{errorMessage}</p>
                 </div>
               )}
 
               {submitStatus === 'success' && (
-                <div className="bg-primary/15 p-3 rounded-md flex items-start">
-                  <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <div className="text-primary text-sm">Event created successfully! Redirecting...</div>
+                <div className="rounded-md p-4 bg-success/10 flex items-center gap-3 text-success">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>Event created successfully!</p>
                 </div>
               )}
 
-              {/* Submit Button */}
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  className="w-full md:w-auto" 
-                  disabled={submitting}
+              {/* Form Controls */}
+              <div className="flex justify-end gap-4 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push(`/hr-dashboard/${params.userId}?tab=resources`)}
                 >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submitting}>
                   {submitting ? (
-                    <>Creating Event...</>
-                  ) : (
                     <>
-                      <CalendarPlus className="mr-2 h-4 w-4" />
-                      Create Event
+                      <span className="loading loading-spinner loading-xs mr-2"></span>
+                      Creating...
                     </>
+                  ) : (
+                    <>Create Event</>
                   )}
                 </Button>
               </div>

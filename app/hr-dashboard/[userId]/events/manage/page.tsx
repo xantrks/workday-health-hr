@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -18,7 +19,9 @@ import {
   Edit,
   Trash2,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  MoreVertical
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -49,6 +52,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -276,260 +281,180 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Manage Health Events</h1>
-          <p className="text-muted-foreground">
-            View, organize, and manage company-sponsored health events
-          </p>
-        </div>
-        
-        <div className="flex gap-4">
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="webinar">Webinars</SelectItem>
-              <SelectItem value="workshop">Workshops</SelectItem>
-              <SelectItem value="seminar">Seminars</SelectItem>
-              <SelectItem value="training">Training</SelectItem>
-              <SelectItem value="meeting">Meetings</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button onClick={() => router.push(`/hr-dashboard/${params.userId}/events/create`)}>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <Link href={`/hr-dashboard/${params.userId}?tab=resources`}>
+          <Button variant="ghost" size="sm" className="group mb-4 pl-1 flex items-center gap-1 text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-primary">Health Events</h1>
+            <p className="text-muted-foreground mt-1">Manage all scheduled health workshops and seminars</p>
+          </div>
+          <Button 
+            onClick={() => router.push(`/hr-dashboard/${params.userId}/events/create`)}
+            className="sm:self-start"
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Event
           </Button>
         </div>
       </div>
-      
-      <Tabs defaultValue="calendar" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-          <TabsTrigger value="list">List View</TabsTrigger>
-          <TabsTrigger value="stats">Registration Stats</TabsTrigger>
+
+      <Tabs defaultValue="calendar" className="space-y-6">
+        <TabsList className="w-full max-w-md mx-auto">
+          <TabsTrigger value="calendar" className="flex-1">Calendar View</TabsTrigger>
+          <TabsTrigger value="list" className="flex-1">List View</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="calendar">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Calendar</CardTitle>
-              <CardDescription>
-                View all events in calendar format. Click on an event to see details.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="h-[600px] flex items-center justify-center">
-                  <p>Loading calendar...</p>
-                </div>
-              ) : error ? (
-                <div className="h-[600px] flex items-center justify-center text-destructive">
-                  <AlertCircle className="h-5 w-5 mr-2" />
-                  {error}
-                </div>
-              ) : (
-                <div className="h-[600px]">
-                  <FullCalendar
-                    ref={calendarRef}
-                    plugins={[dayGridPlugin, interactionPlugin]}
-                    initialView="dayGridMonth"
-                    events={getCalendarEvents()}
-                    headerToolbar={{
-                      left: 'prev,next today',
-                      center: 'title',
-                      right: 'dayGridMonth,dayGridWeek'
-                    }}
-                    eventClick={handleEventClick}
-                    height="600px"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="calendar" className="border border-muted rounded-md p-6">
+          <div className="flex-1 bg-card rounded-md overflow-hidden">
+            <FullCalendar
+              plugins={[dayGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,dayGridWeek'
+              }}
+              events={getCalendarEvents()}
+              eventClick={handleEventClick}
+              height="auto"
+              aspectRatio={1.35}
+            />
+          </div>
         </TabsContent>
         
         <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event List</CardTitle>
-              <CardDescription>
-                View and manage all events in a list format
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="py-8 text-center">Loading events...</div>
-              ) : error ? (
-                <div className="py-8 text-center text-destructive">
-                  <AlertCircle className="h-5 w-5 inline-block mr-2" />
-                  {error}
+          <div className="grid gap-6">
+            {loading ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="text-center">
+                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading events...</p>
                 </div>
-              ) : getFilteredEvents().length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  No events found. Create new events to get started.
+              </div>
+            ) : error ? (
+              <div className="text-center py-16">
+                <div className="rounded-full bg-destructive/10 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-6 w-6 text-destructive" />
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableCaption>A list of all health events</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Event</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Registrations</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getFilteredEvents().map((event) => (
-                        <TableRow key={event.id}>
-                          <TableCell className="font-medium">{event.title}</TableCell>
-                          <TableCell>
-                            <Badge className={getBadgeColor(event.eventType)}>
-                              {event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{formatDate(event.startDate)}</TableCell>
-                          <TableCell>{event.location || 'Online'}</TableCell>
-                          <TableCell>
-                            <span className="font-medium">{event.registrationCount}</span>
-                            {event.maxAttendees !== "Unlimited" && (
-                              <span className="text-muted-foreground"> / {event.maxAttendees}</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <Info className="h-4 w-4" />
-                                  <span className="sr-only">Actions</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => {
-                                  setSelectedEvent(event);
-                                  setShowEventDetails(true);
-                                }}>
-                                  <Info className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => router.push(`/hr-dashboard/${params.userId}/events/edit/${event.id}`)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Event
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() => {
-                                    setSelectedEvent(event);
-                                    setDeleteConfirmOpen(true);
-                                  }}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete Event
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <p className="text-destructive">{error}</p>
+                <Button 
+                  variant="outline" 
+                  onClick={fetchEvents} 
+                  className="mt-6"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : getFilteredEvents().length === 0 ? (
+              <div className="text-center py-16">
+                <div className="rounded-full bg-muted p-3 w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="stats">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registration Statistics</CardTitle>
-              <CardDescription>
-                View registration statistics for all events
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="py-8 text-center">Loading statistics...</div>
-              ) : error ? (
-                <div className="py-8 text-center text-destructive">
-                  <AlertCircle className="h-5 w-5 inline-block mr-2" />
-                  {error}
-                </div>
-              ) : getFilteredEvents().length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  No events found. Create new events to view statistics.
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {getFilteredEvents().map((event) => (
-                    <Card key={event.id} className="overflow-hidden">
-                      <CardHeader className="pb-2">
+                <p className="text-muted-foreground">No events scheduled</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push(`/hr-dashboard/${params.userId}/events/create`)} 
+                  className="mt-6"
+                >
+                  Create First Event
+                </Button>
+              </div>
+            ) : (
+              getFilteredEvents().map((event) => (
+                <Card key={event.id} className="overflow-hidden border-muted shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader className={`pb-3 ${getBadgeColor(event.eventType).background}`}>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
                         <CardTitle className="text-lg">{event.title}</CardTitle>
-                        <Badge className={getBadgeColor(event.eventType)}>
-                          {event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)}
+                        <Badge variant="secondary" className={getBadgeColor(event.eventType).text}>
+                          {event.eventType}
                         </Badge>
-                      </CardHeader>
-                      <CardContent className="pb-3">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <CalendarIcon className="h-4 w-4 mr-1 text-muted-foreground" />
-                            <span className="text-sm">{formatDate(event.startDate)}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                            <span className="text-sm font-medium">{event.registrationCount}</span>
-                            {event.maxAttendees !== "Unlimited" && (
-                              <span className="text-sm text-muted-foreground"> / {event.maxAttendees}</span>
-                            )}
-                          </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => setSelectedEvent(event)}>
+                            <Info className="mr-2 h-4 w-4" />
+                            <span>View Details</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/hr-dashboard/${params.userId}/events/edit/${event.id}`)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit Event</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setSelectedEvent(event);
+                              setDeleteConfirmOpen(true);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete Event</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-start gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p>{formatDate(event.startDate)}</p>
+                          {event.endDate && event.endDate !== event.startDate && (
+                            <p className="text-muted-foreground">To: {formatDate(event.endDate)}</p>
+                          )}
                         </div>
-                        <div className="mt-3">
-                          <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-primary h-full" 
-                              style={{ 
-                                width: event.maxAttendees !== "Unlimited" 
-                                  ? `${Math.min(100, (event.registrationCount / (event.maxAttendees as number)) * 100)}%` 
-                                  : `100%`,
-                                opacity: event.maxAttendees !== "Unlimited" ? 1 : 0.5
-                              }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {event.maxAttendees !== "Unlimited" 
-                              ? `${event.registrationCount} of ${event.maxAttendees} spots filled`
-                              : `${event.registrationCount} registrations (unlimited capacity)`
-                            }
-                          </p>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.location}</span>
                         </div>
-                      </CardContent>
-                      <CardFooter className="pt-0">
-                        <Button 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventDetails(true);
-                          }}
-                        >
-                          View Details
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      )}
+                      {event.maxAttendees && (
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.registrationCount || 0} / {event.maxAttendees}</span>
+                        </div>
+                      )}
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {event.description}
+                      </p>
+                    )}
+                  </CardContent>
+                  <CardFooter className="border-t pt-4 pb-4 flex justify-between gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setSelectedEvent(event)}>
+                      View Details
+                    </Button>
+                    {event.registrationLink && (
+                      <Button size="sm" asChild>
+                        <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Registration
+                        </a>
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))
+            )}
+          </div>
         </TabsContent>
       </Tabs>
       

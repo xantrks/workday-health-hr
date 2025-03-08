@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { 
   Upload, 
   FileText, 
@@ -11,7 +12,8 @@ import {
   Video,
   X,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  ChevronLeft
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -166,28 +168,69 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload New Resource</CardTitle>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <Link href={`/hr-dashboard/${params.userId}?tab=resources`}>
+          <Button variant="ghost" size="sm" className="group mb-4 pl-1 flex items-center gap-1 text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold text-primary">Upload New Resource</h1>
+        <p className="text-muted-foreground mt-1">Add new documents, guidelines or educational materials for employees</p>
+      </div>
+
+      <Card className="shadow-sm border-muted">
+        <CardHeader className="border-b bg-muted/30">
+          <CardTitle>Resource Information</CardTitle>
           <CardDescription>Upload company policy files, menstrual health or menopause health educational resources</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Resource Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter resource title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-8">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Resource Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter resource title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="policy_documents">Policy Documents</SelectItem>
+                          <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
+                          <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
+                          <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
+                          <SelectItem value="others">Others</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -198,38 +241,10 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                     <FormControl>
                       <Textarea 
                         placeholder="Enter resource description (optional)" 
-                        className="resize-none" 
+                        className="resize-none min-h-24" 
                         {...field} 
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="policy_documents">Policy Documents</SelectItem>
-                        <SelectItem value="menstrual_health_resources">Menstrual Health Resources</SelectItem>
-                        <SelectItem value="menopause_health_resources">Menopause Health Resources</SelectItem>
-                        <SelectItem value="workshop_materials">Workshop Materials</SelectItem>
-                        <SelectItem value="others">Others</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -248,74 +263,93 @@ export default function UploadResourcePage({ params }: { params: { userId: strin
                       />
                     </FormControl>
                     <FormDescription>
-                      Example: Education,Video,Science
+                      Tags help users find resources more easily (e.g. health, policy, guidelines)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="file">File</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    ref={fileInputRef}
-                    id="file"
+              <div className="border border-dashed rounded-lg p-8 bg-muted/20">
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <div className="bg-primary/10 p-5 rounded-full">
+                    <Upload className="h-8 w-8 text-primary" />
+                  </div>
+                  <p className="font-medium text-lg">Drag & drop your file here</p>
+                  <p className="text-sm text-muted-foreground">or click to browse files</p>
+                  
+                  <input
                     type="file"
+                    ref={fileInputRef}
                     onChange={handleFileChange}
-                    className={file ? 'hidden' : ''}
+                    className="hidden"
+                    id="file-upload"
                   />
-                  {file && (
-                    <div className="flex items-center p-2 border rounded-md w-full justify-between">
-                      <div className="flex items-center gap-2">
-                        {getFileIcon()}
-                        <span className="text-sm truncate max-w-[200px]">
-                          {file.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={removeFile}
-                        className="h-8 w-8"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-2"
+                  >
+                    Browse Files
+                  </Button>
                 </div>
-                {!file && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Supports PDF, Word, PPT, Excel, images and video files, max 20MB
-                  </p>
-                )}
-                {errorMessage && (
-                  <p className="text-sm text-destructive mt-1 flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {errorMessage}
-                  </p>
+
+                {file && (
+                  <div className="mt-5 p-4 border rounded-md bg-background flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getFileIcon()}
+                      <div>
+                        <p className="font-medium">{file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeFile}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.back()}
-                  disabled={uploading}
+              {errorMessage && (
+                <div className="rounded-md p-4 bg-destructive/10 flex items-center gap-3 text-destructive">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>{errorMessage}</p>
+                </div>
+              )}
+
+              {uploadStatus === 'success' && (
+                <div className="rounded-md p-4 bg-success/10 flex items-center gap-3 text-success">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>Resource uploaded successfully!</p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-4 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push(`/hr-dashboard/${params.userId}?tab=resources`)}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={uploading}
-                  className="flex items-center gap-2"
-                >
-                  {uploading ? 'Uploading...' : 'Upload Resource'}
-                  {uploadStatus === 'success' && <CheckCircle className="h-4 w-4" />}
-                  {uploadStatus === 'error' && <AlertCircle className="h-4 w-4" />}
+                <Button type="submit" disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs mr-2"></span>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>Upload Resource</>
+                  )}
                 </Button>
               </div>
             </form>
