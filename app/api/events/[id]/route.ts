@@ -79,21 +79,47 @@ export async function PATCH(
     
     const updateData = validatedData.data;
     
-    // Convert string dates to Date objects if needed
-    if (updateData.startDate && typeof updateData.startDate === 'string') {
-      updateData.startDate = new Date(updateData.startDate);
+    // Create a properly typed update object
+    const dbUpdateObject: {
+      title?: string;
+      description?: string;
+      eventType?: string;
+      startDate?: Date;
+      endDate?: Date;
+      location?: string;
+      maxAttendees?: number;
+      registrationLink?: string;
+      resourceMaterials?: string[];
+      updatedAt: Date;
+    } = {
+      updatedAt: new Date()
+    };
+    
+    // Copy validated properties to our typed update object
+    if (updateData.title !== undefined) dbUpdateObject.title = updateData.title;
+    if (updateData.description !== undefined) dbUpdateObject.description = updateData.description;
+    if (updateData.eventType !== undefined) dbUpdateObject.eventType = updateData.eventType;
+    if (updateData.location !== undefined) dbUpdateObject.location = updateData.location;
+    if (updateData.maxAttendees !== undefined) dbUpdateObject.maxAttendees = updateData.maxAttendees;
+    if (updateData.registrationLink !== undefined) dbUpdateObject.registrationLink = updateData.registrationLink;
+    if (updateData.resourceMaterials !== undefined) dbUpdateObject.resourceMaterials = updateData.resourceMaterials;
+    
+    // Convert date strings to Date objects
+    if (updateData.startDate) {
+      dbUpdateObject.startDate = typeof updateData.startDate === 'string' 
+        ? new Date(updateData.startDate)
+        : updateData.startDate;
     }
     
-    if (updateData.endDate && typeof updateData.endDate === 'string') {
-      updateData.endDate = new Date(updateData.endDate);
+    if (updateData.endDate) {
+      dbUpdateObject.endDate = typeof updateData.endDate === 'string'
+        ? new Date(updateData.endDate)
+        : updateData.endDate;
     }
     
-    // Update event
+    // Update event with properly typed object
     const updatedEvent = await db.update(event)
-      .set({
-        ...updateData,
-        updatedAt: new Date()
-      })
+      .set(dbUpdateObject)
       .where(eq(event.id, id))
       .returning();
     
