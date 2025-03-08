@@ -400,6 +400,22 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
+                  Manage Events
+                </CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <Link href={`/hr-dashboard/${params.userId}/events/manage`}>
+                  <Button className="w-full">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    View Event Calendar
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
                   Employee Feedback
                 </CardTitle>
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />

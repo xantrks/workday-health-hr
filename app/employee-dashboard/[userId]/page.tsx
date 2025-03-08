@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, FileText, BookOpen } from "lucide-react";
+import { MessageSquare, FileText, BookOpen, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -70,7 +70,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
       </div>
       
       <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 mb-8">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="cycle">Cycle</TabsTrigger>
           <TabsTrigger value="health">Health</TabsTrigger>
@@ -164,6 +164,40 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
           </div>
         </TabsContent>
       </Tabs>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="col-span-2 lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Resources
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href={`/employee-dashboard/${params.userId}/resources`}>
+              <Button className="w-full">
+                View Health Resources
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-2 lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Events
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pt-2">
+            <Link href={`/employee-dashboard/${params.userId}/events`}>
+              <Button className="w-full">
+                View Health Events
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 } 
