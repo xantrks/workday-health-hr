@@ -9,7 +9,7 @@ import postgres from "postgres";
 import { sql } from '@/lib/db';
 import { redis } from '@/lib/db';
 
-import { user, chat, User, reservation, healthRecord } from "./schema";
+import { user, chat, User, reservation, healthRecord, feedback } from "./schema";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -479,5 +479,71 @@ export async function deleteHealthRecord(id: string) {
   } catch (error) {
     console.error("Failed to delete health record:", error);
     throw error;
+  }
+}
+
+export async function createFeedback({
+  content,
+  category,
+  anonymous,
+  userId,
+}: {
+  content: string;
+  category: string;
+  anonymous: boolean;
+  userId?: string;
+}) {
+  try {
+    const result = await db
+      .insert(feedback)
+      .values({
+        id: crypto.randomUUID(),
+        content,
+        category,
+        anonymous,
+        userId: anonymous ? undefined : userId,
+        createdAt: new Date(),
+      })
+      .returning();
+    
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Error creating feedback:", error);
+    return { success: false, error: "Failed to create feedback" };
+  }
+}
+
+export async function getAllFeedback() {
+  try {
+    const result = await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error getting all feedback:", error);
+    return { success: false, error: "Failed to get feedback" };
+  }
+}
+
+export async function getFeedbackByCategory(category: string) {
+  try {
+    const result = await db
+      .select()
+      .from(feedback)
+      .where(eq(feedback.category, category))
+      .orderBy(desc(feedback.createdAt));
+    
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error getting feedback by category:", error);
+    return { success: false, error: "Failed to get feedback" };
+  }
+}
+
+export async function deleteFeedback(id: string) {
+  try {
+    await db.delete(feedback).where(eq(feedback.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    return { success: false, error: "Failed to delete feedback" };
   }
 }

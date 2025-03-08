@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
 
 import { Navbar } from "@/components/custom/navbar";
 
@@ -24,7 +24,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
-          <Toaster position="top-center" />
+          <Toaster />
           <Navbar />
           <main className="min-h-[calc(100vh-4rem)] flex flex-col">
             {children}

@@ -197,6 +197,27 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
             </Link>
           </CardContent>
         </Card>
+        
+        <Card className="col-span-2 lg:col-span-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Share Your Feedback
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pt-2">
+            <div className="text-sm text-muted-foreground mb-3">
+              Help us improve our menstrual and menopause health support by sharing your feedback. 
+              Your input is valuable and can be submitted anonymously.
+            </div>
+            <Link href={`/employee-dashboard/${params.userId}/feedback`}>
+              <Button className="w-full">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Submit Feedback
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
