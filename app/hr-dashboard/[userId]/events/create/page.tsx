@@ -124,7 +124,7 @@ export default function CreateEventPage({ params }: { params: { userId: string }
         startDate: startDateTime.toISOString(),
         endDate: endDateTime.toISOString(),
         location: values.location || '',
-        maxAttendees: values.maxAttendees,
+        maxAttendees: typeof values.maxAttendees === 'string' ? undefined : values.maxAttendees,
         registrationLink: values.registrationLink || undefined,
         resourceMaterials,
         createdById: session?.user?.id
