@@ -56,12 +56,7 @@ const formSchema = z.object({
   endDate: z.string().min(1, { message: 'End date is required' }),
   endTime: z.string().min(1, { message: 'End time is required' }),
   location: z.string().optional(),
-  maxAttendees: z.string().optional()
-    .transform(val => {
-      if (!val) return undefined;
-      const parsed = parseInt(val);
-      return isNaN(parsed) ? undefined : parsed;
-    }),
+  maxAttendees: z.string().optional(),
   registrationLink: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   resourceMaterials: z.string().optional()
 }).refine(data => {
@@ -72,6 +67,9 @@ const formSchema = z.object({
   message: "End date/time must be after start date/time",
   path: ["endDate"]
 });
+
+// 使用 Zod 推断的类型
+type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateEventPage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
@@ -85,7 +83,7 @@ export default function CreateEventPage({ params }: { params: { userId: string }
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
@@ -102,7 +100,7 @@ export default function CreateEventPage({ params }: { params: { userId: string }
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
@@ -117,6 +115,15 @@ export default function CreateEventPage({ params }: { params: { userId: string }
         ? values.resourceMaterials.split(',').map(item => item.trim())
         : [];
 
+      // 处理 maxAttendees: 手动将字符串转换为数字或 undefined
+      let maxAttendeesValue: number | undefined = undefined;
+      if (values.maxAttendees && values.maxAttendees.trim() !== '') {
+        const parsed = parseInt(values.maxAttendees);
+        if (!isNaN(parsed) && parsed > 0) {
+          maxAttendeesValue = parsed;
+        }
+      }
+
       const eventData = {
         title: values.title,
         description: values.description || '',
@@ -124,7 +131,7 @@ export default function CreateEventPage({ params }: { params: { userId: string }
         startDate: startDateTime.toISOString(),
         endDate: endDateTime.toISOString(),
         location: values.location || '',
-        maxAttendees: typeof values.maxAttendees === 'string' ? undefined : values.maxAttendees,
+        maxAttendees: maxAttendeesValue,
         registrationLink: values.registrationLink || undefined,
         resourceMaterials,
         createdById: session?.user?.id
