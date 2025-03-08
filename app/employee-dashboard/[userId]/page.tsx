@@ -2,7 +2,7 @@
 
 import { MessageSquare, FileText, BookOpen, Calendar } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 
@@ -35,7 +35,16 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
     },
   });
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || "overview");
+  
+  // If the tab param changes, update the active tab
+  useEffect(() => {
+    if (tabParam && ['overview', 'cycle', 'health', 'appointments', 'resources'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   // Check if user ID matches
   useEffect(() => {
@@ -69,7 +78,12 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         </Button>
       </div>
       
-      <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+      <Tabs 
+        defaultValue={activeTab} 
+        value={activeTab} 
+        className="w-full" 
+        onValueChange={setActiveTab}
+      >
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="cycle">Cycle</TabsTrigger>

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 import {
   Card,
@@ -49,9 +50,10 @@ const feedbackSchema = z.object({
 type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 
 export default function SubmitFeedback({ params }: { params: { userId: string } }) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const router = useRouter();
+  const linkRef = useRef<HTMLAnchorElement>(null);
 
   // Initialize form
   const form = useForm<FeedbackFormValues>({
@@ -88,7 +90,9 @@ export default function SubmitFeedback({ params }: { params: { userId: string } 
       
       // Redirect back to dashboard after short delay
       setTimeout(() => {
-        router.push(`/employee-dashboard/${params.userId}`);
+        if (linkRef.current) {
+          linkRef.current.click();
+        }
       }, 1500);
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -104,6 +108,9 @@ export default function SubmitFeedback({ params }: { params: { userId: string } 
       title="Submit Feedback"
       description="Share your thoughts and experiences about menstrual and menopause health support in the workplace."
     >
+      {/* Hidden link for redirection */}
+      <Link ref={linkRef} href={`/employee-dashboard/${params.userId}?tab=resources`} className="hidden" />
+      
       <div className="max-w-2xl mx-auto">
         <Card className="shadow-sm">
           <CardContent className="pt-6">
