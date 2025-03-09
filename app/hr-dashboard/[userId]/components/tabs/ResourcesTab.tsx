@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+
 import { 
-  Upload, 
   Files, 
   FileText, 
   Calendar, 
   CalendarPlus, 
-  MessageSquare, 
-  ExternalLink 
+  MessageSquare
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/card';
 
 import { Resource } from '../../types';
-import { formatDate, formatCategory } from '../../services';
 
 interface ResourcesTabProps {
   userId: string;
@@ -37,25 +36,7 @@ export default function ResourcesTab({
   resourcesError 
 }: ResourcesTabProps) {
   return (
-    <div className="flex flex-col space-y-8 px-2">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-primary">Resources Management</h2>
-        <div className="flex space-x-3">
-          <Link href={`/hr-dashboard/${userId}/resources/upload`}>
-            <Button variant="default" size="sm">
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Resource
-            </Button>
-          </Link>
-          <Link href={`/hr-dashboard/${userId}/resources/manage`}>
-            <Button variant="outline" size="sm">
-              <Files className="mr-2 h-4 w-4" />
-              Manage Resources
-            </Button>
-          </Link>
-        </div>
-      </div>
-      
+    <div className="flex flex-col space-y-8 px-2"> 
       <div className="grid gap-8 md:grid-cols-3">
         <Card className="hover:shadow-md transition-all">
           <CardHeader className="pb-2">
@@ -66,14 +47,14 @@ export default function ResourcesTab({
           </CardHeader>
           <CardContent className="pb-3">
             <p className="text-sm text-muted-foreground">
-              Manage all company documents, guides, and policies
+              Access and manage all company documents, guides, and policies
             </p>
           </CardContent>
           <CardFooter className="pt-0">
             <Link href={`/hr-dashboard/${userId}/resources/manage`} className="w-full">
-              <Button variant="ghost" size="sm" className="w-full justify-start">
+              <Button variant="default" size="sm" className="w-full">
                 <Files className="mr-2 h-4 w-4" />
-                View Library
+                Access Resource Center
               </Button>
             </Link>
           </CardFooter>
@@ -129,56 +110,6 @@ export default function ResourcesTab({
           </CardFooter>
         </Card>
       </div>
-      
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Recently Uploaded Resources</CardTitle>
-          <CardDescription>
-            View and manage recently uploaded policy documents and educational resources
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {resourcesLoading ? (
-            <p className="text-center text-muted-foreground py-4">
-              Loading...
-            </p>
-          ) : resourcesError ? (
-            <p className="text-center text-destructive py-4">
-              {resourcesError}
-            </p>
-          ) : recentResources.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No resources uploaded yet, <Link href={`/hr-dashboard/${userId}/resources/upload`} className="text-primary">upload resources</Link> now
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {recentResources.map((resource) => (
-                <div key={resource.id} className="flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{resource.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(resource.createdAt)} · {formatCategory(resource.category)}
-                      </p>
-                    </div>
-                  </div>
-                  <Link href={resource.fileUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-              <div className="pt-2">
-                <Link href={`/hr-dashboard/${userId}/resources/manage`}>
-                  <Button variant="outline" className="w-full">View All Resources</Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 } 
