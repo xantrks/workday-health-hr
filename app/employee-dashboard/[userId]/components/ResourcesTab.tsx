@@ -1,12 +1,14 @@
 'use client';
 
-import Link from 'next/link';
 import { 
-  FileText, 
   BookOpen, 
   Calendar, 
+  FileText, 
   MessageSquare 
 } from 'lucide-react';
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
 import { 
   Card, 
   CardContent, 
@@ -14,7 +16,6 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 interface ResourcesTabProps {
   userId: string;
@@ -22,66 +23,69 @@ interface ResourcesTabProps {
 
 export default function ResourcesTab({ userId }: ResourcesTabProps) {
   return (
-    <>
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="text-center mb-10 max-w-md">
-          <div className="inline-flex p-3 rounded-full bg-primary/10 mb-6">
-            <FileText className="h-10 w-10 text-primary" />
+    <div className="container mx-auto py-8 px-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Resource Library Card */}
+        <Card className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-lg">
+          <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-6 py-4">
+            <CardTitle className="flex items-center text-lg">
+              <FileText className="mr-3 h-5 w-5 text-primary" />
+              Resource Library
+            </CardTitle>
           </div>
-          <h2 className="text-2xl font-semibold mb-3">Resource Library</h2>
-          <p className="text-muted-foreground px-4">
-            Access health guides, educational materials and company policies all in one place.
-          </p>
-        </div>
-        <Link href={`/employee-dashboard/${userId}/resources`}>
-          <Button size="lg" className="px-10">
-            <BookOpen className="mr-2 h-5 w-5" />
-            Browse Resource Library
-          </Button>
-        </Link>
+          <CardContent className="p-6">
+            <p className="mb-6 text-muted-foreground h-24">
+              Access health guides, educational materials, and company policies all in one place.
+            </p>
+            <Link href={`/employee-dashboard/${userId}/resources`}>
+              <Button className="w-full">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Browse Resources
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        {/* Events Card */}
+        <Card className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-lg">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
+            <CardTitle className="flex items-center text-lg">
+              <Calendar className="mr-3 h-5 w-5 text-blue-600" />
+              Health Events
+            </CardTitle>
+          </div>
+          <CardContent className="p-6">
+            <p className="mb-6 text-muted-foreground h-24">
+              View and register for upcoming health workshops and webinars designed to support your wellbeing journey.
+            </p>
+            <Link href={`/employee-dashboard/${userId}/events`}>
+              <Button variant="outline" className="w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+                View Events Calendar
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        {/* Feedback Card */}
+        <Card className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-lg">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4">
+            <CardTitle className="flex items-center text-lg">
+              <MessageSquare className="mr-3 h-5 w-5 text-purple-600" />
+              Share Feedback
+            </CardTitle>
+          </div>
+          <CardContent className="p-6">
+            <p className="mb-6 text-muted-foreground h-24">
+              Help us improve our health support services by sharing your thoughts and experiences anonymously.
+            </p>
+            <Link href={`/employee-dashboard/${userId}/feedback`}>
+              <Button variant="outline" className="w-full border-purple-200 hover:bg-purple-50 hover:text-purple-700">
+                Submit Feedback
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
-      
-      <div className="mt-12">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-md flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-primary" />
-                Upcoming Health Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                View and register for upcoming health workshops and webinars
-              </p>
-              <Link href={`/employee-dashboard/${userId}/events`}>
-                <Button variant="outline" size="sm" className="w-full">
-                  View Events Calendar
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-md flex items-center">
-                <MessageSquare className="h-4 w-4 mr-2 text-primary" />
-                Share Your Feedback
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Help us improve our health support by sharing your anonymous feedback
-              </p>
-              <Link href={`/employee-dashboard/${userId}/feedback`}>
-                <Button variant="outline" size="sm" className="w-full">
-                  Submit Feedback
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </>
+    </div>
   );
 } 
