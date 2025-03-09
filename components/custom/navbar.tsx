@@ -56,9 +56,23 @@ export const Navbar = async () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className="py-1.5 px-2 h-fit font-normal"
+                  className="py-1.5 px-2 h-fit font-normal flex items-center gap-2"
                   variant="secondary"
                 >
+                  {session.user.profileImageUrl ? (
+                    <Image
+                      src={session.user.profileImageUrl}
+                      alt="Profile"
+                      width={24}
+                      height={24}
+                      className="rounded-full h-6 w-6 object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">
+                      {session.user.name.charAt(0)}
+                    </div>
+                  )}
                   {session.user?.email}
                 </Button>
               </DropdownMenuTrigger>

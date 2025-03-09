@@ -13,6 +13,7 @@ interface BaseUser {
   email: string;
   name: string;
   role: string;
+  profileImageUrl?: string;
 }
 
 // 声明模块扩展来扩展默认的 Session 类型
@@ -28,6 +29,7 @@ declare module "next-auth" {
 interface ExtendedJWT extends JWT {
   id: string;
   role: string;
+  profileImageUrl?: string;
 }
 
 // 数据库用户类型
@@ -38,6 +40,7 @@ interface DbUser {
   first_name: string;
   last_name: string;
   role: string;
+  profile_image_url?: string;
 }
 
 export const {
@@ -57,7 +60,7 @@ export const {
 
         try {
           const result = await sql`
-            SELECT id, email, password, first_name, last_name, role 
+            SELECT id, email, password, first_name, last_name, role, profile_image_url 
             FROM "User" 
             WHERE email = ${email}
           `.then(rows => rows as unknown as DbUser[]);
@@ -81,6 +84,7 @@ export const {
             email: user.email,
             name: `${user.first_name} ${user.last_name}`,
             role: user.role,
+            profileImageUrl: user.profile_image_url
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -94,6 +98,7 @@ export const {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.profileImageUrl = user.profileImageUrl;
       }
       return token as ExtendedJWT;
     },
@@ -101,6 +106,7 @@ export const {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.profileImageUrl = token.profileImageUrl as string;
       }
       return session;
     },

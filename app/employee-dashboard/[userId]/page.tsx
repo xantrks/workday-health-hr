@@ -58,6 +58,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
       <DashboardHeader 
         userName={session.user.name || 'User'} 
         userId={params.userId} 
+        profileImageUrl={session.user.profileImageUrl}
       />
       
       <Tabs 

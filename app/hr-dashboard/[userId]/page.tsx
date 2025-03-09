@@ -86,6 +86,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
       <DashboardHeader 
         userName={session.user.name || 'User'} 
         userId={params.userId} 
+        profileImageUrl={session.user.profileImageUrl}
       />
 
       <Tabs defaultValue={activeTab} className="w-full" onValueChange={(value) => setActiveTab(value as DashboardTab)}>
