@@ -36,13 +36,9 @@ export const getPrimarySymptom = (symptoms?: string[]): string => {
 export const getFlowLevelStyle = (flowLevel?: number) => {
   if (!flowLevel || flowLevel <= 0) return null;
   
-  if (flowLevel <= 1) {
-    return FLOW_LEVELS[0];
-  } else if (flowLevel <= 3) {
-    return FLOW_LEVELS[1];
-  } else {
-    return FLOW_LEVELS[2];
-  }
+  // 现在直接使用流量级别作为索引(减去1因为索引从0开始)
+  const index = Math.min(Math.max(Math.floor(flowLevel) - 1, 0), FLOW_LEVELS.length - 1);
+  return FLOW_LEVELS[index];
 };
 
 // 查找特定日期的记录

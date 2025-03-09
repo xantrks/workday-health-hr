@@ -120,15 +120,7 @@ export function PeriodCalendar({
   };
 
   return (
-    <div className="relative">
-      {/* Add title and help text */}
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Period Calendar</h2>
-        <div className="text-sm text-muted-foreground">
-          Click on a day to add or edit period data
-        </div>
-      </div>
-      
+    <div className="relative">     
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
