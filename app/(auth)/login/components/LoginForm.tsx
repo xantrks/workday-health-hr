@@ -41,8 +41,13 @@ export function LoginForm() {
       // Try automatic redirection (but keep backup UI in case of failure)
       const timer = setTimeout(() => {
         try {
-          // First try direct navigation
-          window.location.href = `/employee-dashboard/${state.userId}`;
+          // Get the target dashboard path based on user role
+          const dashboardPath = state.role === 'hr' ? 
+            `/hr-dashboard/${state.userId}` : 
+            `/employee-dashboard/${state.userId}`;
+            
+          // Navigate to appropriate dashboard based on role
+          window.location.href = dashboardPath;
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
           // No action on failure, user will see manual choice buttons
@@ -69,11 +74,16 @@ export function LoginForm() {
   // Modify navigation target address - directly navigate to user-specific dashboard
   const handleDirectNavigation = () => {
     try {
+      // Get the target dashboard path based on user role
+      const dashboardPath = state.role === 'hr' ? 
+        `/hr-dashboard/${userId}` : 
+        `/employee-dashboard/${userId}`;
+        
       if (window.top) {
         // Directly navigate to user-specific dashboard
-        window.top.location.href = `/employee-dashboard/${userId}`;
+        window.top.location.href = dashboardPath;
       } else {
-        window.location.href = `/employee-dashboard/${userId}`;
+        window.location.href = dashboardPath;
       }
     } catch (error) {
       console.error("Navigation failed:", error);
@@ -81,7 +91,12 @@ export function LoginForm() {
       // Backup method: Create form and submit directly
       const form = document.createElement('form');
       form.method = 'GET';
-      form.action = `/employee-dashboard/${userId}`;
+      
+      // Set action based on user role
+      form.action = state.role === 'hr' ? 
+        `/hr-dashboard/${userId}` : 
+        `/employee-dashboard/${userId}`;
+        
       form.target = '_top';
       document.body.appendChild(form);
       form.submit();
@@ -104,7 +119,7 @@ export function LoginForm() {
               Go directly to my dashboard
             </button>
             
-            <form action={`/employee-dashboard/${userId}`} method="GET" target="_top">
+            <form action={state.role === 'hr' ? `/hr-dashboard/${userId}` : `/employee-dashboard/${userId}`} method="GET" target="_top">
               <button 
                 type="submit"
                 className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors"
@@ -114,7 +129,7 @@ export function LoginForm() {
             </form>
             
             <a 
-              href={`/employee-dashboard/${userId}`}
+              href={state.role === 'hr' ? `/hr-dashboard/${userId}` : `/employee-dashboard/${userId}`}
               className="block w-full bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center"
             >
               Use direct link
@@ -124,7 +139,7 @@ export function LoginForm() {
           {/* Use iframe to preload static page */}
           <iframe 
             ref={iframeRef}
-            src="/employee-dashboard/static"
+            src={state.role === 'hr' ? "/hr-dashboard/static" : "/employee-dashboard/static"}
             style={{ display: 'none' }}
             title="Preload Page"
           />
