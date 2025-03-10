@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { LoginActionState } from '../types';
 
@@ -19,13 +19,8 @@ export function useLoginEffect(state: LoginActionState) {
     } else if (state.status === "success" && state.userId) {
       toast.success("登录成功");
       
+      // 只记录日志，不再执行重定向，避免与LoginForm冲突
       console.log("登录成功，角色:", state.role, "用户ID:", state.userId);
-      
-      // 使用最简单最直接的方式重定向到dashboard
-      console.log("准备重定向到dashboard...");
-      
-      // 不使用任何复杂的路由逻辑，直接设置URL
-      window.location.href = "/dashboard";
     }
   }, [state.status, state.userId, state.role]);
 } 

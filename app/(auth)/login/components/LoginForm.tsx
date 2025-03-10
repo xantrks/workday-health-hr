@@ -1,10 +1,10 @@
 'use client';
 
-import Link from "next/link";
 import Image from "next/image";
-import { useFormState } from 'react-dom';
-import { useState } from 'react';
+import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useFormState } from 'react-dom';
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 
 import { login } from "../../actions";
 import { LoginActionState } from '../types';
-import { useLoginEffect } from '../hooks/useLoginEffect';
 
 /**
  * 登录表单组件
@@ -26,25 +25,24 @@ export function LoginForm() {
     status: "idle"
   });
   
-  // 创建一个包装的表单动作处理函数
-  const handleSubmit = async (formData: FormData) => {
-    setIsSubmitting(true);
-    const result = await formAction(formData);
-    
-    // 表单处理完成后手动检查状态
-    if (result?.status === 'success') {
-      console.log('表单提交成功，准备重定向...');
+  // 监听state变化，而不是依赖于formAction的返回值
+  useEffect(() => {
+    if (state.status === 'success' && state.userId) {
+      console.log('登录成功，准备重定向...');
       // 等待一小段时间，确保状态已更新
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 300);
-    } else {
+    } else if (state.status === 'failed' || state.status === 'invalid_data') {
       setIsSubmitting(false);
     }
+  }, [state]);
+  
+  // 创建一个包装的表单动作处理函数
+  const handleSubmit = (formData: FormData) => {
+    setIsSubmitting(true);
+    formAction(formData);
   };
-
-  // 使用自定义钩子处理登录效果
-  useLoginEffect(state);
 
   return (
     <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8">
