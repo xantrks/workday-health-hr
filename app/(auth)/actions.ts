@@ -26,17 +26,21 @@ export const login = async (
   formData: FormData,
 ): Promise<LoginActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
+    // Validate login form
+    const validationResult = authFormSchema.safeParse({
       email: formData.get("email"),
       password: formData.get("password"),
     });
 
-    // 获取用户角色和ID
-    const userResult = await sql`
-      SELECT id, role FROM "User" 
-      WHERE email = ${validatedData.email}
-    `;
-    
+    if (!validationResult.success) {
+      console.log("Form validation failed:", validationResult.error);
+      return { status: "invalid_data" };
+    }
+
+    const validatedData = validationResult.data;
+
+    // Get user role and ID
+    const userResult = await getUser(validatedData.email);
     const user = userResult[0];
     if (!user) {
       console.log("User does not exist:", validatedData.email);
@@ -100,7 +104,8 @@ export interface RegisterActionState {
 
 export async function register(prevState: RegisterActionState, formData: FormData): Promise<RegisterActionState> {
   try {
-    const rawFormData = {
+    // Validate form data
+    const validationResult = registerFormSchema.safeParse({
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
       email: formData.get("email"),
@@ -108,79 +113,78 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       confirmPassword: formData.get("confirmPassword"),
       agreedToTerms: formData.get("agreedToTerms") === "on",
       profileImage: formData.get("profileImage") as File | null
-    };
+    });
 
-    // 验证表单数据
-    const validatedData = registerFormSchema.safeParse(rawFormData);
-    
-    if (!validatedData.success) {
+    if (!validationResult.success) {
       return {
         status: "invalid_data",
-        errors: validatedData.error.errors.map(error => ({
-          message: error.message
-        }))
+        errors: validationResult.error.errors.map((error) => ({
+          message: error.message,
+        })),
       };
     }
 
-    // 检查用户是否已存在
-    const existingUser = await sql`
-      SELECT email FROM "User" 
-      WHERE email = ${validatedData.data.email}
-    `;
+    const validatedData = validationResult.data;
 
+    // Check if user already exists
+    const existingUser = await getUser(validatedData.email);
     if (existingUser.length > 0) {
       return {
-        status: "user_exists"
+        status: "user_exists",
+        errors: [
+          {
+            message: "A user with this email already exists",
+          },
+        ],
       };
     }
 
-    // 对密码进行哈希处理
-    const hashedPassword = hashSync(validatedData.data.password, 10);
+    // Hash password
+    const hashedPassword = hashSync(validatedData.password, 10);
 
-    let newUser;
-    try {
-      newUser = await createUser({
-        firstName: validatedData.data.firstName,
-        lastName: validatedData.data.lastName,
-        email: validatedData.data.email,
-        password: hashedPassword,
-        agreedToTerms: validatedData.data.agreedToTerms,
-        profileImage: rawFormData.profileImage || undefined
-      });
+    // Create user in database
+    const user = await createUser({
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      email: validatedData.email.toLowerCase(),
+      password: hashedPassword,
+      agreedToTerms: validatedData.agreedToTerms,
+      profileImage: validatedData.profileImage || undefined
+    });
 
-      // 成功创建用户后，缓存用户数据到 Redis
-      await redis.set(`user:${validatedData.data.email}`, {
-        firstName: validatedData.data.firstName,
-        lastName: validatedData.data.lastName,
-        email: validatedData.data.email
-      }, {
-        ex: 3600 // 1小时过期
-      });
-
-      return {
-        status: "success"
-      };
-      
-    } catch (dbError) {
-      console.error("Database error:", dbError);
-      // 添加类型检查
-      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
-        if (dbError.code === '23505') {
-          return {
-            status: "user_exists"
-          };
-        }
-      }
-      throw dbError;
+    // After successfully creating user, cache user data to Redis
+    const userId = user.userId;
+    if (userId) {
+      await redis.set(
+        `user:${userId}`,
+        JSON.stringify({
+          id: userId,
+          email: validatedData.email.toLowerCase(),
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName
+        }),
+        { ex: 3600 } // 1 hour expiration
+      );
     }
 
+    return {
+      status: "success",
+    };
   } catch (error) {
-    console.error("Registration error:", error);
+    // Add type checking
+    if (error instanceof Error) {
+      console.error("Registration error:", error.message);
+    } else {
+      console.error("Unknown registration error");
+    }
+
     return {
       status: "failed",
-      errors: [{
-        message: error instanceof Error ? error.message : "Failed to create account"
-      }]
+      errors: [
+        {
+          message: "Failed to create account. Please try again later.",
+        },
+      ],
     };
   }
 }

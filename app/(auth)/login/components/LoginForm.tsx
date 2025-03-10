@@ -147,10 +147,10 @@ export function LoginForm() {
         
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold tracking-tight">
-            欢迎回来
+            Welcome Back
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            请登录您的账户
+            Please login to your account
           </p>
         </div>
 

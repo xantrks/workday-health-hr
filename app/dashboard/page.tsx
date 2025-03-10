@@ -10,34 +10,34 @@ export default function Dashboard() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
-    // 确认代码是在客户端运行的
+    // Confirm code is running on the client
     setIsClient(true);
-    console.log('仪表盘页面挂载成功');
+    console.log('Dashboard page mounted successfully');
     
-    // 添加调试信息
+    // Add debug information
     if (status === 'authenticated' && session?.user) {
-      console.log('用户已登录:', session.user);
+      console.log('User logged in:', session.user);
     } else {
-      console.log('会话状态:', status);
+      console.log('Session status:', status);
     }
   }, [status, session]);
   
-  // 处理直接导航到用户仪表盘
+  // Handle direct navigation to user dashboard
   const handleDirectNavigation = () => {
     if (!session?.user?.id) return;
     
     setIsRedirecting(true);
     
     try {
-      // 直接导航到用户特定仪表盘
+      // Direct navigation to user-specific dashboard
       window.location.href = `/employee-dashboard/${session.user.id}`;
     } catch (error) {
-      console.error("导航失败:", error);
+      console.error("Navigation failed:", error);
       setIsRedirecting(false);
     }
   };
   
-  // 仅在客户端渲染的内容
+  // Only render content on the client
   if (!isClient) {
     return (
       <div className="flex items-center justify-center min-h-screen">
