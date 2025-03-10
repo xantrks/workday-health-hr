@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useFormState } from 'react-dom';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -15,24 +16,34 @@ import { LoginActionState } from '../types';
 import { useLoginEffect } from '../hooks/useLoginEffect';
 
 /**
- * Login form component
- * Handles user login with email and password
+ * 登录表单组件
+ * 处理用户通过邮箱和密码登录
  */
 export function LoginForm() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [state, formAction] = useFormState<LoginActionState, FormData>(login, {
     status: "idle"
   });
   
-  // 添加状态以跟踪表单提交
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
   // 创建一个包装的表单动作处理函数
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
-    return formAction(formData);
+    const result = await formAction(formData);
+    
+    // 表单处理完成后手动检查状态
+    if (result?.status === 'success') {
+      console.log('表单提交成功，准备重定向...');
+      // 等待一小段时间，确保状态已更新
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
+    } else {
+      setIsSubmitting(false);
+    }
   };
 
-  // Use custom hook for handling login effects
+  // 使用自定义钩子处理登录效果
   useLoginEffect(state);
 
   return (
@@ -49,36 +60,37 @@ export function LoginForm() {
         
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold tracking-tight">
-            Welcome Back
+            欢迎回来
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Please sign in to your account
+            请登录您的账户
           </p>
         </div>
 
         <AuthForm action={handleSubmit} variant="login">
           <div className="space-y-5">
             <div>
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">邮箱</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="Enter your email"
+                placeholder="输入您的邮箱"
                 className="mt-1"
+                disabled={isSubmitting}
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium">密码</Label>
                 <Link
                   href="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
-                  Forgot password?
+                  忘记密码?
                 </Link>
               </div>
               <Input
@@ -87,16 +99,17 @@ export function LoginForm() {
                 type="password"
                 autoComplete="current-password"
                 required
-                placeholder="Enter your password"
+                placeholder="输入您的密码"
                 className="mt-1"
+                disabled={isSubmitting}
               />
             </div>
 
             <SubmitButton
               className="w-full py-2.5"
-              loading={state.status === "in_progress"}
+              loading={state.status === "in_progress" || isSubmitting}
             >
-              Sign In
+              登录
             </SubmitButton>
 
             <div className="relative my-6">
@@ -105,18 +118,18 @@ export function LoginForm() {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-background px-2 text-muted-foreground">
-                  or
+                  或
                 </span>
               </div>
             </div>
 
             <p className="text-center text-sm text-muted-foreground mb-4">
-              Don&apos;t have an account?{" "}
+              没有账号?{" "}
               <Link
                 href="/register"
                 className="font-medium text-primary hover:underline"
               >
-                Sign Up
+                注册
               </Link>
             </p>
           </div>
