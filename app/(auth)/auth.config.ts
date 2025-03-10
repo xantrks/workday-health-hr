@@ -21,7 +21,7 @@ export const authConfig = {
       if (isLoggedIn && isOnAuth) {
         const role = (auth.user as any).role;
         const userId = (auth.user as any).id;
-        const dashboardPath = role === 'HR' ? 
+        const dashboardPath = role === 'hr' ? 
           `/hr-dashboard/${userId}` : 
           `/employee-dashboard/${userId}`;
         return Response.redirect(new URL(dashboardPath, nextUrl));
