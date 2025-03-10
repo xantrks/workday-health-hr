@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { LoginActionState } from '../types';
 
 /**
@@ -22,33 +22,23 @@ export function useLoginEffect(state: LoginActionState) {
       // 添加调试输出
       console.log("登录成功，角色:", state.role, "用户ID:", state.userId);
       
-      const dashboardPath = state.role?.toLowerCase() === "hr" ? 
-        `/hr-dashboard/${state.userId}` : 
-        `/employee-dashboard/${state.userId}`;
+      // 直接使用通用仪表盘路由，避免动态路由问题
+      const dashboardUrl = '/dashboard';
       
-      // 构建完整URL
-      const origin = window.location.origin;
-      const fullUrl = `${origin}${dashboardPath}`;
+      console.log("重定向到通用仪表盘:", dashboardUrl);
       
-      console.log("重定向到完整URL:", fullUrl);
+      // 直接使用window.location.replace方法保证跳转
+      window.location.replace(dashboardUrl);
       
-      // 首先尝试使用router
-      try {
-        router.push(dashboardPath);
-        
-        // 设置一个延迟备份，如果router失败则使用window.location.replace
-        setTimeout(() => {
-          // 检查URL是否仍在登录页
-          if (window.location.pathname.includes('/login')) {
-            console.log("路由器重定向可能失败，使用location.replace");
-            window.location.replace(fullUrl);
-          }
-        }, 1000);
-      } catch (error) {
-        console.error("路由器重定向失败:", error);
-        // 直接使用location.replace
-        window.location.replace(fullUrl);
-      }
+      // 备用方案：如果上面的方法失败，尝试使用延迟跳转
+      // setTimeout(() => {
+      //   try {
+      //     router.push('/dashboard');
+      //   } catch (e) {
+      //     console.error("Router导航失败:", e);
+      //     window.location.href = '/dashboard';
+      //   }
+      // }, 500);
     }
   }, [state.status, state.role, state.userId, router]);
 } 
