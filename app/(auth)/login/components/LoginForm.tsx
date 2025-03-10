@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useFormState } from 'react-dom';
+import { useState } from 'react';
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -21,6 +22,15 @@ export function LoginForm() {
   const [state, formAction] = useFormState<LoginActionState, FormData>(login, {
     status: "idle"
   });
+  
+  // 添加状态以跟踪表单提交
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 创建一个包装的表单动作处理函数
+  const handleSubmit = (formData: FormData) => {
+    setIsSubmitting(true);
+    return formAction(formData);
+  };
 
   // Use custom hook for handling login effects
   useLoginEffect(state);
@@ -46,7 +56,7 @@ export function LoginForm() {
           </p>
         </div>
 
-        <AuthForm action={formAction} variant="login">
+        <AuthForm action={handleSubmit} variant="login">
           <div className="space-y-5">
             <div>
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>

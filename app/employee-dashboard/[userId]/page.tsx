@@ -18,9 +18,12 @@ import { AppointmentsTab } from '../components/AppointmentsTab';
 import ResourcesTab from './components/ResourcesTab';
 
 export default function EmployeeDashboard({ params }: { params: { userId: string } }) {
+  console.log("员工仪表盘页面加载，用户ID:", params.userId);
+  
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
+      console.log("未认证用户，重定向到登录页");
       router.replace('/login');
     },
   });
@@ -31,6 +34,18 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
     (tabParam as DashboardTab) || 'overview'
   );
   
+  // 紧急修复：如果页面加载超过5秒但仍未完成认证，强制刷新
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (status === 'loading') {
+        console.log("会话加载超时，尝试刷新页面");
+        window.location.reload();
+      }
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [status]);
+  
   // Update active tab when URL parameter changes
   useEffect(() => {
     if (tabParam && ['overview', 'cycle', 'health', 'appointments', 'resources'].includes(tabParam)) {
@@ -40,18 +55,27 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
 
   // Redirect if user ID doesn't match session
   useEffect(() => {
+    console.log("会话状态:", status, "用户:", session?.user?.id);
+    
     if (session?.user && session.user.id !== params.userId) {
+      console.log("用户ID不匹配，重定向到正确的仪表盘");
       router.replace(`/employee-dashboard/${session.user.id}`);
     }
   }, [session, params.userId, router]);
 
   // Loading state
   if (status === 'loading') {
+    console.log("仪表盘加载中...");
     return <LoadingView />;
   }
 
   // No session
-  if (!session?.user) return null;
+  if (!session?.user) {
+    console.log("无会话信息，返回null");
+    return null;
+  }
+
+  console.log("仪表盘渲染，用户:", session.user.name, "ID:", session.user.id);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -68,11 +92,11 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         onValueChange={(value) => setActiveTab(value as DashboardTab)}
       >
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="cycle">Cycle</TabsTrigger>
-          <TabsTrigger value="health">Health</TabsTrigger>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="overview">概览</TabsTrigger>
+          <TabsTrigger value="cycle">周期</TabsTrigger>
+          <TabsTrigger value="health">健康</TabsTrigger>
+          <TabsTrigger value="appointments">预约</TabsTrigger>
+          <TabsTrigger value="resources">资源</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
