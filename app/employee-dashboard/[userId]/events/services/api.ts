@@ -2,46 +2,45 @@ import { toast } from "sonner";
 
 import { Event, Registration } from "../types";
 
-// 获取所有事件
+// Get all events
 export const fetchEvents = async (): Promise<{
   events: Event[];
   error: string | null;
 }> => {
   try {
     const response = await fetch("/api/events");
+    
     if (!response.ok) {
       throw new Error("Failed to fetch events");
     }
-    const data = await response.json();
-    return { events: data, error: null };
+    
+    return { events: await response.json(), error: null };
   } catch (error) {
     console.error("Error fetching events:", error);
     return { events: [], error: "Failed to fetch events, please try again later" };
   }
 };
 
-// 获取用户注册信息
+// Get user registration information
 export const fetchUserRegistrations = async (
   userId: string
 ): Promise<Registration[]> => {
   try {
-    if (!userId) return [];
-
-    const response = await fetch(`/api/users/${userId}/registrations`);
+    const response = await fetch(`/api/users/${userId}/events`);
+    
     if (!response.ok) {
-      console.log("Failed to fetch user registrations, status:", response.status);
+      console.log("Failed to fetch user registration information, status:", response.status);
       return [];
     }
-
-    const data = await response.json();
-    return data || [];
+    
+    return await response.json();
   } catch (error) {
     console.error("Error fetching registration information:", error);
     return [];
   }
 };
 
-// 注册事件
+// Register for event
 export const registerForEvent = async (
   eventId: string,
   userId: string,
@@ -79,7 +78,7 @@ export const registerForEvent = async (
   }
 };
 
-// 取消注册
+// Cancel registration
 export const cancelRegistration = async (
   eventId: string,
   onSuccess?: (eventId: string) => void
@@ -95,7 +94,7 @@ export const cancelRegistration = async (
     }
 
     // Success message
-    toast.success("Successfully canceled registration");
+    toast.success("Successfully cancelled registration");
     
     // Trigger success callback
     if (onSuccess) {
@@ -104,7 +103,7 @@ export const cancelRegistration = async (
     
     return true;
   } catch (error) {
-    console.error("Error canceling registration:", error);
+    console.error("Cancellation error:", error);
     toast.error((error as Error).message || "Failed to cancel registration");
     return false;
   }

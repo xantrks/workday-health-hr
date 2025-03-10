@@ -16,8 +16,8 @@ import { login } from "../../actions";
 import { LoginActionState } from '../types';
 
 /**
- * 登录表单组件
- * 处理用户通过邮箱和密码登录
+ * Login form component
+ * Handles user login via email and password
  */
 export function LoginForm() {
   const router = useRouter();
@@ -30,43 +30,43 @@ export function LoginForm() {
     status: "idle"
   });
   
-  // 监听state变化
+  // Monitor state changes
   useEffect(() => {
     if (state.status === 'success' && state.userId) {
-      console.log('登录成功:', state);
+      console.log('Login successful:', state);
       setLoginSuccess(true);
       setUserId(state.userId);
-      toast.success("登录成功!");
+      toast.success("Login successful!");
       
-      // 尝试自动重定向（但保留备用UI以防失败）
+      // Try automatic redirection (but keep backup UI in case of failure)
       const timer = setTimeout(() => {
         try {
-          // 先尝试直接导航
+          // First try direct navigation
           window.location.href = `/employee-dashboard/${state.userId}`;
         } catch (error) {
-          console.error("自动重定向失败，等待用户手动选择:", error);
-          // 失败时不做任何处理，用户将看到手动选择按钮
+          console.error("Automatic redirection failed, waiting for user manual selection:", error);
+          // No action on failure, user will see manual choice buttons
         }
-      }, 800); // 给toast足够时间显示
+      }, 800); // Give toast enough time to display
       
-      // 清理定时器
+      // Clean up timer
       return () => clearTimeout(timer);
     } else if (state.status === 'failed') {
-      toast.error("无效的邮箱或密码");
+      toast.error("Invalid email or password");
       setIsSubmitting(false);
     } else if (state.status === 'invalid_data') {
-      toast.error("请检查您的输入");
+      toast.error("Please check your input");
       setIsSubmitting(false);
     }
   }, [state]);
   
-  // 创建一个包装的表单动作处理函数
+  // Create a wrapper form action processing function
   const handleSubmit = (formData: FormData) => {
     setIsSubmitting(true);
     formAction(formData);
   };
   
-  // 修改导航目标地址 - 直接导航到用户特定仪表盘
+  // Modify navigation target address - directly navigate to user-specific dashboard
   const handleDirectNavigation = () => {
     try {
       if (window.top) {
@@ -88,7 +88,7 @@ export function LoginForm() {
     }
   };
 
-  // 如果登录成功，显示导航界面
+  // If login is successful, display navigation interface
   if (loginSuccess && userId) {
     return (
       <div className="w-full flex items-center justify-center p-6 md:p-8">
@@ -121,12 +121,12 @@ export function LoginForm() {
             </a>
           </div>
           
-          {/* 在使用iframe预加载静态页面 */}
+          {/* Use iframe to preload static page */}
           <iframe 
             ref={iframeRef}
             src="/employee-dashboard/static"
             style={{ display: 'none' }}
-            title="预加载页面"
+            title="Preload Page"
           />
         </div>
       </div>
@@ -150,21 +150,21 @@ export function LoginForm() {
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Please login to your account
+            Please log in to your account
           </p>
         </div>
 
         <AuthForm action={handleSubmit} variant="login">
           <div className="space-y-5">
             <div>
-              <Label htmlFor="email" className="text-sm font-medium">邮箱</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="输入您的邮箱"
+                placeholder="Enter your email"
                 className="mt-1"
                 disabled={isSubmitting}
               />
@@ -172,12 +172,12 @@ export function LoginForm() {
 
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">密码</Label>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <Link
                   href="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
-                  忘记密码?
+                  Forgot password?
                 </Link>
               </div>
               <Input
@@ -186,7 +186,7 @@ export function LoginForm() {
                 type="password"
                 autoComplete="current-password"
                 required
-                placeholder="输入您的密码"
+                placeholder="Enter your password"
                 className="mt-1"
                 disabled={isSubmitting}
               />
@@ -196,7 +196,7 @@ export function LoginForm() {
               className="w-full py-2.5"
               loading={state.status === "in_progress" || isSubmitting}
             >
-              登录
+              Login
             </SubmitButton>
 
             <div className="relative my-6">
@@ -205,18 +205,18 @@ export function LoginForm() {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-background px-2 text-muted-foreground">
-                  或
+                  or
                 </span>
               </div>
             </div>
 
             <p className="text-center text-sm text-muted-foreground mb-4">
-              没有账号?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/register"
                 className="font-medium text-primary hover:underline"
               >
-                注册
+                Register
               </Link>
             </p>
           </div>

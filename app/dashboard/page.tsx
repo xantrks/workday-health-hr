@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
-    // Confirm code is running on the client
+    // Confirm code is running on client
     setIsClient(true);
     console.log('Dashboard page mounted successfully');
     
@@ -37,7 +37,7 @@ export default function Dashboard() {
     }
   };
   
-  // Only render content on the client
+  // Only render content on client
   if (!isClient) {
     return (
       <div className="flex items-center justify-center min-h-screen">
