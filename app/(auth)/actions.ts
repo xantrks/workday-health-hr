@@ -1,8 +1,8 @@
 "use server";
 
 import { hashSync } from "bcryptjs";
-import { z } from "zod";
 import { SignInResponse } from "next-auth/react";
+import { z } from "zod";
 
 import { createUser, getUser } from "@/db/queries";
 import { redis } from "@/lib/db";
@@ -39,11 +39,11 @@ export const login = async (
     
     const user = userResult[0];
     if (!user) {
-      console.log("用户不存在:", validatedData.email);
+      console.log("User does not exist:", validatedData.email);
       return { status: "failed" };
     }
     
-    console.log("从数据库获取用户:", user.id, "角色:", user.role);
+    console.log("Retrieved user from database:", user.id, "role:", user.role);
 
     try {
       const result = await signIn("credentials", {
@@ -57,14 +57,14 @@ export const login = async (
         return { status: "failed" };
       }
 
-      // 确保返回用户ID和角色（统一使用小写角色名）
+      // Ensure returning user ID and role (using lowercase role name)
       const normalizedRole = typeof user.role === 'string' ? user.role.toLowerCase() : 'employee';
-      console.log("登录成功，返回角色:", normalizedRole, "用户ID:", user.id.toString());
+      console.log("Login successful, returning role:", normalizedRole, "User ID:", user.id.toString());
       
       return { 
         status: "success",
         role: normalizedRole,
-        userId: user.id.toString() // 确保ID是字符串
+        userId: user.id.toString() // Ensure ID is a string
       };
     } catch (signInError: any) {
       console.error("SignIn error:", signInError);

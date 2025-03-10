@@ -70,15 +70,15 @@ export function LoginForm() {
   const handleDirectNavigation = () => {
     try {
       if (window.top) {
-        // 直接导航到用户特定仪表盘
+        // Directly navigate to user-specific dashboard
         window.top.location.href = `/employee-dashboard/${userId}`;
       } else {
         window.location.href = `/employee-dashboard/${userId}`;
       }
     } catch (error) {
-      console.error("导航失败:", error);
+      console.error("Navigation failed:", error);
       
-      // 备用方法：创建表单并直接提交
+      // Backup method: Create form and submit directly
       const form = document.createElement('form');
       form.method = 'GET';
       form.action = `/employee-dashboard/${userId}`;
@@ -93,15 +93,15 @@ export function LoginForm() {
     return (
       <div className="w-full flex items-center justify-center p-6 md:p-8">
         <div className="text-center max-w-md bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-2xl font-bold mb-4">登录成功</h2>
-          <p className="mb-8 text-gray-600">请选择以下方式前往您的仪表盘</p>
+          <h2 className="text-2xl font-bold mb-4">Login Successful</h2>
+          <p className="mb-8 text-gray-600">Please select a way to go to your dashboard</p>
           
           <div className="space-y-4">
             <button 
               onClick={handleDirectNavigation}
               className="w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors"
             >
-              直接前往我的仪表盘
+              Go directly to my dashboard
             </button>
             
             <form action={`/employee-dashboard/${userId}`} method="GET" target="_top">
@@ -109,7 +109,7 @@ export function LoginForm() {
                 type="submit"
                 className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors"
               >
-                通过表单前往
+                Go through form
               </button>
             </form>
             
@@ -117,7 +117,7 @@ export function LoginForm() {
               href={`/employee-dashboard/${userId}`}
               className="block w-full bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center"
             >
-              使用直接链接
+              Use direct link
             </a>
           </div>
           

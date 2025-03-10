@@ -92,11 +92,11 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         onValueChange={(value) => setActiveTab(value as DashboardTab)}
       >
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">概览</TabsTrigger>
-          <TabsTrigger value="cycle">周期</TabsTrigger>
-          <TabsTrigger value="health">健康</TabsTrigger>
-          <TabsTrigger value="appointments">预约</TabsTrigger>
-          <TabsTrigger value="resources">资源</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="cycle">Cycle</TabsTrigger>
+          <TabsTrigger value="health">Health</TabsTrigger>
+          <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="resources">Resources</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">

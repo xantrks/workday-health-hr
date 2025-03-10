@@ -31,31 +31,31 @@ export default function StaticEmployeeDashboard() {
         {session ? (
           <div>
             <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
-              <h2 className="text-xl font-semibold text-green-800">登录成功!</h2>
+              <h2 className="text-xl font-semibold text-green-800">Login Successful!</h2>
               <p className="text-green-700 mt-2">
-                欢迎回来, {session.user?.name || '用户'}!
+                Welcome back, {session.user?.name || 'User'}!
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">健康数据</h3>
-                <p>这里将显示您的健康数据摘要</p>
+                <h3 className="text-lg font-medium mb-3">Health Data</h3>
+                <p>Your health data summary will be displayed here</p>
               </div>
               
               <div className="bg-purple-50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">周期跟踪</h3>
-                <p>这里将显示您的周期跟踪信息</p>
+                <h3 className="text-lg font-medium mb-3">Cycle Tracking</h3>
+                <p>Your cycle tracking information will be displayed here</p>
               </div>
               
               <div className="bg-yellow-50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">即将到来的预约</h3>
-                <p>您没有即将到来的预约</p>
+                <h3 className="text-lg font-medium mb-3">Upcoming Appointments</h3>
+                <p>You have no upcoming appointments</p>
               </div>
               
               <div className="bg-pink-50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">健康提示</h3>
-                <p>保持水分摄入是维持健康的重要部分</p>
+                <h3 className="text-lg font-medium mb-3">Health Tips</h3>
+                <p>Staying hydrated is an important part of maintaining health</p>
               </div>
             </div>
             
@@ -64,7 +64,7 @@ export default function StaticEmployeeDashboard() {
                 href="/dashboard"
                 className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition-colors"
               >
-                返回主仪表盘
+                Back to Main Dashboard
               </Link>
               
               <button 

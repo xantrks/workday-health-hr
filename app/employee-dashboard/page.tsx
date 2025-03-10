@@ -10,7 +10,7 @@ export default function EmployeeDashboardIndex() {
   const { data: session, status } = useSession();
   const [isClient, setIsClient] = useState(false);
   
-  // 确保只在客户端执行
+  // Ensure execution only on the client
   useEffect(() => {
     setIsClient(true);
     

@@ -48,18 +48,18 @@ export default function Dashboard() {
   
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6">仪表盘</h1>
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       
       {status === 'loading' ? (
         <div className="flex flex-col items-center p-8">
-          <p className="mb-4">正在加载您的信息...</p>
+          <p className="mb-4">Loading your information...</p>
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : status === 'authenticated' ? (
         <div className="bg-white shadow-md rounded p-6">
           <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
-            <h2 className="text-xl font-semibold text-blue-800">欢迎回来, {session?.user?.name || '用户'}!</h2>
-            <p className="text-blue-700 mt-2">您可以使用下面的按钮直接访问您的个人仪表盘。</p>
+            <h2 className="text-xl font-semibold text-blue-800">Welcome back, {session?.user?.name || 'User'}!</h2>
+            <p className="text-blue-700 mt-2">You can use the button below to directly access your personal dashboard.</p>
           </div>
           
           <div className="mb-8">
@@ -68,7 +68,7 @@ export default function Dashboard() {
               disabled={isRedirecting}
               className="w-full bg-blue-600 text-white px-6 py-3 rounded text-center hover:bg-blue-700 transition-colors disabled:bg-blue-400"
             >
-              {isRedirecting ? '正在跳转...' : '前往我的个人仪表盘'}
+              {isRedirecting ? 'Redirecting...' : 'Go to my personal dashboard'}
             </button>
           </div>
           
@@ -78,7 +78,7 @@ export default function Dashboard() {
               className="bg-green-600 text-white px-4 py-3 rounded text-center hover:bg-green-700 transition-colors"
               target="_self"
             >
-              直接链接访问
+              Direct link access
             </a>
             
             <form action={`/employee-dashboard/${session?.user?.id}`} method="GET">
@@ -86,20 +86,20 @@ export default function Dashboard() {
                 type="submit" 
                 className="w-full bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 transition-colors"
               >
-                通过表单前往
+                Go to my personal dashboard
               </button>
             </form>
           </div>
         </div>
       ) : (
         <div className="bg-white shadow-md rounded p-6">
-          <h2 className="text-xl font-semibold mb-4">您尚未登录</h2>
-          <p>请先登录以访问您的仪表盘</p>
+          <h2 className="text-xl font-semibold mb-4">You are not logged in</h2>
+          <p>Please log in to access your dashboard</p>
           <Link 
             href="/login" 
             className="bg-blue-600 text-white px-4 py-2 rounded mt-4 inline-block hover:bg-blue-700 transition-colors"
           >
-            去登录
+            Go to login
           </Link>
         </div>
       )}
