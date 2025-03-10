@@ -20,8 +20,8 @@ export const Navbar = async () => {
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "";
   
-  // Don't show navbar on login and register pages
-  if (pathname === "/login" || pathname === "/register") {
+  // 只在注册页面隐藏导航栏，在登录页显示导航栏
+  if (pathname === "/register") {
     return null;
   }
 

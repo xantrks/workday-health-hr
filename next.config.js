@@ -9,6 +9,11 @@ const nextConfig = {
   // 添加重写规则以支持自定义路由
   async rewrites() {
     return [
+      // 根路径重定向到登录页
+      {
+        source: '/',
+        destination: '/login',
+      },
       // 如果用户已登录，访问/login时重定向到dashboard
       {
         source: '/login',

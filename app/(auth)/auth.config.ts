@@ -20,20 +20,9 @@ export const authConfig = {
       const isOnAuth = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register');
 
-      // 已登录用户访问登录/注册页面时重定向到仪表盘
-      if (isLoggedIn && isOnAuth) {
-        const role = ((auth.user as any).role || '').toLowerCase();
-        const userId = (auth.user as any).id;
-        console.log("重定向登录用户离开登录页，角色:", role, "ID:", userId);
-        
-        const dashboardPath = role === 'hr' ? 
-          `/hr-dashboard/${userId}` : 
-          `/employee-dashboard/${userId}`;
-          
-        console.log("重定向到:", dashboardPath);
-        return Response.redirect(new URL(dashboardPath, nextUrl));
-      }
-
+      // 不再重定向已登录用户离开登录页面
+      // 修改：允许已登录用户访问登录页面
+      
       // 允许访问登录和注册页面
       if (isOnAuth) return true;
 
