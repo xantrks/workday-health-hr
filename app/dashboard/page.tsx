@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [isClient, setIsClient] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
     // 确认代码是在客户端运行的
@@ -20,6 +21,21 @@ export default function Dashboard() {
       console.log('会话状态:', status);
     }
   }, [status, session]);
+  
+  // 处理直接导航到用户仪表盘
+  const handleDirectNavigation = () => {
+    if (!session?.user?.id) return;
+    
+    setIsRedirecting(true);
+    
+    try {
+      // 直接导航到用户特定仪表盘
+      window.location.href = `/employee-dashboard/${session.user.id}`;
+    } catch (error) {
+      console.error("导航失败:", error);
+      setIsRedirecting(false);
+    }
+  };
   
   // 仅在客户端渲染的内容
   if (!isClient) {
@@ -41,51 +57,38 @@ export default function Dashboard() {
         </div>
       ) : status === 'authenticated' ? (
         <div className="bg-white shadow-md rounded p-6">
-          <h2 className="text-xl font-semibold mb-4">您已登录</h2>
-          <p className="mb-2">欢迎回来, {session?.user?.name || '用户'}!</p>
+          <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
+            <h2 className="text-xl font-semibold text-blue-800">欢迎回来, {session?.user?.name || '用户'}!</h2>
+            <p className="text-blue-700 mt-2">您可以使用下面的按钮直接访问您的个人仪表盘。</p>
+          </div>
           
-          <div className="mt-6">
-            <p className="mb-4">请选择您要访问的仪表盘:</p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
-                href={`/employee-dashboard/${session?.user?.id}`}
-                className="bg-blue-600 text-white px-6 py-3 rounded text-center hover:bg-blue-700 transition-colors"
-              >
-                员工仪表盘
-              </Link>
-              
-              {session?.user?.role?.toLowerCase() === 'hr' && (
-                <Link 
-                  href={`/hr-dashboard/${session?.user?.id}`}
-                  className="bg-green-600 text-white px-6 py-3 rounded text-center hover:bg-green-700 transition-colors"
-                >
-                  HR仪表盘
-                </Link>
-              )}
-            </div>
+          <div className="mb-8">
+            <button
+              onClick={handleDirectNavigation}
+              disabled={isRedirecting}
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded text-center hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+            >
+              {isRedirecting ? '正在跳转...' : '前往我的个人仪表盘'}
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a 
+              href={`/employee-dashboard/${session?.user?.id}`}
+              className="bg-green-600 text-white px-4 py-3 rounded text-center hover:bg-green-700 transition-colors"
+              target="_self"
+            >
+              直接链接访问
+            </a>
             
-            <div className="mt-6 p-4 border border-yellow-300 bg-yellow-50 rounded">
-              <h3 className="text-lg font-medium text-yellow-800">如果您遇到导航问题</h3>
-              <p className="text-yellow-700 mb-3">您可以尝试直接访问以下链接：</p>
-              <div className="flex flex-col gap-2">
-                <a 
-                  href={`/employee-dashboard/${session?.user?.id}`}
-                  className="text-blue-600 hover:underline"
-                  target="_self"
-                >
-                  直接链接：员工仪表盘
-                </a>
-                
-                <form action={`/employee-dashboard/${session?.user?.id}`} method="GET" className="mt-2">
-                  <button 
-                    type="submit" 
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  >
-                    通过表单导航：员工仪表盘
-                  </button>
-                </form>
-              </div>
-            </div>
+            <form action={`/employee-dashboard/${session?.user?.id}`} method="GET">
+              <button 
+                type="submit" 
+                className="w-full bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 transition-colors"
+              >
+                通过表单前往
+              </button>
+            </form>
           </div>
         </div>
       ) : (

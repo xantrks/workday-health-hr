@@ -38,7 +38,19 @@ export function LoginForm() {
       setUserId(state.userId);
       toast.success("登录成功!");
       
-      // 不再自动重定向，等待用户点击按钮
+      // 尝试自动重定向（但保留备用UI以防失败）
+      const timer = setTimeout(() => {
+        try {
+          // 先尝试直接导航
+          window.location.href = `/employee-dashboard/${state.userId}`;
+        } catch (error) {
+          console.error("自动重定向失败，等待用户手动选择:", error);
+          // 失败时不做任何处理，用户将看到手动选择按钮
+        }
+      }, 800); // 给toast足够时间显示
+      
+      // 清理定时器
+      return () => clearTimeout(timer);
     } else if (state.status === 'failed') {
       toast.error("无效的邮箱或密码");
       setIsSubmitting(false);
@@ -54,14 +66,14 @@ export function LoginForm() {
     formAction(formData);
   };
   
-  // 处理直接跳转 - 强制使用原生方法
+  // 修改导航目标地址 - 直接导航到用户特定仪表盘
   const handleDirectNavigation = () => {
     try {
-      // 导航到静态页面而不是动态路由
       if (window.top) {
-        window.top.location.href = `/employee-dashboard/static`;
+        // 直接导航到用户特定仪表盘
+        window.top.location.href = `/employee-dashboard/${userId}`;
       } else {
-        window.location.href = `/employee-dashboard/static`;
+        window.location.href = `/employee-dashboard/${userId}`;
       }
     } catch (error) {
       console.error("导航失败:", error);
@@ -69,30 +81,30 @@ export function LoginForm() {
       // 备用方法：创建表单并直接提交
       const form = document.createElement('form');
       form.method = 'GET';
-      form.action = `/employee-dashboard/static`;
-      form.target = '_top'; // 重要: 在顶级窗口中打开
+      form.action = `/employee-dashboard/${userId}`;
+      form.target = '_top';
       document.body.appendChild(form);
       form.submit();
     }
   };
 
   // 如果登录成功，显示导航界面
-  if (loginSuccess) {
+  if (loginSuccess && userId) {
     return (
       <div className="w-full flex items-center justify-center p-6 md:p-8">
         <div className="text-center max-w-md bg-white shadow-lg rounded-lg p-8">
           <h2 className="text-2xl font-bold mb-4">登录成功</h2>
-          <p className="mb-8 text-gray-600">请点击下方按钮前往您的仪表盘</p>
+          <p className="mb-8 text-gray-600">请选择以下方式前往您的仪表盘</p>
           
           <div className="space-y-4">
             <button 
               onClick={handleDirectNavigation}
               className="w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors"
             >
-              前往静态仪表盘
+              直接前往我的仪表盘
             </button>
             
-            <form action="/employee-dashboard/static" method="GET" target="_top">
+            <form action={`/employee-dashboard/${userId}`} method="GET" target="_top">
               <button 
                 type="submit"
                 className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors"
@@ -102,10 +114,10 @@ export function LoginForm() {
             </form>
             
             <a 
-              href="/employee-dashboard/static"
+              href={`/employee-dashboard/${userId}`}
               className="block w-full bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center"
             >
-              直接链接访问
+              使用直接链接
             </a>
           </div>
           
