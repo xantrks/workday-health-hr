@@ -26,15 +26,29 @@ export function useLoginEffect(state: LoginActionState) {
         `/hr-dashboard/${state.userId}` : 
         `/employee-dashboard/${state.userId}`;
       
-      console.log("重定向到:", dashboardPath);
+      // 构建完整URL
+      const origin = window.location.origin;
+      const fullUrl = `${origin}${dashboardPath}`;
       
-      // 使用Next.js的Router进行导航而不是window.location
-      router.push(dashboardPath);
+      console.log("重定向到完整URL:", fullUrl);
       
-      // 备用方案：如果router.push不起作用，可以使用这个
-      // setTimeout(() => {
-      //   window.location.href = dashboardPath;
-      // }, 500);
+      // 首先尝试使用router
+      try {
+        router.push(dashboardPath);
+        
+        // 设置一个延迟备份，如果router失败则使用window.location.replace
+        setTimeout(() => {
+          // 检查URL是否仍在登录页
+          if (window.location.pathname.includes('/login')) {
+            console.log("路由器重定向可能失败，使用location.replace");
+            window.location.replace(fullUrl);
+          }
+        }, 1000);
+      } catch (error) {
+        console.error("路由器重定向失败:", error);
+        // 直接使用location.replace
+        window.location.replace(fullUrl);
+      }
     }
   }, [state.status, state.role, state.userId, router]);
 } 

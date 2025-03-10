@@ -17,11 +17,22 @@ export async function middleware(request: NextRequest) {
   }) as Token | null;
 
   if (token) {
-    console.log("Token存在:", token.id, "角色:", token.role);
+    console.log("中间件Token存在:", token.id, "角色:", token.role);
+  } else {
+    console.log("中间件Token不存在");
   }
 
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
+  
+  console.log("当前路径:", path, "来源:", origin);
+  
+  // 检查是否直接访问employee-dashboard而不是带userId的路径
+  if (path === '/employee-dashboard' && token) {
+    const dashboardPath = `/employee-dashboard/${token.id}`;
+    console.log("从employee-dashboard重定向到:", dashboardPath);
+    return NextResponse.redirect(new URL(dashboardPath, origin));
+  }
   
   // Handle root path access logic - redirect to appropriate page
   if (path === '/' || path === '') {
@@ -36,6 +47,7 @@ export async function middleware(request: NextRequest) {
         `/employee-dashboard/${token.id}`;
         
       console.log("重定向到:", dashboardPath);
+      // 使用更简单的重定向方式
       return NextResponse.redirect(new URL(dashboardPath, origin));
     } else {
       // Redirect non-logged-in users to login page
@@ -59,16 +71,19 @@ export async function middleware(request: NextRequest) {
 
   // If accessing dashboard but not logged in, redirect to login page
   if ((path.startsWith('/hr-dashboard') || path.startsWith('/employee-dashboard')) && !token) {
+    console.log("未授权访问仪表盘，重定向到登录页");
     return NextResponse.redirect(new URL('/login', origin));
   }
 
   // If accessing HR dashboard but not HR role, redirect to unauthorized page
   if (path.startsWith('/hr-dashboard') && token?.role?.toLowerCase() !== 'hr') {
+    console.log("非HR角色访问HR仪表盘，重定向到未授权页面");
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
   // If accessing employee dashboard but is HR role, redirect to unauthorized page
   if (path.startsWith('/employee-dashboard') && token?.role?.toLowerCase() === 'hr') {
+    console.log("HR角色访问员工仪表盘，重定向到未授权页面");
     return NextResponse.redirect(new URL('/unauthorized', origin));
   }
 
@@ -81,6 +96,7 @@ export const config = {
     '/login',
     '/register',
     '/hr-dashboard/:path*',
+    '/employee-dashboard',
     '/employee-dashboard/:path*'
   ]
 };
