@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
 export default function DashboardRedirect() {
   const { data: session, status } = useSession();
@@ -9,18 +9,18 @@ export default function DashboardRedirect() {
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
       const role = (session.user.role || '').toLowerCase();
-      console.log("仪表盘页 - 用户已登录:", session.user.id, "角色:", role);
+      console.log("Dashboard page - User logged in:", session.user.id, "Role:", role);
       
       const dashboardPath = role === 'hr' ? 
         `/hr-dashboard/${session.user.id}` : 
         `/employee-dashboard/${session.user.id}`;
         
-      console.log("重定向到:", dashboardPath);
+      console.log("Redirecting to:", dashboardPath);
       
-      // 直接使用window.location.replace而不是Router
+      // Use window.location.replace directly instead of Router
       window.location.replace(dashboardPath);
     } else if (status === 'unauthenticated') {
-      console.log("仪表盘页 - 用户未登录");
+      console.log("Dashboard page - User not logged in");
       window.location.replace('/login');
     }
   }, [session, status]);
@@ -28,7 +28,7 @@ export default function DashboardRedirect() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">正在加载您的仪表盘...</h1>
+        <h1 className="text-2xl font-bold mb-4">Loading your dashboard...</h1>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
       </div>
     </div>
