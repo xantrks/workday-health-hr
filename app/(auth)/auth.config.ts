@@ -11,6 +11,9 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
+      console.log("auth.config authorized被调用，路径:", nextUrl.pathname);
+      console.log("认证状态:", auth?.user ? "已登录" : "未登录");
+      
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/hr-dashboard') || 
                            nextUrl.pathname.startsWith('/employee-dashboard');
@@ -19,11 +22,15 @@ export const authConfig = {
 
       // 已登录用户访问登录/注册页面时重定向到仪表盘
       if (isLoggedIn && isOnAuth) {
-        const role = (auth.user as any).role;
+        const role = ((auth.user as any).role || '').toLowerCase();
         const userId = (auth.user as any).id;
+        console.log("重定向登录用户离开登录页，角色:", role, "ID:", userId);
+        
         const dashboardPath = role === 'hr' ? 
           `/hr-dashboard/${userId}` : 
           `/employee-dashboard/${userId}`;
+          
+        console.log("重定向到:", dashboardPath);
         return Response.redirect(new URL(dashboardPath, nextUrl));
       }
 

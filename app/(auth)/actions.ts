@@ -39,8 +39,11 @@ export const login = async (
     
     const user = userResult[0];
     if (!user) {
+      console.log("用户不存在:", validatedData.email);
       return { status: "failed" };
     }
+    
+    console.log("从数据库获取用户:", user.id, "角色:", user.role);
 
     try {
       const result = await signIn("credentials", {
@@ -54,10 +57,13 @@ export const login = async (
         return { status: "failed" };
       }
 
-      // 确保返回用户ID和角色
+      // 确保返回用户ID和角色（统一使用小写角色名）
+      const normalizedRole = typeof user.role === 'string' ? user.role.toLowerCase() : 'employee';
+      console.log("登录成功，返回角色:", normalizedRole, "用户ID:", user.id.toString());
+      
       return { 
         status: "success",
-        role: user.role,
+        role: normalizedRole,
         userId: user.id.toString() // 确保ID是字符串
       };
     } catch (signInError: any) {
