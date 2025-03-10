@@ -26,6 +26,8 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
 - 🏥 **Medical Appointment Integration** - Connect with healthcare providers
 - 📈 **Work Efficiency Tracking** - Correlate health data with productivity
 - 🧠 **Mental Health Support** - Track mood and stress levels
+- 🎓 **Resource & Education Center** - Access health educational materials
+- 📅 **Events & Webinars Management** - Register for health-related events
 
 > [!NOTE]
 > - Node.js >= 18.0.0 required
@@ -54,6 +56,7 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
   - [🗄️ Database Schema](#️-database-schema)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
+  - [🙋‍♀ Author](#-author)
 
 ## 🛠️ Tech Stack
 
@@ -93,7 +96,7 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
 </div>
 
 > [!TIP]
-> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The AI functionality leverages Google's advanced AI models.
+> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The AI functionality leverages Google's advanced AI models through Gemini API.
 
 ## 📂 Project Structure
 
@@ -104,6 +107,7 @@ sanicle-ai/
 │   ├── api/              # API routes
 │   ├── employee-dashboard/ # Employee-facing features
 │   ├── hr-dashboard/     # HR management features
+│   ├── dashboard/        # Shared dashboard components
 │   └── (chat)/           # AI assistant chat functionality
 ├── components/          # Reusable UI components
 │   ├── custom/          # Custom project components
@@ -190,6 +194,7 @@ The Employee Dashboard provides a personalized health management experience:
 - **AI Health Assistant**: Get personalized health advice from Sani
 - **Medical Appointments**: Schedule and manage healthcare visits
 - **Leave Management**: Request and track health-related leave
+- **Resource Library**: Access educational materials about women's health
 
 ### HR Dashboard
 
@@ -200,6 +205,7 @@ The HR Dashboard offers anonymized health data insights for better workforce pla
 - **Productivity Insights**: Correlate health patterns with work efficiency
 - **Health Education**: Access resources for supporting employee health
 - **Privacy-Focused Design**: All data is anonymized and aggregated
+- **Event Management**: Organize health-related webinars and workshops
 
 ## 🤖 AI Assistant Implementation
 
@@ -212,10 +218,11 @@ Sani, the AI health assistant, provides personalized support and guidance to emp
 - **Appointment Assistance**: Help with scheduling medical appointments
 - **Mental Health Support**: Conversations about stress and emotional well-being
 - **Privacy Protection**: Confidential interactions with user data protection
+- **Health Education**: Information about women's health topics and resources
 
 ### Technology
 
-The AI assistant is powered by Google's AI models through the @ai-sdk/google integration, with custom middleware for handling health-specific queries and ensuring privacy.
+The AI assistant is powered by Google's Gemini AI models through the @ai-sdk/google integration, with custom middleware for handling health-specific queries and ensuring privacy.
 
 ## 🔒 Privacy & Security
 
@@ -235,6 +242,11 @@ Our database design includes the following core tables:
 - `HealthRecord`: Health tracking data including menstrual cycles, symptoms, etc.
 - `Chat`: AI assistant conversation history
 - `Reservation`: Medical appointment booking information
+- `ResourceFile`: Educational resources and policy documents
+- `Event`: Health-related events and webinars
+- `EventRegistration`: Tracking event attendance
+- `Feedback`: Anonymous employee feedback
+- `HealthBenefit`: Company health benefits information
 
 ## 🤝 Contributing
 
