@@ -12,6 +12,35 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
+
+![screencapture-sanicle-ai-vercel-app-login-2025-03-10-21_19_52](https://github.com/user-attachments/assets/d91a1e48-740c-45e3-bb85-557a90371dd6)
+
+![screencapture-sanicle-ai-vercel-app-register-2025-03-10-21_26_21](https://github.com/user-attachments/assets/f741d109-f760-4293-9adf-8a30a3801a7c)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-f13eaf10-0a5b-49cf-b943-c35de5f631b4-2025-03-10-21_26_46](https://github.com/user-attachments/assets/dd1f2537-673d-47c6-b555-f9295520cd88)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-f13eaf10-0a5b-49cf-b943-c35de5f631b4-2025-03-10-21_26_59](https://github.com/user-attachments/assets/b5d34a6a-b80e-40fc-aaf7-d7d3f51a29ef)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-f13eaf10-0a5b-49cf-b943-c35de5f631b4-2025-03-10-21_27_51](https://github.com/user-attachments/assets/79602f44-1d11-45b1-ba74-c6b4b8756af7)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-f13eaf10-0a5b-49cf-b943-c35de5f631b4-resources-2025-03-10-21_28_46](https://github.com/user-attachments/assets/77349073-674c-4f6a-82e6-7adb53ab0dd6)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-f13eaf10-0a5b-49cf-b943-c35de5f631b4-events-2025-03-10-21_29_11](https://github.com/user-attachments/assets/11669e42-92ed-4121-a57c-358b6e605b85)
+
+![screencapture-sanicle-ai-vercel-app-chat-36a2b38e-be71-4c62-a459-ff43cb6d5c7c-2025-03-10-21_31_22](https://github.com/user-attachments/assets/d7fdcb72-4120-4ff9-bee5-8036000901fa)
+
+![screencapture-sanicle-ai-vercel-app-employee-dashboard-66c3f2c0-d160-4c74-973a-cfc94588674f-2025-03-10-21_31_47](https://github.com/user-attachments/assets/1c0ac79e-2208-4012-91f4-f5b55aa1130d)
+
+![screencapture-sanicle-ai-vercel-app-hr-dashboard-66c3f2c0-d160-4c74-973a-cfc94588674f-2025-03-10-21_38_57](https://github.com/user-attachments/assets/4fee0238-d046-4940-900f-90aecc5d6a71)
+
+![screencapture-sanicle-ai-vercel-app-hr-dashboard-66c3f2c0-d160-4c74-973a-cfc94588674f-events-manage-2025-03-10-21_39_31](https://github.com/user-attachments/assets/9edd1180-27ec-49c0-be0c-b29c0c8cc922)
+
+![screencapture-sanicle-ai-vercel-app-hr-dashboard-66c3f2c0-d160-4c74-973a-cfc94588674f-resources-manage-2025-03-10-21_39_07](https://github.com/user-attachments/assets/da54c38e-5cfa-4086-9c45-7178c8fb860d)
+
+![screencapture-sanicle-ai-vercel-app-chat-3f879853-f10a-48c2-9c34-063a52e7405d-2025-03-10-21_40_34](https://github.com/user-attachments/assets/c5681916-986f-48dc-843c-a1bc845dfe79)
+
+
+
 # 🌟 Introduction
 
 Sanicle-AI is a comprehensive women's health platform designed for workplace wellness. The platform offers personalized health tracking for female employees while providing HR departments with anonymized data insights for better workforce planning and employee support.
