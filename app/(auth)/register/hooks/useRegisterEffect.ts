@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { RegisterActionState } from '../types';
@@ -16,7 +16,9 @@ export function useRegisterEffect(state: RegisterActionState) {
     if (state.status === "user_exists") {
       toast.error("Email already registered");
     } else if (state.status === "failed") {
-      toast.error(state.errors?.[0]?.message || "Failed to create account");
+      toast.error(state.errors?.[0]?.message || "Registration is temporarily disabled. Please contact HR department to create your account.", {
+        duration: 5000
+      });
     } else if (state.status === "invalid_data") {
       state.errors?.forEach(error => {
         toast.error(error.message);
