@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, differenceInDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { toast } from "sonner";
+import { format, differenceInDays } from "date-fns";
 import { Calendar as CalendarIcon, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -33,7 +34,7 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
     suggestions: string[];
   } | null>(null);
 
-  // 当用户选择请假类型后获取相关的请假理由建议
+  // Get leave reason suggestions when user selects a leave type
   useEffect(() => {
     if (selectedType) {
       const fetchSuggestions = async () => {
@@ -44,7 +45,7 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
             setSuggestions(data);
           }
         } catch (error) {
-          console.error("获取请假建议失败:", error);
+          console.error("Failed to fetch leave suggestions:", error);
         }
       };
       
@@ -54,7 +55,7 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
 
   const validateRequest = async () => {
     if (!selectedType || !dateRange?.from || !dateRange?.to || !reason) {
-      toast.error("请填写所有必填字段");
+      toast.error("Please fill in all required fields");
       return false;
     }
 
@@ -79,12 +80,12 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
         setValidationResult(result);
         return result.isValid;
       } else {
-        toast.error("验证请求失败");
+        toast.error("Failed to validate request");
         return false;
       }
     } catch (error) {
-      console.error("验证请假请求失败:", error);
-      toast.error("验证请求时发生错误");
+      console.error("Failed to validate leave request:", error);
+      toast.error("An error occurred during validation");
       return false;
     } finally {
       setIsValidating(false);
@@ -99,34 +100,41 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
     try {
       setIsSubmitting(true);
       
+      // Ensure dateRange and its properties are defined before formatting
+      if (!dateRange?.from || !dateRange.to || !selectedType) {
+        toast.error("Please complete all required fields");
+        setIsSubmitting(false);
+        return;
+      }
+      
       const response = await fetch("/api/leave", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          startDate: format(dateRange!.from, "yyyy-MM-dd"),
-          endDate: format(dateRange!.to, "yyyy-MM-dd"),
-          leaveType: selectedType!.name,
+          startDate: format(dateRange.from, "yyyy-MM-dd"),
+          endDate: format(dateRange.to, "yyyy-MM-dd"),
+          leaveType: selectedType.name,
           reason,
         }),
       });
 
       if (response.ok) {
-        toast.success("请假申请已提交");
+        toast.success("Leave request submitted successfully");
         
-        // 重置表单
+        // Reset form
         setSelectedType(null);
         setDateRange(undefined);
         setReason("");
         setValidationResult(null);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "提交请假申请失败");
+        toast.error(errorData.message || "Failed to submit leave request");
       }
     } catch (error) {
-      console.error("提交请假申请失败:", error);
-      toast.error("提交请假申请时发生错误");
+      console.error("Failed to submit leave request:", error);
+      toast.error("An error occurred while submitting leave request");
     } finally {
       setIsSubmitting(false);
     }
@@ -176,7 +184,9 @@ export function LeaveRequestForm({ leaveTypes }: LeaveRequestFormProps) {
                 "w-full justify-start text-left font-normal",
                 !dateRange && "text-muted-foreground"
               )}
-              onClick={() => document.getElementById('date-picker')?.showPicker()}
+              onClick={() => {
+                document.getElementById('start-date')?.click();
+              }}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateRange?.from ? (
