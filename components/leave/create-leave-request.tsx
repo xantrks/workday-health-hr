@@ -44,7 +44,7 @@ export function CreateLeaveRequest({
 
   const handleSubmit = async () => {
     if (!selectedType || !dateRange?.from || !dateRange?.to || !reason) {
-      toast.error("请填写所有必填字段");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -60,14 +60,14 @@ export function CreateLeaveRequest({
         totalDays,
       });
       
-      // 成功后重置表单
+      // Reset form after successful submission
       setSelectedType(null);
       setDateRange(undefined);
       setReason("");
-      toast.success("请假申请已提交");
+      toast.success("Leave request submitted successfully");
     } catch (error) {
-      console.error("提交请假申请失败:", error);
-      toast.error("提交请假申请失败，请重试");
+      console.error("Failed to submit leave request:", error);
+      toast.error("Failed to submit leave request, please try again");
     } finally {
       setIsSubmitting(false);
     }
@@ -76,15 +76,15 @@ export function CreateLeaveRequest({
   return (
     <div className="flex flex-col gap-4 w-full bg-white dark:bg-gray-900 p-4 rounded-lg border">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">请假申请</h3>
+        <h3 className="text-lg font-medium">Leave Request</h3>
         <p className="text-sm text-muted-foreground">
-          请填写以下信息提交您的请假申请
+          Please fill in the information below to submit your leave request
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">请假类型</label>
+          <label className="text-sm font-medium">Leave Type</label>
           <LeaveTypeSelector
             leaveTypes={leaveTypes}
             selectedType={selectedType}
@@ -93,18 +93,18 @@ export function CreateLeaveRequest({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">请假日期范围</label>
+          <label className="text-sm font-medium">Leave Date Range</label>
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
           {dateRange?.from && dateRange?.to && (
             <p className="text-sm text-muted-foreground">
-              共 {differenceInDays(dateRange.to, dateRange.from) + 1} 天
+              Total {differenceInDays(dateRange.to, dateRange.from) + 1} days
               {selectedType && selectedType.maxDays < 999 && (
                 <span>
                   {" "}
-                  (最多可请 {selectedType.maxDays} 天)
+                  (Maximum {selectedType.maxDays} days allowed)
                 </span>
               )}
             </p>
@@ -112,16 +112,16 @@ export function CreateLeaveRequest({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">请假原因</label>
+          <label className="text-sm font-medium">Reason for Leave</label>
           <Textarea
-            placeholder="请详细说明您的请假原因..."
+            placeholder="Please provide details for your leave request..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={4}
           />
           {suggestions.length > 0 && (
             <div className="mt-2">
-              <p className="text-sm font-medium mb-1">建议的请假理由：</p>
+              <p className="text-sm font-medium mb-1">Suggested reasons:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion, index) => (
                   <Button
@@ -154,12 +154,12 @@ export function CreateLeaveRequest({
           {isSubmitting || isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              提交中...
+              Submitting...
             </>
           ) : (
             <>
               <Check className="mr-2 h-4 w-4" />
-              提交请假申请
+              Submit Request
             </>
           )}
         </Button>

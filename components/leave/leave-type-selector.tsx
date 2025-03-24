@@ -4,13 +4,6 @@ import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -36,6 +29,13 @@ export function LeaveTypeSelector({
   onSelect,
 }: LeaveTypeSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter leave types by search term
+  const filteredTypes = leaveTypes.filter(type => 
+    type.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    type.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,15 +51,29 @@ export function LeaveTypeSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search leave types..." />
-          <CommandEmpty>No leave types found</CommandEmpty>
-          <CommandGroup>
-            {leaveTypes.map((type) => (
-              <CommandItem
+        <div className="flex flex-col">
+          {/* Search input */}
+          <div className="flex items-center border-b px-3">
+            <input
+              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Search leave types..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          {/* No results message */}
+          {filteredTypes.length === 0 && (
+            <div className="py-6 text-center text-sm">No leave types found</div>
+          )}
+          
+          {/* Leave type list */}
+          <div className="overflow-hidden p-1">
+            {filteredTypes.map((type) => (
+              <div
                 key={type.id}
-                value={type.id}
-                onSelect={() => {
+                className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                onClick={() => {
                   onSelect(type);
                   setOpen(false);
                 }}
@@ -74,10 +88,10 @@ export function LeaveTypeSelector({
                   <span>{type.name}</span>
                   <span className="text-xs text-muted-foreground">{type.description}</span>
                 </div>
-              </CommandItem>
+              </div>
             ))}
-          </CommandGroup>
-        </Command>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );
