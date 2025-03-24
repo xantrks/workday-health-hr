@@ -130,16 +130,16 @@ export default function CycleTab({ userId }: CycleTabProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Column - Calendar */}
-        <Card className="bg-white shadow-sm border-neutral-100 lg:col-span-2">
+        <Card className="border-border shadow-md dark:shadow-primary/5 lg:col-span-2 backdrop-blur-sm dark:bg-card/95">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-bold">Period Calendar</CardTitle>
+                <CardTitle className="text-lg font-bold text-foreground">Period Calendar</CardTitle>
                 <CardDescription className="text-muted-foreground mt-0.5">
                   Track and predict your menstrual cycle
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="px-3 flex items-center gap-1 text-xs bg-primary/5 text-primary border-primary/20">
+              <Badge variant="outline" className="px-3 flex items-center gap-1 text-xs bg-primary/10 text-primary border-primary/30 dark:bg-primary/20">
                 <TrendingUp className="h-3 w-3" />
                 <span>Next Period: {periodStats.nextPeriodDate || '--'}</span>
               </Badge>
@@ -170,25 +170,25 @@ export default function CycleTab({ userId }: CycleTabProps) {
         {/* Right Column - Analysis & Symptoms Combined */}
         <div className="lg:col-span-1">
           {/* Cycle Analysis Card */}
-          <Card className="bg-white shadow-sm border-neutral-100 mb-4">
+          <Card className="border-border shadow-md dark:shadow-primary/5 mb-4 backdrop-blur-sm dark:bg-card/95">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Cycle Analysis</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">Cycle Analysis</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               {periodStats ? (
                 <div className="w-full space-y-3">
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-primary/10 p-2 rounded-lg">
+                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
                       <p className="text-xs text-muted-foreground">Average Cycle</p>
-                      <p className="text-xl font-bold">{periodStats.avgCycleLength || '--'} <span className="text-xs font-normal">days</span></p>
+                      <p className="text-xl font-bold text-foreground">{periodStats.avgCycleLength || '--'} <span className="text-xs font-normal">days</span></p>
                     </div>
-                    <div className="bg-primary/10 p-2 rounded-lg">
+                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
                       <p className="text-xs text-muted-foreground">Period Length</p>
-                      <p className="text-xl font-bold">{periodStats.avgPeriodLength || '--'} <span className="text-xs font-normal">days</span></p>
+                      <p className="text-xl font-bold text-foreground">{periodStats.avgPeriodLength || '--'} <span className="text-xs font-normal">days</span></p>
                     </div>
-                    <div className="bg-primary/10 p-2 rounded-lg">
+                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
                       <p className="text-xs text-muted-foreground">Fertility Window</p>
-                      <p className="text-sm font-semibold pt-0.5">Mar 3 - Mar 8</p>
+                      <p className="text-sm font-semibold pt-0.5 text-foreground">Mar 3 - Mar 8</p>
                     </div>
                   </div>
                   <div className="text-center text-xs text-muted-foreground mt-1">
@@ -202,20 +202,20 @@ export default function CycleTab({ userId }: CycleTabProps) {
           </Card>
           
           {/* Common Symptoms Card */}
-          <Card className="bg-white shadow-sm border-neutral-100">
+          <Card className="border-border shadow-md dark:shadow-primary/5 backdrop-blur-sm dark:bg-card/95">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Common Symptoms</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">Common Symptoms</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               {frequentSymptoms.length > 0 ? (
                 <div className="space-y-2.5">
                   {frequentSymptoms.map((symptom, index) => (
                     <div key={index} className="flex items-center">
-                      <p className="text-xs font-medium w-20">{symptom.label}</p>
+                      <p className="text-xs font-medium w-20 text-foreground">{symptom.label}</p>
                       <div className="flex-1 mx-2">
-                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-muted dark:bg-muted/40 overflow-hidden">
                           <div 
-                            className="h-full bg-primary" 
+                            className="h-full bg-primary dark:bg-primary/80 transition-all" 
                             style={{ width: `${symptom.percentage}%` }}
                           ></div>
                         </div>
