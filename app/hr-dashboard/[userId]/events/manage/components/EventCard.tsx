@@ -1,15 +1,18 @@
 'use client';
 
+import { format, parseISO } from 'date-fns';
+import { Calendar, Clock, MapPin, Trash2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Clock, Edit, ExternalLink, Info, MapPin, MoreVertical, Trash2, Users } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -19,102 +22,90 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 import { Event } from '../types';
-import { formatDate, getBadgeColor } from '../utils';
+import { getEventTypeColor } from '../utils';
 
 interface EventCardProps {
   event: Event;
-  onViewDetails: (event: Event) => void;
-  onDeleteClick: (event: Event) => void;
-  userId: string;
+  onViewDetails: () => void;
+  onDeleteClick: () => void;
+  className?: string;
 }
 
-export default function EventCard({ event, onViewDetails, onDeleteClick, userId }: EventCardProps) {
+export default function EventCard({
+  event,
+  onViewDetails,
+  onDeleteClick,
+  className
+}: EventCardProps) {
   const router = useRouter();
-  const badgeColor = getBadgeColor(event.eventType);
+  const eventTypeColor = getEventTypeColor(event.eventType);
   
   return (
-    <Card className="overflow-hidden border-muted shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className={`pb-3 ${badgeColor.background}`}>
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <CardTitle className="text-lg">{event.title}</CardTitle>
-            <Badge variant="secondary" className={badgeColor.text}>
-              {event.eventType}
-            </Badge>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onViewDetails(event)}>
-                <Info className="mr-2 h-4 w-4" />
-                <span>View Details</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/hr-dashboard/${userId}/events/edit/${event.id}`)}>
-                <Edit className="mr-2 h-4 w-4" />
-                <span>Edit Event</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => onDeleteClick(event)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete Event</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <Card 
+      className={cn(
+        "overflow-hidden border-border/30 dark:border-border/20",
+        className
+      )}
+    >
+      <CardHeader className="space-y-1">
+        <div className="flex items-center justify-between">
+          <Badge 
+            variant="secondary" 
+            className={cn(
+              "px-2 py-0.5 text-xs font-medium",
+              eventTypeColor
+            )}
+          >
+            {event.eventType}
+          </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick();
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
+        <CardTitle className="text-lg">{event.title}</CardTitle>
+        <CardDescription className="line-clamp-2">
+          {event.description}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-4 space-y-3">
-        <div className="flex items-start gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p>{formatDate(event.startDate)}</p>
-              {event.endDate && event.endDate !== event.startDate && (
-                <p className="text-muted-foreground">To: {formatDate(event.endDate)}</p>
-              )}
-            </div>
+      <CardContent className="grid gap-4">
+        <div className="grid gap-2">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Clock className="mr-2 h-4 w-4" />
+            {format(parseISO(event.startDate), 'h:mm a')} - {format(parseISO(event.endDate), 'h:mm a')}
           </div>
           {event.location && (
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span>{event.location}</span>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="mr-2 h-4 w-4" />
+              {event.location}
             </div>
           )}
-          {event.maxAttendees && (
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span>{event.registrationCount || 0} / {event.maxAttendees}</span>
+          {event.maxParticipants && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Users className="mr-2 h-4 w-4" />
+              Max Participants: {event.maxParticipants}
             </div>
           )}
         </div>
-        {event.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {event.description}
-          </p>
-        )}
       </CardContent>
-      <CardFooter className="border-t pt-4 pb-4 flex justify-between gap-2">
-        <Button variant="outline" size="sm" onClick={() => onViewDetails(event)}>
+      <CardFooter>
+        <Button 
+          variant="outline" 
+          className="w-full hover:bg-muted/50 dark:hover:bg-muted/20"
+          onClick={onViewDetails}
+        >
           View Details
         </Button>
-        {event.registrationLink && (
-          <Button size="sm" asChild>
-            <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Registration
-            </a>
-          </Button>
-        )}
       </CardFooter>
     </Card>
   );

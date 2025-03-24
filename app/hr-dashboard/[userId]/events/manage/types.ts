@@ -7,13 +7,13 @@ export interface Event {
   startDate: string;
   endDate: string;
   location: string | null;
-  maxAttendees: number | null | string;
-  registrationLink: string | null;
-  resourceMaterials: string[];
+  maxParticipants?: number;
+  registrationCount?: number;
   createdAt: string;
   updatedAt: string;
   createdById: string;
-  registrationCount: number;
+  registrationLink: string | null;
+  resourceMaterials: string[];
 }
 
 // Calendar event display format
@@ -34,7 +34,7 @@ export interface BadgeColorResult {
 }
 
 // Event filter options
-export type EventFilter = 'all' | 'webinar' | 'workshop' | 'seminar' | 'training' | 'meeting';
+export type EventFilter = 'all' | 'upcoming' | 'past' | 'draft';
 
 // Tab view options
 export type TabView = 'calendar' | 'list'; 

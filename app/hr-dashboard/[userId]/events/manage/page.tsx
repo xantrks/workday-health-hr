@@ -1,23 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import { Calendar, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import FullCalendar from '@fullcalendar/react';
+import { useState, useEffect, useRef } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import { Event, EventFilter } from './types';
-import { fetchEvents, deleteEvent as deleteEventService } from './services';
-import { filterEvents } from './utils';
-
-import HeaderSection from './components/HeaderSection';
 import CalendarView, { CalendarRef } from './components/CalendarView';
-import ListView from './components/ListView';
-import EventDetailsDialog from './components/EventDetailsDialog';
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
-import UnauthorizedView from './components/UnauthorizedView';
+import EventDetailsDialog from './components/EventDetailsDialog';
+import HeaderSection from './components/HeaderSection';
+import ListView from './components/ListView';
 import LoadingView from './components/LoadingView';
+import UnauthorizedView from './components/UnauthorizedView';
+import { fetchEvents, deleteEvent as deleteEventService } from './services';
+import { Event, EventFilter } from './types';
+import { filterEvents } from './utils';
 
 export default function ManageEventsPage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
@@ -115,12 +115,27 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
       />
 
       <Tabs defaultValue="calendar" className="space-y-6">
-        <TabsList className="w-full max-w-md mx-auto">
-          <TabsTrigger value="calendar" className="flex-1">Calendar View</TabsTrigger>
-          <TabsTrigger value="list" className="flex-1">List View</TabsTrigger>
+        <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 p-1 bg-muted/20 dark:bg-muted/10 rounded-lg shadow-sm">
+          <TabsTrigger 
+            value="calendar" 
+            className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Calendar View
+          </TabsTrigger>
+          <TabsTrigger 
+            value="list" 
+            className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
+          >
+            <List className="h-4 w-4 mr-2" />
+            List View
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="calendar" className="border border-muted rounded-md p-6">
+        <TabsContent 
+          value="calendar" 
+          className="border border-muted/50 dark:border-muted/30 rounded-lg p-6 bg-card shadow-sm dark:shadow-primary/5 transition-all duration-200"
+        >
           <CalendarView
             ref={calendarRef}
             events={events}
@@ -129,7 +144,10 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
           />
         </TabsContent>
         
-        <TabsContent value="list">
+        <TabsContent 
+          value="list"
+          className="border border-muted/50 dark:border-muted/30 rounded-lg bg-card shadow-sm dark:shadow-primary/5 transition-all duration-200"
+        >
           <ListView 
             events={events}
             loading={loading}
