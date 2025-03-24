@@ -30,24 +30,24 @@ import { getCategoryCounts, getFilteredResources, getPopularResources } from './
 
 // Color schemes for different resource categories
 const CATEGORY_COLORS = {
-  policy_documents: "bg-blue-50 text-blue-600 border-blue-200",
-  menstrual_health_resources: "bg-rose-50 text-rose-600 border-rose-200",
-  menopause_health_resources: "bg-amber-50 text-amber-600 border-amber-200",
-  workshop_materials: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  others: "bg-purple-50 text-purple-600 border-purple-200",
-  all: "bg-gray-50 text-gray-600 border-gray-200"
+  policy_documents: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800",
+  menstrual_health_resources: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800",
+  menopause_health_resources: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800",
+  workshop_materials: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800",
+  others: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800",
+  all: "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/70 dark:text-gray-300 dark:border-gray-700"
 };
 
 // Color schemes for different file types
 const FILE_TYPE_COLORS = {
-  pdf: "bg-red-50 text-red-600 border-red-200",
-  word: "bg-blue-50 text-blue-600 border-blue-200",
-  presentation: "bg-orange-50 text-orange-600 border-orange-200",
-  spreadsheet: "bg-green-50 text-green-600 border-green-200",
-  image: "bg-purple-50 text-purple-600 border-purple-200",
-  video: "bg-pink-50 text-pink-600 border-pink-200",
-  text: "bg-slate-50 text-slate-600 border-slate-200",
-  all: "bg-gray-50 text-gray-600 border-gray-200"
+  pdf: "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/70 dark:text-red-300 dark:border-red-800",
+  word: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800",
+  presentation: "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/70 dark:text-orange-300 dark:border-orange-800",
+  spreadsheet: "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/70 dark:text-green-300 dark:border-green-800",
+  image: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800",
+  video: "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-950/70 dark:text-pink-300 dark:border-pink-800",
+  text: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/70 dark:text-slate-300 dark:border-slate-700",
+  all: "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/70 dark:text-gray-300 dark:border-gray-700"
 };
 
 // Category display names (shortened) - same as in other components
@@ -137,7 +137,7 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
       description="Access health resources, guides and policy documents to support your wellbeing"
     >
       {/* New Horizontal Search & Filter Bar */}
-      <Card className="mb-6 border shadow-sm bg-white/50 backdrop-blur-sm">
+      <Card className="mb-6 border shadow-sm bg-white/50 dark:bg-card/40 backdrop-blur-sm dark:border-border/40 dark:shadow-primary/5">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <div className="relative w-full md:w-1/3">
@@ -146,7 +146,7 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                 placeholder="Search resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 border-primary/10 focus:border-primary/30 focus:ring-primary/20"
+                className="pl-9 border-primary/10 focus:border-primary/30 focus:ring-primary/20 dark:border-primary/30 dark:focus:border-primary/50 dark:bg-background/50"
               />
             </div>
             
@@ -195,7 +195,7 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                 variant={viewMode === 'grid' ? "secondary" : "outline"} 
                 size="sm" 
                 onClick={() => setViewMode('grid')}
-                className="w-10 h-10 p-0"
+                className="w-10 h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -203,7 +203,7 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
                 variant={viewMode === 'list' ? "secondary" : "outline"} 
                 size="sm" 
                 onClick={() => setViewMode('list')}
-                className="w-10 h-10 p-0"
+                className="w-10 h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -223,13 +223,13 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
               </div>
             </div>
           ) : error ? (
-            <div className="flex justify-center items-center py-10 border border-red-200 rounded-lg bg-red-50">
-              <p className="text-red-600">{error}</p>
+            <div className="flex justify-center items-center py-10 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/30 dark:border-red-800/50 dark:text-red-300">
+              <p className="text-red-600 dark:text-red-300">{error}</p>
             </div>
           ) : filteredResources.length === 0 ? (
-            <div className="flex justify-center items-center py-12 border rounded-lg bg-gray-50/50">
+            <div className="flex justify-center items-center py-12 border rounded-lg bg-gray-50/50 dark:bg-gray-800/30 dark:border-gray-700/50">
               <div className="text-center px-4 py-8">
-                <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <Search className="h-12 w-12 text-gray-300 dark:text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No resources found</h3>
                 <p className="text-muted-foreground mb-2">We couldn&apos;t find any resources matching your search criteria</p>
                 <p className="text-xs text-muted-foreground">Try adjusting your filters or search term</p>

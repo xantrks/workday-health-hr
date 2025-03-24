@@ -11,17 +11,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { trackResourceDownload, trackResourceView } from "../services";
 import { Resource } from "../types";
 import { getFileTypeInfo } from "../utils";
-import { trackResourceDownload, trackResourceView } from "../services";
 
 // Category color mappings - same as ResourceCard
 const CATEGORY_COLORS = {
-  policy_documents: "bg-blue-50 text-blue-600 border-blue-200",
-  menstrual_health_resources: "bg-rose-50 text-rose-600 border-rose-200",
-  menopause_health_resources: "bg-amber-50 text-amber-600 border-amber-200",
-  workshop_materials: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  others: "bg-purple-50 text-purple-600 border-purple-200"
+  policy_documents: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800",
+  menstrual_health_resources: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800",
+  menopause_health_resources: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800",
+  workshop_materials: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800",
+  others: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800"
 };
 
 // Category display names (shortened)
@@ -57,9 +57,9 @@ export default function ResourceList({ resources }: ResourceListProps) {
         return (
           <div 
             key={resource.id} 
-            className="flex items-center border rounded-lg p-3 transition-all hover:shadow-md bg-white group"
+            className="flex items-center border rounded-lg p-3 transition-all hover:shadow-md bg-white dark:bg-card/80 dark:border-border/40 dark:hover:shadow-primary/10 backdrop-blur-sm group"
           >
-            <div className={`p-2 rounded-md ${color} flex items-center justify-center mr-4 h-12 w-12`}>
+            <div className={`p-2 rounded-md ${color} flex items-center justify-center mr-4 h-12 w-12 dark:bg-opacity-90`}>
               {icon}
             </div>
             <div className="flex-1 min-w-0">
@@ -121,12 +121,12 @@ export default function ResourceList({ resources }: ResourceListProps) {
                 {resource.tags && resource.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {resource.tags.slice(0, 2).map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="outline" className="text-xs dark:bg-muted/30 dark:border-border/50">
                         {tag}
                       </Badge>
                     ))}
                     {resource.tags.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs dark:bg-muted/30 dark:border-border/50">
                         +{resource.tags.length - 2}
                       </Badge>
                     )}
@@ -143,7 +143,7 @@ export default function ResourceList({ resources }: ResourceListProps) {
                       size="sm"
                       onClick={() => trackResourceView(resource.id)}
                       asChild
-                      className="bg-primary/10 hover:bg-primary/20 text-primary"
+                      className="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30"
                     >
                       <a href={resource.fileUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4" />
@@ -164,7 +164,7 @@ export default function ResourceList({ resources }: ResourceListProps) {
                       size="sm"
                       onClick={() => trackResourceDownload(resource.id)}
                       asChild
-                      className="border-primary/20 hover:bg-primary/5"
+                      className="border-primary/20 hover:bg-primary/5 dark:border-primary/30 dark:hover:bg-primary/10"
                     >
                       <a 
                         href={resource.fileUrl} 

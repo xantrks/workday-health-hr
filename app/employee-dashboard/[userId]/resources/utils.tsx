@@ -2,6 +2,7 @@
 
 import { FileText, File, Image, Video } from 'lucide-react';
 import React from 'react';
+
 import { Resource, FileTypeInfo, CategoryCounts } from './types';
 
 /**
@@ -47,19 +48,19 @@ export function getFilteredResources(
 export function getFileTypeInfo(fileType: string): FileTypeInfo {
   switch (fileType) {
     case 'pdf':
-      return { icon: <FileText className="h-5 w-5" />, color: 'bg-red-100 text-red-600' };
+      return { icon: <FileText className="h-5 w-5" />, color: 'bg-red-100 text-red-600 dark:bg-red-900/60 dark:text-red-300' };
     case 'word':
-      return { icon: <FileText className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600' };
+      return { icon: <FileText className="h-5 w-5" />, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300' };
     case 'presentation':
-      return { icon: <FileText className="h-5 w-5" />, color: 'bg-orange-100 text-orange-600' };
+      return { icon: <FileText className="h-5 w-5" />, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/60 dark:text-orange-300' };
     case 'spreadsheet':
-      return { icon: <FileText className="h-5 w-5" />, color: 'bg-green-100 text-green-600' };
+      return { icon: <FileText className="h-5 w-5" />, color: 'bg-green-100 text-green-600 dark:bg-green-900/60 dark:text-green-300' };
     case 'image':
-      return { icon: <Image className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600' };
+      return { icon: <Image className="h-5 w-5" />, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/60 dark:text-purple-300' };
     case 'video':
-      return { icon: <Video className="h-5 w-5" />, color: 'bg-pink-100 text-pink-600' };
+      return { icon: <Video className="h-5 w-5" />, color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/60 dark:text-pink-300' };
     default:
-      return { icon: <File className="h-5 w-5" />, color: 'bg-gray-100 text-gray-600' };
+      return { icon: <File className="h-5 w-5" />, color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' };
   }
 }
 
