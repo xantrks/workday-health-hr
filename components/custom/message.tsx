@@ -8,6 +8,8 @@ import { BotIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { LeaveRequestForm } from "../leave/leave-request-form";
+import { LeaveRequests } from "../leave/leave-requests";
 
 export const Message = ({
   chatId,
@@ -51,8 +53,45 @@ export const Message = ({
                   <div key={toolCallId}>
                     {toolName === "getWeather" ? (
                       <Weather weatherAtLocation={result} />
+                    ) : toolName === "getLeaveTypes" ? (
+                      <LeaveRequestForm leaveTypes={result.leaveTypes} />
+                    ) : toolName === "getLeaveReasonSuggestions" ? (
+                      <div className="text-sm text-muted-foreground">
+                        <p className="font-medium mb-1">建议的请假理由：</p>
+                        <ul className="list-disc pl-6">
+                          {result.suggestions.map((suggestion: string, i: number) => (
+                            <li key={i}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : toolName === "validateLeaveRequest" ? (
+                      <div className={`p-4 rounded-md border ${result.isValid ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+                        <p className={`font-medium mb-1 ${result.isValid ? 'text-green-700' : 'text-red-700'}`}>
+                          {result.message}
+                        </p>
+                        {!result.isValid && result.suggestions.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium">改进建议：</p>
+                            <ul className="list-disc pl-6 text-sm text-red-700">
+                              {result.suggestions.map((suggestion: string, i: number) => (
+                                <li key={i}>{suggestion}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ) : toolName === "submitLeaveRequest" ? (
+                      <div className={`p-4 rounded-md border ${result.success ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+                        <p className={`font-medium ${result.success ? 'text-green-700' : 'text-red-700'}`}>
+                          {result.success ? result.message : result.error}
+                        </p>
+                      </div>
+                    ) : toolName === "getUserLeaveRequests" ? (
+                      <LeaveRequests leaveRequests={result.leaveRequests} />
                     ) : (
-                      <div>{JSON.stringify(result, null, 2)}</div>
+                      <div className="whitespace-pre-wrap bg-muted p-2 rounded text-xs">
+                        {JSON.stringify(result, null, 2)}
+                      </div>
                     )}
                   </div>
                 );
@@ -61,6 +100,13 @@ export const Message = ({
                   <div key={toolCallId} className="skeleton">
                     {toolName === "getWeather" ? (
                       <Weather />
+                    ) : toolName === "getLeaveTypes" ? (
+                      <div className="animate-pulse p-4 border rounded-md">
+                        <div className="h-5 bg-gray-200 rounded w-1/3 mb-3"></div>
+                        <div className="h-10 bg-gray-200 rounded mb-3"></div>
+                        <div className="h-10 bg-gray-200 rounded mb-3"></div>
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                      </div>
                     ) : null}
                   </div>
                 );

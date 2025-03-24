@@ -147,3 +147,21 @@ export const healthBenefit = pgTable("HealthBenefit", {
 });
 
 export type HealthBenefit = InferSelectModel<typeof healthBenefit>;
+
+// Leave request table
+export const leaveRequest = pgTable("LeaveRequest", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  employeeId: uuid("employee_id").notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  leaveType: varchar("leave_type", { length: 50 }).notNull(), // such as: sick leave, vacation, menstrual leave, etc.
+  reason: text("reason").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
+  approverNote: text("approver_note"),
+  approverId: uuid("approver_id"),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type LeaveRequest = InferSelectModel<typeof leaveRequest>;
