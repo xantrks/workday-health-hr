@@ -99,15 +99,6 @@ export interface RegisterActionState {
 }
 
 export async function register(prevState: RegisterActionState, formData: FormData): Promise<RegisterActionState> {
-  // Return message indicating registration is disabled
-  return {
-    status: "failed",
-    errors: [{
-      message: "Registration is temporarily disabled. Please contact HR department to create your account."
-    }]
-  };
-
-  /* Original registration code - temporarily disabled
   try {
     const rawFormData = {
       firstName: formData.get("firstName"),
@@ -192,7 +183,6 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       }]
     };
   }
-  */
 }
 
 const getBaseUrl = () => {
