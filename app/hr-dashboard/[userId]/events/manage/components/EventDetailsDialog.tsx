@@ -1,10 +1,11 @@
 'use client';
 
+import { format, parseISO } from 'date-fns';
+import { Calendar, Clock, Edit, MapPin, MoreVertical, Trash2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { CalendarIcon, Clock, Download, Edit, ExternalLink, MapPin, Trash2, Users } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 import { Event } from '../types';
 import { formatDate, getBadgeColor } from '../utils';
@@ -53,7 +55,7 @@ export default function EventDetailsDialog({
         <div className="space-y-4">
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <div className="flex items-center">
-              <CalendarIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+              <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
               <span>Start: {formatDate(event.startDate)}</span>
             </div>
             <div className="flex items-center">
@@ -66,7 +68,7 @@ export default function EventDetailsDialog({
             </div>
             <div className="flex items-center">
               <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-              <span>Registrations: {event.registrationCount} {event.maxAttendees !== "Unlimited" ? `/ ${event.maxAttendees}` : ''}</span>
+              <span>Registrations: {event.registrationCount} {event.maxParticipants ? `/ ${event.maxParticipants}` : ''}</span>
             </div>
           </div>
           
@@ -89,7 +91,7 @@ export default function EventDetailsDialog({
                   rel="noopener noreferrer"
                   className="text-primary hover:underline flex items-center"
                 >
-                  <ExternalLink className="h-4 w-4 mr-1" />
+                  <MoreVertical className="h-4 w-4 mr-1" />
                   {event.registrationLink}
                 </a>
               </div>
@@ -108,7 +110,7 @@ export default function EventDetailsDialog({
                     rel="noopener noreferrer"
                     className="text-primary hover:underline flex items-center"
                   >
-                    <Download className="h-4 w-4 mr-1" />
+                    <MoreVertical className="h-4 w-4 mr-1" />
                     Material {index + 1}
                   </a>
                 ))}
