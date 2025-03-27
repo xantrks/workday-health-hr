@@ -13,6 +13,9 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 
+https://github.com/user-attachments/assets/5c283230-ea92-450b-8c80-aa28bb2045bc
+
+
 ![screencapture-sanicle-ai-vercel-app-login-2025-03-10-21_19_52](https://github.com/user-attachments/assets/d91a1e48-740c-45e3-bb85-557a90371dd6)
 
 ![screencapture-sanicle-ai-vercel-app-register-2025-03-10-21_26_21](https://github.com/user-attachments/assets/f741d109-f760-4293-9adf-8a30a3801a7c)
