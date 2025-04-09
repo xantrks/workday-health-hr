@@ -1,14 +1,28 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Send, X, MessageSquare, BotIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChatMessage, Message } from "./ChatMessage";
+import { ChatMessage } from "./ChatMessage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTheme } from "next-themes";
+
+// Define interface for messages
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+// Add detailed debug logging
+const DEBUG = true;
+function debugLog(message: string, data?: any): void {
+  if (DEBUG) {
+    console.log(`[CHAT_WIDGET_DEBUG] ${message}`, data || '');
+  }
+}
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +40,14 @@ export function ChatWidget() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Component mount debugging
+  useEffect(() => {
+    debugLog("ChatWidget component mounted");
+    return () => {
+      debugLog("ChatWidget component unmounted");
+    };
+  }, []);
+  
   useEffect(() => {
     // Scroll to bottom when messages change
     if (messagesEndRef.current) {
@@ -39,12 +61,17 @@ export function ChatWidget() {
     
     if (input.trim() === "") return;
     
+    debugLog("Submitting message via standard API", { message: input });
+    
     const userMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev: Message[]) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
     
     try {
+      debugLog("Fetching from /api/watsonx-chat endpoint");
+      const startTime = Date.now();
+      
       const response = await fetch("/api/watsonx-chat", {
         method: "POST",
         headers: {
@@ -56,21 +83,27 @@ export function ChatWidget() {
         }),
       });
       
+      const endTime = Date.now();
+      debugLog(`API request completed in ${endTime - startTime}ms with status ${response.status}`);
+      
       if (!response.ok) {
         // Handle HTTP errors gracefully
-        console.error(`API Error: ${response.status} ${response.statusText}`);
+        debugLog("API Error response", { 
+          status: response.status, 
+          statusText: response.statusText 
+        });
         throw new Error(`API Error: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log("API response:", data); // Log complete response
+      debugLog("API response received", data);
       
       // Adjust parsing logic based on watsonx.ai response structure
       let assistantMessage = "Sorry, I couldn't process your request. Please try again.";
       
       // Add logging based on error messages
       if (data.error) {
-        console.error("Error from API:", data.error, data.details);
+        debugLog("Error from API", { error: data.error, details: data.details });
         
         // Handle specific deployment not found error with a helpful message
         if (data.details && data.details.includes("deployment_not_found")) {
@@ -80,31 +113,43 @@ export function ChatWidget() {
         }
       } else {
         // Check different possible response structures - prioritize the sample project's expected format
+        debugLog("Parsing response data structure");
+        
         if (data.results && Array.isArray(data.results) && data.results[0]?.generated_text) {
+          debugLog("Found response in data.results[0].generated_text");
           assistantMessage = data.results[0].generated_text;
         } else if (data.generated_text) {
+          debugLog("Found response in data.generated_text");
           assistantMessage = data.generated_text;
         } else if (data.result && data.result.generated_text) {
+          debugLog("Found response in data.result.generated_text");
           assistantMessage = data.result.generated_text;
         } else if (data.choices && data.choices[0]?.message?.content) {
+          debugLog("Found response in data.choices[0].message.content");
           assistantMessage = data.choices[0].message.content;
+        } else {
+          debugLog("WARNING: Could not find response in any expected location", data);
         }
 
         // Log the parsed message
-        console.log("Parsed assistant message:", assistantMessage);
+        debugLog("Parsed assistant message:", assistantMessage.substring(0, 50) + "...");
       }
       
       // Make sure we have a valid message to display
       if (!assistantMessage || assistantMessage.trim() === "") {
+        debugLog("WARNING: Empty response received");
         assistantMessage = "I received your message but couldn't generate a proper response. Please try again.";
       }
       
-      setMessages((prev) => [
+      setMessages((prev: Message[]) => [
         ...prev,
         { role: "assistant", content: assistantMessage },
       ]);
     } catch (error) {
-      console.error("Error:", error);
+      debugLog("Error during API call", { 
+        message: error instanceof Error ? error.message : String(error),
+        error 
+      });
       
       // Provide a fallback response when API is unavailable
       const fallbackResponses = [
@@ -115,8 +160,9 @@ export function ChatWidget() {
       ];
       
       const randomFallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      debugLog("Using fallback response", { response: randomFallback });
       
-      setMessages((prev) => [
+      setMessages((prev: Message[]) => [
         ...prev,
         {
           role: "assistant",
@@ -125,6 +171,7 @@ export function ChatWidget() {
       ]);
     } finally {
       setIsLoading(false);
+      debugLog("Request handling completed");
     }
   }
 
@@ -133,6 +180,8 @@ export function ChatWidget() {
     e.preventDefault();
     
     if (input.trim() === "") return;
+    
+    debugLog("Submitting message via streaming API", { message: input });
     
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -146,6 +195,9 @@ export function ChatWidget() {
     ]);
     
     try {
+      debugLog("Fetching from streaming API endpoint");
+      const startTime = Date.now();
+      
       const response = await fetch("/api/watsonx-chat", {
         method: "POST",
         headers: {
@@ -157,9 +209,15 @@ export function ChatWidget() {
         }),
       });
       
+      const endTime = Date.now();
+      debugLog(`Streaming API request initiated in ${endTime - startTime}ms with status ${response.status}`);
+      
       if (!response.ok) {
         // Handle HTTP errors gracefully
-        console.error(`API Error: ${response.status} ${response.statusText}`);
+        debugLog("API Error response", { 
+          status: response.status, 
+          statusText: response.statusText 
+        });
         throw new Error(`API Error: ${response.status}`);
       }
       
@@ -168,23 +226,34 @@ export function ChatWidget() {
       if (!reader) throw new Error("Response body is null");
       
       let partialResponse = "";
+      let chunkCounter = 0;
       
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          debugLog("Stream completed after receiving", { 
+            chunkCount: chunkCounter,
+            totalResponseLength: partialResponse.length
+          });
+          break;
+        }
         
         // Decode chunk
         const chunk = new TextDecoder().decode(value);
-        console.log("Streaming chunk:", chunk); // Log streaming response
+        chunkCounter++;
         
         // Parse SSE data
         const lines = chunk.split('\n');
         let parsedChunk = "";
         
+        debugLog(`Processing chunk #${chunkCounter}`, { chunkSize: chunk.length });
+        
         for (const line of lines) {
           if (line.startsWith('data:')) {
             try {
               const jsonData = JSON.parse(line.substring(5));
+              debugLog("Parsed SSE JSON data", { dataKeys: Object.keys(jsonData) });
+              
               if (jsonData.generated_text) {
                 parsedChunk += jsonData.generated_text;
               } else if (jsonData.results && Array.isArray(jsonData.results) && jsonData.results[0]?.generated_text) {
@@ -192,17 +261,24 @@ export function ChatWidget() {
               } else if (jsonData.choices && jsonData.choices[0]?.delta?.content) {
                 parsedChunk += jsonData.choices[0].delta.content;
               } else if (jsonData.error) {
-                console.error("Error in stream:", jsonData.error);
+                debugLog("Error in stream", { error: jsonData.error });
                 throw new Error(jsonData.error);
               }
             } catch (e) {
-              console.error("Failed to parse JSON from SSE", e);
+              debugLog("Failed to parse JSON from SSE", {
+                error: e instanceof Error ? e.message : String(e), 
+                line: line.substring(0, 100) + "..."
+              });
             }
           }
         }
         
         // Update partialResponse
         partialResponse += parsedChunk;
+        debugLog("Updated partial response", { 
+          newContentLength: parsedChunk.length,
+          totalLength: partialResponse.length 
+        });
         
         // Update the last message
         setMessages((prev) => {
@@ -217,6 +293,7 @@ export function ChatWidget() {
 
       // If we ended up with an empty response, provide a fallback
       if (!partialResponse || partialResponse.trim() === "") {
+        debugLog("WARNING: Empty streaming response received");
         setMessages((prev) => {
           const updatedMessages = [...prev];
           updatedMessages[updatedMessages.length - 1] = {
@@ -227,7 +304,10 @@ export function ChatWidget() {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      debugLog("Error during streaming API call", { 
+        message: error instanceof Error ? error.message : String(error),
+        error 
+      });
       
       // Provide a fallback response when API is unavailable
       const fallbackResponses = [
@@ -238,6 +318,7 @@ export function ChatWidget() {
       ];
       
       const randomFallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      debugLog("Using fallback streaming response", { response: randomFallback });
       
       // Update error message
       setMessages((prev) => {
@@ -250,6 +331,7 @@ export function ChatWidget() {
       });
     } finally {
       setIsLoading(false);
+      debugLog("Streaming request handling completed");
     }
   }
 

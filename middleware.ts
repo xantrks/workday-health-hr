@@ -9,19 +9,19 @@ interface Token {
 }
 
 export async function middleware(request: NextRequest) {
-  // 记录访问日志
-  console.log("[Middleware] 访问路径:", request.nextUrl.pathname);
+  // Log access path
+  console.log("[Middleware] Access path:", request.nextUrl.pathname);
   
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
   
-  // 处理根路径访问 - 始终重定向到登录页
+  // Handle root path access - always redirect to login page
   if (path === '/' || path === '') {
-    console.log("[Middleware] 根路径访问，重定向到登录页");
+    console.log("[Middleware] Root path access, redirecting to login page");
     return NextResponse.redirect(new URL('/login', origin));
   }
   
-  // 所有其他路径不做处理
+  // No processing for all other paths
   return NextResponse.next();
 }
 
