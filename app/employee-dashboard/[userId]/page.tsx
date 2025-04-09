@@ -16,6 +16,7 @@ import CycleTab from '../components/CycleTab';
 import { HealthTab } from '../components/HealthTab';
 import { AppointmentsTab } from '../components/AppointmentsTab';
 import ResourcesTab from './components/ResourcesTab';
+import { ChatWidgetWrapper } from '@/components/chat';
 
 export default function EmployeeDashboard({ params }: { params: { userId: string } }) {
   console.log("员工仪表盘页面加载，用户ID:", params.userId);
@@ -119,6 +120,8 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
           <ResourcesTab userId={params.userId} />
         </TabsContent>
       </Tabs>
+      
+      <ChatWidgetWrapper />
     </div>
   );
 } 

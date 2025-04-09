@@ -37,3 +37,4 @@ yarn-error.log*
 .vscode
 .env*.local
 /gemini-chatbot
+/sanicle-cloud-实现AI对话功能的示例项目

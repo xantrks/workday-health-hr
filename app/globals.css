@@ -31,6 +31,7 @@
     --chart-4: 185 60% 40%;
     --chart-5: 185 40% 60%;
     --radius: 0.75rem;
+    --primary-deep: #0050a0;
 }
 
 .dark {
@@ -127,4 +128,36 @@
   body {
     @apply bg-background text-foreground;
     }
+}
+
+/* Additional animation keyframes for the WatsonX chat widget */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10%);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoom-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

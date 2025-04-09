@@ -59,6 +59,48 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        "primary-deep": "var(--primary-deep)",
+      },
+      animation: {
+        "bounce-subtle": "bounce-subtle 5s ease-in-out infinite",
+        "slide-up": "slide-up 0.3s ease-out",
+        "zoom-in": "zoom-in 0.2s ease-out",
+      },
+      keyframes: {
+        "bounce-subtle": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-10%)",
+          },
+        },
+        "slide-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "zoom-in": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
+      },
+      boxShadow: {
+        button: "0 4px 14px 0 rgba(0, 0, 0, 0.2)",
+        "button-hover": "0 6px 20px rgba(0, 0, 0, 0.3)",
+        "card": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        "card-hover": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
       },
     },
   },
