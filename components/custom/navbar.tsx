@@ -15,6 +15,26 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
+// Function to determine dashboard path based on user role
+const getDashboardPath = (user: any) => {
+  if (!user?.id) return "/dashboard";
+  
+  const role = user.role?.toLowerCase();
+  const userId = user.id;
+  
+  if (role === 'superadmin') {
+    return `/super-admin/${userId}`;
+  } else if (role === 'admin' || role === 'orgadmin') {
+    return `/admin-dashboard/${userId}`;
+  } else if (role === 'hr') {
+    return `/hr-dashboard/${userId}`;
+  } else if (role === 'manager') {
+    return `/manager-dashboard/${userId}`;
+  } else {
+    return `/employee-dashboard/${userId}`;
+  }
+};
+
 export const Navbar = async () => {
   let session = await auth();
   const headersList = headers();
@@ -24,6 +44,9 @@ export const Navbar = async () => {
   if (pathname === "/register") {
     return null;
   }
+
+  // Get the correct dashboard path for this user
+  const dashboardPath = session?.user ? getDashboardPath(session.user) : "/dashboard";
 
   return (
     <header className="sticky top-0 w-full bg-background border-b z-50 shadow-sm">
@@ -78,7 +101,7 @@ export const Navbar = async () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Link href="/dashboard" className="w-full">
+                  <Link href={dashboardPath} className="w-full">
                     My Dashboard
                   </Link>
                 </DropdownMenuItem>

@@ -21,6 +21,26 @@ export default function Dashboard() {
       console.log('Session status:', status);
     }
   }, [status, session]);
+
+  // Function to determine dashboard path based on role
+  const getDashboardPath = () => {
+    if (!session?.user?.id) return null;
+    
+    const role = session.user.role?.toLowerCase();
+    const userId = session.user.id;
+    
+    if (role === 'superadmin') {
+      return `/super-admin/${userId}`;
+    } else if (role === 'admin' || role === 'orgadmin') {
+      return `/admin-dashboard/${userId}`;
+    } else if (role === 'hr') {
+      return `/hr-dashboard/${userId}`;
+    } else if (role === 'manager') {
+      return `/manager-dashboard/${userId}`;
+    } else {
+      return `/employee-dashboard/${userId}`;
+    }
+  };
   
   // Handle direct navigation to user dashboard
   const handleDirectNavigation = () => {
@@ -29,8 +49,15 @@ export default function Dashboard() {
     setIsRedirecting(true);
     
     try {
-      // Direct navigation to user-specific dashboard
-      window.location.href = `/employee-dashboard/${session.user.id}`;
+      // Get appropriate dashboard path based on role
+      const dashboardPath = getDashboardPath();
+      if (dashboardPath) {
+        // Direct navigation to user-specific dashboard
+        window.location.href = dashboardPath;
+      } else {
+        console.error("Could not determine dashboard path");
+        setIsRedirecting(false);
+      }
     } catch (error) {
       console.error("Navigation failed:", error);
       setIsRedirecting(false);
@@ -45,6 +72,8 @@ export default function Dashboard() {
       </div>
     );
   }
+  
+  const dashboardPath = getDashboardPath();
   
   return (
     <div className="container mx-auto p-8">
@@ -74,14 +103,14 @@ export default function Dashboard() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a 
-              href={`/employee-dashboard/${session?.user?.id}`}
+              href={dashboardPath || '#'}
               className="bg-green-600 text-white px-4 py-3 rounded text-center hover:bg-green-700 transition-colors"
               target="_self"
             >
               Direct link access
             </a>
             
-            <form action={`/employee-dashboard/${session?.user?.id}`} method="GET">
+            <form action={dashboardPath || '#'} method="GET">
               <button 
                 type="submit" 
                 className="w-full bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 transition-colors"
