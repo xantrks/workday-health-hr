@@ -148,7 +148,11 @@ export async function PATCH(
     }
     
     // Update the user's role
-    const updatedUser = await updateUserRole(userId, data.role);
+    const updatedUser = await updateUserRole({
+      userId,
+      role: data.role,
+      organizationId
+    });
     
     // Don't return sensitive information
     const { password, ...userWithoutPassword } = updatedUser;
