@@ -71,7 +71,10 @@ export default async function Page({
   } else {
     // Use existing chat
     chat = {
-      ...chatFromDb,
+      id: chatFromDb.id,
+      createdAt: chatFromDb.createdAt,
+      userId: chatFromDb.userId,
+      organizationId: chatFromDb.organizationId,
       messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
     };
 
