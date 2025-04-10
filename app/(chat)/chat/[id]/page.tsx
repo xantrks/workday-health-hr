@@ -55,6 +55,7 @@ export default async function Page({
         id,
         messages: initialMessages,
         userId: session.user.id,
+        organizationId: session.user.organizationId || null
       });
       
       chat = {
@@ -62,6 +63,7 @@ export default async function Page({
         createdAt: new Date(),
         messages: initialMessages,
         userId: session.user.id,
+        organizationId: session.user.organizationId || null
       };
     } else {
       return notFound();

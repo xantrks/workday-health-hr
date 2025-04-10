@@ -672,7 +672,7 @@ export async function createHealthRecord({
     // Ensure date format is correct, use UTC date to avoid timezone issues
     const formattedDate = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
     
-    // 确保即使值为0也能正确处理
+    // Ensure values are handled correctly even if they are 0
     const sleepHoursValue = sleepHours !== undefined ? sleepHours : null;
     const stressLevelValue = stressLevel !== undefined ? stressLevel : null;
     
@@ -744,7 +744,7 @@ export async function getHealthRecordsByUserId({
       .from(healthRecord)
       .where(eq(healthRecord.userId, userId));
     
-    // 如果有日期范围，使用SQL直接查询
+    // If date range is provided, use direct SQL query
     if (startDate && endDate) {
       const result = await sql`
         SELECT * FROM "HealthRecord"
@@ -756,7 +756,7 @@ export async function getHealthRecordsByUserId({
       return result;
     }
     
-    // 否则使用Drizzle ORM
+    // Otherwise use Drizzle ORM
     return await query.orderBy(desc(healthRecord.date));
   } catch (error) {
     console.error("Failed to get health records:", error);
@@ -1151,11 +1151,13 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveChat({ 
   id,
   messages,
-  userId 
+  userId,
+  organizationId
 }: { 
   id: string; 
   messages: any[];
   userId: string;
+  organizationId?: string | null;
 }) {
   try {
     // Check if chat exists
@@ -1179,13 +1181,15 @@ export async function saveChat({
           id,
           "createdAt",
           messages,
-          "userId"
+          "userId",
+          "organization_id"
         )
         VALUES (
           ${id},
           ${new Date()},
           ${JSON.stringify(messages)},
-          ${userId}
+          ${userId},
+          ${organizationId || null}
         )
         RETURNING *
       `;

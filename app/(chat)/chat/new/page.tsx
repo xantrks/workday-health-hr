@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { auth } from "@/app/(auth)/auth";
 import { Chat } from "@/components/custom/chat";
 
@@ -49,7 +50,7 @@ How can I support your health journey today?`;
 export default async function NewChatPage({
   searchParams,
 }: {
-  searchParams: { userId: string; role: string };
+  searchParams: { userId: string; role: string; organizationId?: string };
 }) {
   const session = await auth();
 
@@ -72,6 +73,9 @@ export default async function NewChatPage({
   const welcomeMessage = searchParams.role === "hr" 
     ? "Welcome to Sani Assistant for HR professionals. How can I help you with workforce management and employee wellbeing today?"
     : "Welcome to Sani Assistant. I'm here to support your health and wellbeing journey. How can I help you today?";
+
+  // Get organization ID from search params or from user session
+  const organizationId = searchParams.organizationId || session.user.organizationId || null;
 
   // Redirect to new created chat page with initial message parameters
   return redirect(`/chat/${newChatId}?systemMessage=${encodeURIComponent(initialSystemMessage)}&welcomeMessage=${encodeURIComponent(welcomeMessage)}`);
