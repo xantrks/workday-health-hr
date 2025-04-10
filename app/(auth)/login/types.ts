@@ -2,9 +2,9 @@
  * Login action state interface
  */
 export interface LoginActionState {
-  status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
-  role?: string;
-  userId?: string;
+  status: "idle" | "success" | "failed" | "invalid_data";
+  role?: string | null;
+  userId?: string | null;
 }
 
 /**

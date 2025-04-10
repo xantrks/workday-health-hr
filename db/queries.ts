@@ -1209,3 +1209,124 @@ export async function deleteChatById({ id }: { id: string }) {
     throw error;
   }
 }
+
+// Reservation functions
+export async function getReservationById({ id }: { id: string }) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Reservation"
+      WHERE id = ${id}
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to get reservation:", error);
+    throw error;
+  }
+}
+
+export async function updateReservation({ 
+  id, 
+  hasCompletedPayment 
+}: { 
+  id: string; 
+  hasCompletedPayment: boolean 
+}) {
+  try {
+    const result = await sql`
+      UPDATE "Reservation"
+      SET "hasCompletedPayment" = ${hasCompletedPayment}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to update reservation:", error);
+    throw error;
+  }
+}
+
+// User role functions
+export async function updateUserRole({ 
+  userId, 
+  role, 
+  organizationId 
+}: { 
+  userId: string; 
+  role: string;
+  organizationId: string;
+}) {
+  try {
+    // First, get the role ID
+    const roleResult = await sql`
+      SELECT id FROM "Role"
+      WHERE name = ${role}
+    `;
+    
+    if (!roleResult.length) {
+      throw new Error(`Role ${role} not found`);
+    }
+    
+    const roleId = roleResult[0].id;
+    
+    // Check if user already has a role in this organization
+    const existingRoleResult = await sql`
+      SELECT * FROM "UserRole"
+      WHERE user_id = ${userId}
+      AND organization_id = ${organizationId}
+    `;
+    
+    if (existingRoleResult.length) {
+      // Update existing role
+      const result = await sql`
+        UPDATE "UserRole"
+        SET role_id = ${roleId},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId}
+        AND organization_id = ${organizationId}
+        RETURNING *
+      `;
+      
+      // Also update the primary_role_id in User table
+      await sql`
+        UPDATE "User"
+        SET primary_role_id = ${roleId},
+            role = ${role},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId}
+      `;
+      
+      return result[0];
+    } else {
+      // Create new role assignment
+      const result = await sql`
+        INSERT INTO "UserRole" (
+          user_id,
+          role_id,
+          organization_id
+        )
+        VALUES (
+          ${userId},
+          ${roleId},
+          ${organizationId}
+        )
+        RETURNING *
+      `;
+      
+      // Also update the primary_role_id in User table
+      await sql`
+        UPDATE "User"
+        SET primary_role_id = ${roleId},
+            role = ${role},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId}
+      `;
+      
+      return result[0];
+    }
+  } catch (error) {
+    console.error("Failed to update user role:", error);
+    throw error;
+  }
+}

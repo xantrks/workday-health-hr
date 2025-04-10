@@ -68,7 +68,7 @@ export function LoginForm() {
   }, [formState]);
   
   // Function to determine dashboard path based on role
-  const getDashboardPath = (role?: string, id?: string) => {
+  const getDashboardPath = (role?: string | null, id?: string | null) => {
     if (!role || !id) return "/dashboard";
     
     const normalizedRole = role.toLowerCase();
@@ -95,7 +95,7 @@ export function LoginForm() {
     const formData = new FormData(formElement);
     
     try {
-      const result = await login(formState, formData);
+      const result = await login(null, formData);
       setFormState(result);
     } catch (error) {
       console.error("Login error:", error);
