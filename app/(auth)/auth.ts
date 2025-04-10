@@ -1,8 +1,9 @@
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+
 import { JWT } from "next-auth/jwt";
 import type { Session, DefaultSession } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 
 import { sql } from "@/lib/db";
 import { authConfig } from "./auth.config";
@@ -14,6 +15,8 @@ interface BaseUser {
   name: string;
   role: string;
   profileImageUrl?: string;
+  organizationId?: string;
+  isSuperAdmin?: boolean;
 }
 
 // 声明模块扩展来扩展默认的 Session 类型
@@ -30,6 +33,8 @@ interface ExtendedJWT extends JWT {
   id: string;
   role: string;
   profileImageUrl?: string;
+  organizationId?: string;
+  isSuperAdmin?: boolean;
 }
 
 // 数据库用户类型
@@ -41,6 +46,13 @@ interface DbUser {
   last_name: string;
   role: string;
   profile_image_url?: string;
+  organization_id?: string;
+  is_super_admin?: boolean;
+}
+
+// Make sure NEXTAUTH_SECRET is set
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error("Please set NEXTAUTH_SECRET environment variable in .env.local");
 }
 
 export const {
@@ -60,7 +72,7 @@ export const {
 
         try {
           const result = await sql`
-            SELECT id, email, password, first_name, last_name, role, profile_image_url 
+            SELECT id, email, password, first_name, last_name, role, profile_image_url, organization_id, is_super_admin 
             FROM "User" 
             WHERE email = ${email}
           `.then(rows => rows as unknown as DbUser[]);
@@ -84,7 +96,9 @@ export const {
             email: user.email,
             name: `${user.first_name} ${user.last_name}`,
             role: user.role,
-            profileImageUrl: user.profile_image_url
+            profileImageUrl: user.profile_image_url,
+            organizationId: user.organization_id,
+            isSuperAdmin: user.is_super_admin
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -99,6 +113,8 @@ export const {
         token.id = user.id;
         token.role = user.role;
         token.profileImageUrl = user.profileImageUrl;
+        token.organizationId = user.organizationId;
+        token.isSuperAdmin = user.isSuperAdmin;
       }
       return token as ExtendedJWT;
     },
@@ -107,6 +123,8 @@ export const {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.profileImageUrl = token.profileImageUrl as string;
+        session.user.organizationId = token.organizationId as string;
+        session.user.isSuperAdmin = token.isSuperAdmin as boolean;
       }
       return session;
     },
@@ -116,4 +134,5 @@ export const {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
 });

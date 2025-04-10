@@ -10,8 +10,22 @@ import {
   date,
   integer,
   text,
+  foreignKey,
 } from "drizzle-orm/pg-core";
 
+// Organization table for multi-tenant architecture
+export const organization = pgTable("Organization", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subscriptionPlan: varchar("subscription_plan", { length: 50 }).notNull(),
+  logoUrl: varchar("logo_url", { length: 255 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Organization = InferSelectModel<typeof organization>;
+
+// User table with enhanced role system
 export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   firstName: varchar("first_name", { length: 64 }).notNull(),
@@ -22,13 +36,49 @@ export const user = pgTable("User", {
   profileImageUrl: varchar("profile_image_url", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  // Updated role field to include all role types from the hierarchy
   role: varchar("role", { length: 20 }).notNull().default("employee"),
   department: varchar("department", { length: 100 }),
   position: varchar("position", { length: 100 }),
   location: varchar("location", { length: 100 }),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
+  // For superadmin who manages all organizations
+  isSuperAdmin: boolean("is_super_admin").default(false),
 });
 
 export type User = InferSelectModel<typeof user>;
+
+// Employee profile specific data
+export const employee = pgTable("Employee", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => user.id),
+  gender: varchar("gender", { length: 20 }),
+  dateOfBirth: date("date_of_birth"),
+  emergencyContact: varchar("emergency_contact", { length: 255 }),
+  hireDate: date("hire_date"),
+  jobTitle: varchar("job_title", { length: 100 }),
+  managerId: uuid("manager_id").references(() => user.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Employee = InferSelectModel<typeof employee>;
+
+// User-Role relationship for more flexible role assignment
+export const userRole = pgTable("UserRole", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => user.id),
+  role: varchar("role", { length: 20 }).notNull(), // admin, hr, employee, etc.
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type UserRole = InferSelectModel<typeof userRole>;
+
+// ----------------------------------------
+// Existing tables with organization support
+// ----------------------------------------
 
 export const chat = pgTable("Chat", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -64,6 +114,8 @@ export const healthRecord = pgTable("HealthRecord", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   userId: uuid("userId").notNull(),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type HealthRecord = InferSelectModel<typeof healthRecord>;
@@ -82,6 +134,8 @@ export const resourceFile = pgTable("ResourceFile", {
   createdById: uuid("created_by_id").notNull(),
   viewCount: integer("view_count").notNull().default(0), // View count
   downloadCount: integer("download_count").notNull().default(0), // Download count
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type ResourceFile = InferSelectModel<typeof resourceFile>;
@@ -101,6 +155,8 @@ export const event = pgTable("Event", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdById: uuid("created_by_id").notNull(),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type Event = InferSelectModel<typeof event>;
@@ -126,6 +182,8 @@ export const feedback = pgTable("Feedback", {
   anonymous: boolean("anonymous").notNull().default(true),
   userId: uuid("user_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type Feedback = InferSelectModel<typeof feedback>;
@@ -144,6 +202,8 @@ export const healthBenefit = pgTable("HealthBenefit", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdById: uuid("created_by_id").notNull(),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type HealthBenefit = InferSelectModel<typeof healthBenefit>;
@@ -162,6 +222,8 @@ export const leaveRequest = pgTable("LeaveRequest", {
   approvedAt: timestamp("approved_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  // Adding organization relationship
+  organizationId: uuid("organization_id").references(() => organization.id),
 });
 
 export type LeaveRequest = InferSelectModel<typeof leaveRequest>;

@@ -12,6 +12,7 @@ export interface RegisterActionState {
 export interface RegisterFormData {
   firstName: string;
   lastName: string;
+  organizationName: string;
   email: string;
   password: string;
   confirmPassword: string;

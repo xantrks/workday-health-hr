@@ -4,11 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useFormState } from 'react-dom';
 import { toast } from 'sonner';
 
-import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
+import { 
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -26,25 +31,25 @@ export function LoginForm() {
   const [userId, setUserId] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
-  const [state, formAction] = useFormState<LoginActionState, FormData>(login, {
+  const [formState, setFormState] = useState<LoginActionState>({
     status: "idle"
   });
   
   // Monitor state changes
   useEffect(() => {
-    if (state.status === 'success' && state.userId) {
-      console.log('Login successful:', state);
+    if (formState.status === 'success' && formState.userId) {
+      console.log('Login successful:', formState);
       setLoginSuccess(true);
-      setUserId(state.userId);
+      setUserId(formState.userId);
       toast.success("Login successful!");
       
       // Try automatic redirection (but keep backup UI in case of failure)
       const timer = setTimeout(() => {
         try {
           // Get the target dashboard path based on user role
-          const dashboardPath = state.role === 'hr' ? 
-            `/hr-dashboard/${state.userId}` : 
-            `/employee-dashboard/${state.userId}`;
+          const dashboardPath = formState.role === 'hr' ? 
+            `/hr-dashboard/${formState.userId}` : 
+            (formState.role === 'admin' ? `/admin-dashboard/${formState.userId}` : `/employee-dashboard/${formState.userId}`);
             
           // Navigate to appropriate dashboard based on role
           window.location.href = dashboardPath;
@@ -56,28 +61,42 @@ export function LoginForm() {
       
       // Clean up timer
       return () => clearTimeout(timer);
-    } else if (state.status === 'failed') {
+    } else if (formState.status === 'failed') {
       toast.error("Invalid email or password");
       setIsSubmitting(false);
-    } else if (state.status === 'invalid_data') {
+    } else if (formState.status === 'invalid_data') {
       toast.error("Please check your input");
       setIsSubmitting(false);
     }
-  }, [state]);
+  }, [formState]);
   
   // Create a wrapper form action processing function
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    formAction(formData);
+    
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+    
+    try {
+      const result = await login(formState, formData);
+      setFormState(result);
+    } catch (error) {
+      console.error("Login error:", error);
+      setFormState({
+        status: "failed"
+      });
+      setIsSubmitting(false);
+    }
   };
   
   // Modify navigation target address - directly navigate to user-specific dashboard
   const handleDirectNavigation = () => {
     try {
       // Get the target dashboard path based on user role
-      const dashboardPath = state.role === 'hr' ? 
+      const dashboardPath = formState.role === 'hr' ? 
         `/hr-dashboard/${userId}` : 
-        `/employee-dashboard/${userId}`;
+        (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`);
         
       if (window.top) {
         // Directly navigate to user-specific dashboard
@@ -93,9 +112,9 @@ export function LoginForm() {
       form.method = 'GET';
       
       // Set action based on user role
-      form.action = state.role === 'hr' ? 
+      form.action = formState.role === 'hr' ? 
         `/hr-dashboard/${userId}` : 
-        `/employee-dashboard/${userId}`;
+        (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`);
         
       form.target = '_top';
       document.body.appendChild(form);
@@ -119,7 +138,12 @@ export function LoginForm() {
               Go directly to my dashboard
             </button>
             
-            <form action={state.role === 'hr' ? `/hr-dashboard/${userId}` : `/employee-dashboard/${userId}`} method="GET" target="_top">
+            <form action={formState.role === 'hr' ? 
+              `/hr-dashboard/${userId}` : 
+              (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`)} 
+              method="GET" 
+              target="_top"
+            >
               <button 
                 type="submit"
                 className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors"
@@ -129,7 +153,9 @@ export function LoginForm() {
             </form>
             
             <a 
-              href={state.role === 'hr' ? `/hr-dashboard/${userId}` : `/employee-dashboard/${userId}`}
+              href={formState.role === 'hr' ? 
+                `/hr-dashboard/${userId}` : 
+                (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`)}
               className="block w-full bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center"
             >
               Use direct link
@@ -139,7 +165,9 @@ export function LoginForm() {
           {/* Use iframe to preload static page */}
           <iframe 
             ref={iframeRef}
-            src={state.role === 'hr' ? "/hr-dashboard/static" : "/employee-dashboard/static"}
+            src={formState.role === 'hr' ? 
+              "/hr-dashboard/static" : 
+              (formState.role === 'admin' ? "/admin-dashboard/static" : "/employee-dashboard/static")}
             style={{ display: 'none' }}
             title="Preload Page"
           />
@@ -160,7 +188,7 @@ export function LoginForm() {
           />
         </div>
         
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h2 className="text-2xl font-bold tracking-tight">
             Welcome Back
           </h2>
@@ -169,73 +197,92 @@ export function LoginForm() {
           </p>
         </div>
 
-        <AuthForm action={handleSubmit} variant="login">
-          <div className="space-y-5">
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="Enter your email"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="Enter your password"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <SubmitButton
-              className="w-full py-2.5"
-              loading={state.status === "in_progress" || isSubmitting}
-            >
-              Login
-            </SubmitButton>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-background px-2 text-muted-foreground">
-                  or
-                </span>
-              </div>
-            </div>
-
-            <p className="text-center text-sm text-muted-foreground mb-4">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/register"
-                className="font-medium text-primary hover:underline"
-              >
-                Register
-              </Link>
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Multi-Tenant Platform</CardTitle>
+            <CardDescription>
+              Access your organization&apos;s dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Your login provides access to features based on your role:
             </p>
+            <ul className="list-disc pl-5 text-sm text-muted-foreground mt-1">
+              <li>Organization Admin: Manage users and organization settings</li>
+              <li>HR: Configure benefits and handle employee requests</li>
+              <li>Employee: Track health and access resources</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="Enter your email"
+              className="mt-1"
+              disabled={isSubmitting}
+            />
           </div>
-        </AuthForm>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="Enter your password"
+              className="mt-1"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <SubmitButton
+            className="w-full py-2.5"
+            loading={formState.status === "in_progress" || isSubmitting}
+          >
+            Login
+          </SubmitButton>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">
+                or
+              </span>
+            </div>
+          </div>
+
+          <div className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t have an account?
+            </p>
+            <Link
+              href="/register"
+              className="block w-full py-2.5 border border-primary text-primary hover:bg-primary/10 rounded-md text-center text-sm font-medium transition-colors"
+            >
+              Register New Organization
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   );

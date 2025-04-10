@@ -2,7 +2,7 @@ import "server-only";
 
 import { put } from "@vercel/blob";
 import { genSaltSync, hashSync } from "bcryptjs";
-import { desc, eq, and, gte, lte } from "drizzle-orm";
+import { desc, eq, and, gte, lte, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -28,7 +28,20 @@ function getUUID() {
   }
 }
 
-import { user, chat, User, reservation, healthRecord, feedback, leaveRequest, LeaveRequest } from "./schema";
+import { 
+  user, 
+  chat, 
+  User, 
+  reservation, 
+  healthRecord, 
+  feedback, 
+  leaveRequest, 
+  LeaveRequest,
+  organization,
+  Organization,
+  employee,
+  userRole
+} from "./schema";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -46,7 +59,110 @@ interface DbUser {
   agreed_to_terms: boolean;
   created_at: Date;
   updated_at: Date;
+  role: string;
+  organization_id?: string;
+  is_super_admin?: boolean;
 }
+
+// Organization-related functions
+
+export async function createOrganization(data: {
+  name: string;
+  subscriptionPlan: string;
+  logoUrl?: string;
+}) {
+  try {
+    const result = await sql`
+      INSERT INTO "Organization" (
+        name,
+        subscription_plan,
+        logo_url
+      )
+      VALUES (
+        ${data.name},
+        ${data.subscriptionPlan},
+        ${data.logoUrl || null}
+      )
+      RETURNING *
+    `;
+
+    return result[0];
+  } catch (error) {
+    console.error("Failed to create organization:", error);
+    throw error;
+  }
+}
+
+export async function getOrganizationById(id: string) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Organization"
+      WHERE id = ${id}
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to get organization:", error);
+    throw error;
+  }
+}
+
+export async function getAllOrganizations() {
+  try {
+    const result = await sql`
+      SELECT * FROM "Organization"
+      ORDER BY name ASC
+    `;
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to get organizations:", error);
+    throw error;
+  }
+}
+
+export async function updateOrganization(id: string, data: {
+  name?: string;
+  subscriptionPlan?: string;
+  logoUrl?: string;
+}) {
+  try {
+    let updateQuery = '';
+    
+    if (data.name) {
+      updateQuery += `name = ${data.name}, `;
+    }
+    
+    if (data.subscriptionPlan) {
+      updateQuery += `subscription_plan = ${data.subscriptionPlan}, `;
+    }
+    
+    if (data.logoUrl) {
+      updateQuery += `logo_url = ${data.logoUrl}, `;
+    }
+    
+    if (updateQuery === '') {
+      return null; // Nothing to update
+    }
+    
+    // Always add updated_at
+    updateQuery += 'updated_at = CURRENT_TIMESTAMP';
+    
+    const result = await sql`
+      UPDATE "Organization"
+      SET ${sql`${updateQuery}`}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to update organization:", error);
+    throw error;
+  }
+}
+
+// Updated user functions
 
 export async function getUser(email: string): Promise<DbUser[]> {
   // First try to get from Redis cache
@@ -66,7 +182,10 @@ export async function getUser(email: string): Promise<DbUser[]> {
         last_name,
         agreed_to_terms,
         created_at,
-        updated_at
+        updated_at,
+        role,
+        organization_id,
+        is_super_admin
       FROM "User" 
       WHERE email = ${email}
     ` as unknown as DbUser[];
@@ -85,6 +204,31 @@ export async function getUser(email: string): Promise<DbUser[]> {
   }
 }
 
+export async function getUserById(id: string): Promise<DbUser | null> {
+  try {
+    const result = await sql`
+      SELECT 
+        id,
+        email,
+        first_name,
+        last_name,
+        agreed_to_terms,
+        created_at,
+        updated_at,
+        role,
+        organization_id,
+        is_super_admin
+      FROM "User" 
+      WHERE id = ${id}
+    ` as unknown as DbUser[];
+    
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("Failed to get user by ID:", error);
+    throw error;
+  }
+}
+
 export async function createUser(userData: {
   firstName: string;
   lastName: string;
@@ -92,6 +236,8 @@ export async function createUser(userData: {
   password: string;
   agreedToTerms: boolean;
   role?: string;
+  organizationId?: string;
+  isSuperAdmin?: boolean;
   profileImage?: File;
 }) {
   try {
@@ -103,7 +249,9 @@ export async function createUser(userData: {
         email,
         password,
         agreed_to_terms,
-        role
+        role,
+        organization_id,
+        is_super_admin
       )
       VALUES (
         ${userData.firstName},
@@ -111,7 +259,9 @@ export async function createUser(userData: {
         ${userData.email},
         ${userData.password},
         ${userData.agreedToTerms},
-        ${userData.role || 'employee'}
+        ${userData.role || 'employee'},
+        ${userData.organizationId || null},
+        ${userData.isSuperAdmin || false}
       )
       RETURNING *
     `;
@@ -146,114 +296,138 @@ export async function createUser(userData: {
   }
 }
 
-export async function saveChat({
-  id,
-  messages,
-  userId,
-}: {
-  id: string;
-  messages: any;
-  userId: string;
-}) {
+export async function updateUserRole(userId: string, role: string) {
   try {
-    const selectedChats = await db.select().from(chat).where(eq(chat.id, id));
+    const result = await sql`
+      UPDATE "User"
+      SET role = ${role}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to update user role:", error);
+    throw error;
+  }
+}
 
-    if (selectedChats.length > 0) {
-      return await db
-        .update(chat)
-        .set({
-          messages: JSON.stringify(messages),
-        })
-        .where(eq(chat.id, id));
+export async function assignUserToOrganization(userId: string, organizationId: string) {
+  try {
+    const result = await sql`
+      UPDATE "User"
+      SET organization_id = ${organizationId}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to assign user to organization:", error);
+    throw error;
+  }
+}
+
+export async function getUsersByOrganizationId(organizationId: string, role?: string) {
+  try {
+    if (role) {
+      const result = await sql`
+        SELECT 
+          id, 
+          email, 
+          first_name, 
+          last_name, 
+          role,
+          profile_image_url,
+          created_at
+        FROM "User" 
+        WHERE organization_id = ${organizationId}
+        AND role = ${role}
+        ORDER BY first_name ASC
+      `;
+      return result;
+    } else {
+      const result = await sql`
+        SELECT 
+          id, 
+          email, 
+          first_name, 
+          last_name, 
+          role,
+          profile_image_url,
+          created_at
+        FROM "User" 
+        WHERE organization_id = ${organizationId}
+        ORDER BY first_name ASC
+      `;
+      return result;
     }
-
-    return await db.insert(chat).values({
-      id,
-      createdAt: new Date(),
-      messages: JSON.stringify(messages),
-      userId,
-    });
   } catch (error) {
-    console.error("Failed to save chat in database");
+    console.error("Failed to get users by organization:", error);
     throw error;
   }
 }
 
-export async function deleteChatById({ id }: { id: string }) {
-  try {
-    return await db.delete(chat).where(eq(chat.id, id));
-  } catch (error) {
-    console.error("Failed to delete chat by id from database");
-    throw error;
-  }
-}
+// Employee-related functions
 
-export async function getChatsByUserId({ id }: { id: string }) {
-  try {
-    return await db
-      .select()
-      .from(chat)
-      .where(eq(chat.userId, id))
-      .orderBy(desc(chat.createdAt));
-  } catch (error) {
-    console.error("Failed to get chats by user from database");
-    throw error;
-  }
-}
-
-export async function getChatById({ id }: { id: string }) {
-  try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    return selectedChat;
-  } catch (error) {
-    console.error("Failed to get chat by id from database");
-    throw error;
-  }
-}
-
-export async function createReservation({
-  id,
-  userId,
-  details,
-}: {
-  id: string;
+export async function createEmployeeProfile(data: {
   userId: string;
-  details: any;
+  gender?: string;
+  dateOfBirth?: Date;
+  emergencyContact?: string;
+  hireDate?: Date;
+  jobTitle?: string;
+  managerId?: string;
 }) {
-  return await db.insert(reservation).values({
-    id,
-    createdAt: new Date(),
-    userId,
-    hasCompletedPayment: false,
-    details: JSON.stringify(details),
-  });
+  try {
+    const result = await sql`
+      INSERT INTO "Employee" (
+        user_id,
+        gender,
+        date_of_birth,
+        emergency_contact,
+        hire_date,
+        job_title,
+        manager_id
+      )
+      VALUES (
+        ${data.userId},
+        ${data.gender || null},
+        ${data.dateOfBirth || null},
+        ${data.emergencyContact || null},
+        ${data.hireDate || null},
+        ${data.jobTitle || null},
+        ${data.managerId || null}
+      )
+      RETURNING *
+    `;
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to create employee profile:", error);
+    throw error;
+  }
 }
 
-export async function getReservationById({ id }: { id: string }) {
-  const [selectedReservation] = await db
-    .select()
-    .from(reservation)
-    .where(eq(reservation.id, id));
-
-  return selectedReservation;
+export async function getEmployeeProfile(userId: string) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Employee"
+      WHERE user_id = ${userId}
+    `;
+    
+    return result[0] || null;
+  } catch (error) {
+    console.error("Failed to get employee profile:", error);
+    throw error;
+  }
 }
 
-export async function updateReservation({
-  id,
-  hasCompletedPayment,
-}: {
-  id: string;
-  hasCompletedPayment: boolean;
-}) {
-  return await db
-    .update(reservation)
-    .set({
-      hasCompletedPayment,
-    })
-    .where(eq(reservation.id, id));
-}
+// Other functions remain the same but get organization_id parameter where appropriate
 
-// Health record related query functions
+// ... existing code ...
+
+// Update healthRecord functions to include organization_id
 export async function createHealthRecord({
   userId,
   date,
@@ -263,7 +437,8 @@ export async function createHealthRecord({
   mood,
   sleepHours,
   stressLevel,
-  notes
+  notes,
+  organizationId
 }: {
   userId: string;
   date: Date;
@@ -274,6 +449,7 @@ export async function createHealthRecord({
   sleepHours?: number;
   stressLevel?: number;
   notes?: string;
+  organizationId?: string;
 }) {
   try {
     // Ensure date format is correct, use UTC date to avoid timezone issues
@@ -307,6 +483,7 @@ export async function createHealthRecord({
         "sleep_hours",
         "stress_level",
         "notes",
+        "organization_id",
         "created_at",
         "updated_at"
       )
@@ -320,6 +497,7 @@ export async function createHealthRecord({
         ${sleepHoursValue},
         ${stressLevelValue},
         ${notes || null},
+        ${organizationId || null},
         NOW(),
         NOW()
       )
@@ -581,63 +759,31 @@ export async function createLeaveRequest({
   leaveType: string;
   reason: string;
 }) {
-  const requestId = getUUID();
-  
   try {
-    // Use raw SQL query instead of Drizzle ORM to avoid foreign key constraints
-    try {
-      const result = await sql`
-        INSERT INTO "LeaveRequest" (
-          "id",
-          "employee_id",
-          "start_date",
-          "end_date",
-          "leave_type",
-          "reason",
-          "status",
-          "created_at",
-          "updated_at"
-        )
-        VALUES (
-          ${requestId},
-          ${employeeId},
-          ${startDate},
-          ${endDate},
-          ${leaveType},
-          ${reason},
-          'pending',
-          NOW(),
-          NOW()
-        )
-        RETURNING *
-      `;
-      
-      console.log("Successfully created leave request in database:", result[0]);
-      return result[0];
-    } catch (error) {
-      console.error("Error creating leave request in database:", error);
-      
-      // Return mock data since we can't use ORM due to schema conflicts
-      throw error; // Let the outer catch handle creating the mock response
-    }
+    const result = await sql`
+      INSERT INTO "LeaveRequest" (
+        employee_id,
+        start_date,
+        end_date,
+        leave_type,
+        reason,
+        status
+      )
+      VALUES (
+        ${employeeId},
+        ${startDate},
+        ${endDate},
+        ${leaveType},
+        ${reason},
+        'pending'
+      )
+      RETURNING *
+    `;
+    
+    return result[0];
   } catch (error) {
     console.error("Failed to create leave request:", error);
-    
-    // Create a consistent mock response with the same ID
-    const mockData = {
-      id: requestId,
-      employee_id: employeeId,
-      start_date: startDate,
-      end_date: endDate,
-      leave_type: leaveType,
-      reason: reason,
-      status: "pending",
-      created_at: new Date(),
-      updated_at: new Date()
-    };
-    
-    console.log("Returning mock leave request data:", mockData);
-    return mockData;
+    throw error;
   }
 }
 
@@ -750,3 +896,99 @@ export async function updateLeaveRequestStatus({
 //     throw error;
 //   }
 // }
+
+// Chat-related functions
+export async function getChatsByUserId({ id }: { id: string }) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Chat"
+      WHERE "userId" = ${id}
+      ORDER BY "createdAt" DESC
+    `;
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to get chat history:", error);
+    return [];
+  }
+}
+
+export async function getChatById({ id }: { id: string }) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Chat"
+      WHERE id = ${id}
+    `;
+    
+    if (result.length === 0) {
+      throw new Error("Chat not found");
+    }
+    
+    return result[0];
+  } catch (error) {
+    console.error("Failed to get chat by ID:", error);
+    throw error;
+  }
+}
+
+export async function saveChat({ 
+  id,
+  messages,
+  userId 
+}: { 
+  id: string; 
+  messages: any[];
+  userId: string;
+}) {
+  try {
+    // Check if chat exists
+    const existingChat = await sql`
+      SELECT * FROM "Chat"
+      WHERE id = ${id}
+    `;
+    
+    if (existingChat.length > 0) {
+      // Update existing chat
+      await sql`
+        UPDATE "Chat"
+        SET messages = ${JSON.stringify(messages)}
+        WHERE id = ${id}
+      `;
+      return existingChat[0];
+    } else {
+      // Create new chat
+      const result = await sql`
+        INSERT INTO "Chat" (
+          id,
+          "createdAt",
+          messages,
+          "userId"
+        )
+        VALUES (
+          ${id},
+          ${new Date()},
+          ${JSON.stringify(messages)},
+          ${userId}
+        )
+        RETURNING *
+      `;
+      return result[0];
+    }
+  } catch (error) {
+    console.error("Failed to save chat:", error);
+    throw error;
+  }
+}
+
+export async function deleteChatById({ id }: { id: string }) {
+  try {
+    await sql`
+      DELETE FROM "Chat"
+      WHERE id = ${id}
+    `;
+    return true;
+  } catch (error) {
+    console.error("Failed to delete chat:", error);
+    throw error;
+  }
+}

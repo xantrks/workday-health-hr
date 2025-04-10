@@ -4,7 +4,7 @@ import { hashSync } from "bcryptjs";
 import { SignInResponse } from "next-auth/react";
 import { z } from "zod";
 
-import { createUser, getUser } from "@/db/queries";
+import { createOrganization, createUser, getUser } from "@/db/queries";
 import { redis } from "@/lib/db";
 import { sql } from "@/lib/db";
 
@@ -82,6 +82,7 @@ export const login = async (
 const registerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"), 
+  organizationName: z.string().min(2, "Organization name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -103,6 +104,7 @@ export async function register(prevState: RegisterActionState, formData: FormDat
     const rawFormData = {
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
+      organizationName: formData.get("organizationName"),
       email: formData.get("email"),
       password: formData.get("password"),
       confirmPassword: formData.get("confirmPassword"),
@@ -137,14 +139,22 @@ export async function register(prevState: RegisterActionState, formData: FormDat
     // Hash the password
     const hashedPassword = hashSync(validatedData.data.password, 10);
 
-    let newUser;
     try {
-      newUser = await createUser({
+      // 1. Create organization first
+      const organization = await createOrganization({
+        name: validatedData.data.organizationName,
+        subscriptionPlan: "basic" // Default subscription plan
+      });
+
+      // 2. Create user with organization link
+      const newUser = await createUser({
         firstName: validatedData.data.firstName,
         lastName: validatedData.data.lastName,
         email: validatedData.data.email,
         password: hashedPassword,
         agreedToTerms: validatedData.data.agreedToTerms,
+        role: "admin", // First user is the organization admin
+        organizationId: organization.id,
         profileImage: rawFormData.profileImage || undefined
       });
 
@@ -152,7 +162,8 @@ export async function register(prevState: RegisterActionState, formData: FormDat
       await redis.set(`user:${validatedData.data.email}`, {
         firstName: validatedData.data.firstName,
         lastName: validatedData.data.lastName,
-        email: validatedData.data.email
+        email: validatedData.data.email,
+        organizationId: organization.id
       }, {
         ex: 3600 // 1 hour expiration
       });

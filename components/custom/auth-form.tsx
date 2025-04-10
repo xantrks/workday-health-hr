@@ -17,6 +17,7 @@ export function AuthForm({
   defaultValues?: {
     firstName?: string;
     lastName?: string;
+    organizationName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
