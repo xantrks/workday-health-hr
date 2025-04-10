@@ -2,8 +2,9 @@
  * Register action state interface
  */
 export interface RegisterActionState {
-  status: "idle" | "in_progress" | "success" | "failed" | "user_exists" | "invalid_data";
+  status: "idle" | "success" | "user_exists" | "invalid_data" | "failed_organization_creation" | "failed_user_creation" | "failed_role_assignment" | "error";
   errors?: Array<{ message: string }>;
+  message?: string;
 }
 
 /**
@@ -16,6 +17,8 @@ export interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  subscriptionPlan: string;
+  isNewOrganization: boolean;
 }
 
 /**

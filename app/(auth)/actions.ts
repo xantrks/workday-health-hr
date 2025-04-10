@@ -1,203 +1,374 @@
 "use server";
 
-import { hashSync } from "bcryptjs";
-import { SignInResponse } from "next-auth/react";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 
-import { createOrganization, createUser, getUser } from "@/db/queries";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+import { db } from "@/lib/db";
 import { redis } from "@/lib/db";
 import { sql } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit-log";
 
 import { signIn } from "./auth";
 
-const authFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+import { 
+  getUser, 
+  createUser, 
+  createOrganization, 
+  createOrganizationAdmin,
+  createUserRole,
+  getRoleByName
+} from "@/db/queries";
+
+// Login functionality
 
 export interface LoginActionState {
-  status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
-  role?: string;
-  userId?: string;
+  status: "idle" | "success" | "failed" | "invalid_data";
+  role: string | null;
+  userId: string | null;
 }
 
-export const login = async (
-  _: LoginActionState,
-  formData: FormData,
-): Promise<LoginActionState> => {
+export async function login(
+  _: LoginActionState | null,
+  formData: FormData
+): Promise<LoginActionState> {
   try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get("email"),
-      password: formData.get("password"),
-    });
+    // Validate the email
+    const email = formData.get("email");
+    if (!email || typeof email !== "string") {
+      return {
+        status: "invalid_data",
+        role: null,
+        userId: null,
+      };
+    }
 
-    // Get user role and ID
-    const userResult = await sql`
-      SELECT id, role FROM "User" 
-      WHERE email = ${validatedData.email}
+    // Validate the password
+    const password = formData.get("password");
+    if (!password || typeof password !== "string") {
+      return {
+        status: "invalid_data",
+        role: null,
+        userId: null,
+      };
+    }
+
+    // Parse the email and convert to lowercase
+    const lowercaseEmail = email.toLowerCase();
+
+    // Fetch the user from the database
+    const userRows = await getUser(lowercaseEmail);
+    if (userRows.length === 0) {
+      return {
+        status: "failed",
+        role: null,
+        userId: null,
+      };
+    }
+
+    // Get user data including role information
+    const user = userRows[0];
+    
+    // Get additional user data including primary role
+    const userRoleData = await sql`
+      SELECT 
+        u.id, 
+        u.role, 
+        u.organization_id, 
+        u.is_super_admin,
+        r.name as role_name,
+        r.id as role_id
+      FROM "User" u
+      LEFT JOIN "Role" r ON u.primary_role_id = r.id
+      WHERE u.id = ${user.id}
     `;
     
-    const user = userResult[0];
-    if (!user) {
-      console.log("User does not exist:", validatedData.email);
-      return { status: "failed" };
-    }
-    
-    console.log("Retrieved user from database:", user.id, "role:", user.role);
+    const userData = userRoleData[0];
 
-    try {
-      const result = await signIn("credentials", {
-        email: validatedData.email,
-        password: validatedData.password,
-        redirect: false
-      });
-
-      if (result?.error) {
-        console.error("SignIn error:", result.error);
-        return { status: "failed" };
-      }
-
-      // Ensure returning user ID and role (using lowercase role name)
-      const normalizedRole = typeof user.role === 'string' ? user.role.toLowerCase() : 'employee';
-      console.log("Login successful, returning role:", normalizedRole, "User ID:", user.id.toString());
-      
-      return { 
-        status: "success",
-        role: normalizedRole,
-        userId: user.id.toString() // Ensure ID is a string
+    // Compare the password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return {
+        status: "failed",
+        role: null,
+        userId: null,
       };
-    } catch (signInError: any) {
-      console.error("SignIn error:", signInError);
-      return { status: "failed" };
     }
+
+    // Log successful login
+    await createAuditLog({
+      userId: user.id,
+      entityId: user.id,
+      entityType: "user",
+      action: 'login',
+      organizationId: userData.organization_id,
+      details: {
+        email: lowercaseEmail,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    // Sign the user in
+    await signIn("credentials", {
+      redirect: false,
+      email: lowercaseEmail,
+      password,
+    });
+
+    return {
+      status: "success",
+      role: userData.role_name || userData.role || "employee",
+      userId: user.id,
+    };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
-    }
     console.error("Login error:", error);
-    return { status: "failed" };
+    return {
+      status: "failed",
+      role: null,
+      userId: null,
+    };
   }
-};
-
-const registerFormSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"), 
-  organizationName: z.string().min(2, "Organization name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-  agreedToTerms: z.boolean().refine(val => val === true, {
-    message: "You must agree to the terms and conditions"
-  })
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
-});
-
-export interface RegisterActionState {
-  status: "idle" | "in_progress" | "success" | "failed" | "user_exists" | "invalid_data";
-  errors?: Array<{ message: string }>;
 }
 
-export async function register(prevState: RegisterActionState, formData: FormData): Promise<RegisterActionState> {
+// Registration functionality
+
+export interface RegisterActionState {
+  status:
+    | "idle"
+    | "success"
+    | "user_exists"
+    | "invalid_data"
+    | "failed_organization_creation"
+    | "failed_user_creation"
+    | "failed_role_assignment"
+    | "error";
+  message?: string;
+}
+
+const registerSchema = z
+  .object({
+    firstName: z.string().min(2, "First name is required"),
+    lastName: z.string().min(2, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(100, "Password must be less than 100 characters"),
+    confirmPassword: z.string(),
+    organizationName: z.string().min(2, "Organization name is required"),
+    agreedToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the terms and conditions",
+    }),
+    subscriptionPlan: z.string().default("basic"),
+    isNewOrganization: z.boolean().default(true),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export async function register(
+  _: RegisterActionState | null,
+  formData: FormData
+): Promise<RegisterActionState> {
   try {
-    const rawFormData = {
+    // Parse and validate form data
+    const validatedFields = registerSchema.safeParse({
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
-      organizationName: formData.get("organizationName"),
       email: formData.get("email"),
       password: formData.get("password"),
       confirmPassword: formData.get("confirmPassword"),
-      agreedToTerms: formData.get("agreedToTerms") === "on",
-      profileImage: formData.get("profileImage") as File | null
-    };
+      organizationName: formData.get("organizationName"),
+      agreedToTerms: formData.get("agreedToTerms") === "true",
+      subscriptionPlan: formData.get("subscriptionPlan") || "basic",
+      isNewOrganization: formData.get("isNewOrganization") === "true",
+    });
 
-    // Validate form data
-    const validatedData = registerFormSchema.safeParse(rawFormData);
-    
-    if (!validatedData.success) {
+    if (!validatedFields.success) {
       return {
         status: "invalid_data",
-        errors: validatedData.error.errors.map(error => ({
-          message: error.message
-        }))
+        message: validatedFields.error.errors[0].message,
       };
     }
 
-    // Check if user already exists
-    const existingUser = await sql`
-      SELECT email FROM "User" 
-      WHERE email = ${validatedData.data.email}
-    `;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      organizationName,
+      agreedToTerms,
+      subscriptionPlan,
+      isNewOrganization,
+    } = validatedFields.data;
 
+    const lowercaseEmail = email.toLowerCase();
+
+    // Check if user already exists
+    const existingUser = await getUser(lowercaseEmail);
     if (existingUser.length > 0) {
       return {
-        status: "user_exists"
+        status: "user_exists",
+        message: "A user with this email already exists",
+      };
+    }
+
+    // Get organization admin role
+    const orgAdminRole = await getRoleByName("orgadmin");
+    if (!orgAdminRole) {
+      return {
+        status: "error",
+        message: "Could not find organization admin role",
       };
     }
 
     // Hash the password
-    const hashedPassword = hashSync(validatedData.data.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Use transaction to ensure all operations succeed or fail together
     try {
-      // 1. Create organization first
-      const organization = await createOrganization({
-        name: validatedData.data.organizationName,
-        subscriptionPlan: "basic" // Default subscription plan
-      });
-
-      // 2. Create user with organization link
-      const newUser = await createUser({
-        firstName: validatedData.data.firstName,
-        lastName: validatedData.data.lastName,
-        email: validatedData.data.email,
-        password: hashedPassword,
-        agreedToTerms: validatedData.data.agreedToTerms,
-        role: "admin", // First user is the organization admin
-        organizationId: organization.id,
-        profileImage: rawFormData.profileImage || undefined
-      });
-
-      // After successfully creating the user, cache user data to Redis
-      await redis.set(`user:${validatedData.data.email}`, {
-        firstName: validatedData.data.firstName,
-        lastName: validatedData.data.lastName,
-        email: validatedData.data.email,
-        organizationId: organization.id
-      }, {
-        ex: 3600 // 1 hour expiration
-      });
-
-      return {
-        status: "success"
-      };
+      await sql`BEGIN`;
       
-    } catch (dbError) {
-      console.error("Database error:", dbError);
-      // Add type checking
-      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
-        if (dbError.code === '23505') {
-          return {
-            status: "user_exists"
-          };
+      try {
+        // Create organization
+        const newOrganization = await sql`
+          INSERT INTO "Organization" (
+            name,
+            subscription_plan
+          )
+          VALUES (
+            ${organizationName},
+            ${subscriptionPlan}
+          )
+          RETURNING *
+        `;
+
+        if (!newOrganization || newOrganization.length === 0) {
+          throw new Error("Failed to create organization");
         }
+
+        const organizationId = newOrganization[0].id;
+
+        // Create user with organization association
+        const newUser = await sql`
+          INSERT INTO "User" (
+            first_name,
+            last_name,
+            email,
+            password,
+            agreed_to_terms,
+            organization_id,
+            primary_role_id,
+            role
+          )
+          VALUES (
+            ${firstName},
+            ${lastName},
+            ${lowercaseEmail},
+            ${hashedPassword},
+            ${agreedToTerms},
+            ${organizationId},
+            ${orgAdminRole.id},
+            ${"orgadmin"}
+          )
+          RETURNING *
+        `;
+
+        if (!newUser || newUser.length === 0) {
+          throw new Error("Failed to create user");
+        }
+
+        const userId = newUser[0].id;
+
+        // Create organization admin record
+        await sql`
+          INSERT INTO "OrganizationAdmin" (
+            user_id,
+            organization_id,
+            is_main_admin
+          )
+          VALUES (
+            ${userId},
+            ${organizationId},
+            ${true}
+          )
+        `;
+
+        // Create user role assignment
+        await sql`
+          INSERT INTO "UserRole" (
+            user_id,
+            role_id,
+            organization_id
+          )
+          VALUES (
+            ${userId},
+            ${orgAdminRole.id},
+            ${organizationId}
+          )
+        `;
+
+        // Log registration in audit log
+        await createAuditLog({
+          userId: userId,
+          entityId: userId,
+          entityType: 'user',
+          action: 'registration',
+          organizationId: organizationId,
+          details: {
+            email: lowercaseEmail,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
+        await sql`COMMIT`;
+      } catch (error) {
+        await sql`ROLLBACK`;
+        throw error;
       }
-      throw dbError;
+    } catch (txError) {
+      console.error("Transaction error during registration:", txError);
+      return {
+        status: "error",
+        message: `Registration failed: ${txError instanceof Error ? txError.message : "Unknown error"}`,
+      };
     }
 
+    // Cache the user data in Redis for faster login
+    const userData = {
+      email: lowercaseEmail,
+      firstName,
+      lastName,
+      role: "orgadmin",
+    };
+
+    await redis.set(`user:${lowercaseEmail}`, JSON.stringify(userData), {
+      ex: 3600, // Expire in 1 hour
+    });
+
+    return { status: "success" };
   } catch (error) {
     console.error("Registration error:", error);
     return {
-      status: "failed",
-      errors: [{
-        message: error instanceof Error ? error.message : "Failed to create account"
-      }]
+      status: "error",
+      message: "An unexpected error occurred during registration",
     };
   }
 }
 
-const getBaseUrl = () => {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT || 3000}`;
+// Helper functions
+export async function getBaseUrl() {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+
+  return "http://localhost:3000";
 }

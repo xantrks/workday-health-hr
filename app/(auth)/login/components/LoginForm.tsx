@@ -47,11 +47,8 @@ export function LoginForm() {
       const timer = setTimeout(() => {
         try {
           // Get the target dashboard path based on user role
-          const dashboardPath = formState.role === 'hr' ? 
-            `/hr-dashboard/${formState.userId}` : 
-            (formState.role === 'admin' ? `/admin-dashboard/${formState.userId}` : `/employee-dashboard/${formState.userId}`);
-            
-          // Navigate to appropriate dashboard based on role
+          const dashboardPath = getDashboardPath(formState.role, formState.userId);
+          // Navigate to appropriate dashboard
           window.location.href = dashboardPath;
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
@@ -69,6 +66,25 @@ export function LoginForm() {
       setIsSubmitting(false);
     }
   }, [formState]);
+  
+  // Function to determine dashboard path based on role
+  const getDashboardPath = (role?: string, id?: string) => {
+    if (!role || !id) return "/dashboard";
+    
+    const normalizedRole = role.toLowerCase();
+    
+    if (normalizedRole === 'superadmin') {
+      return `/super-admin/${id}`;
+    } else if (normalizedRole === 'orgadmin') {
+      return `/admin-dashboard/${id}`;
+    } else if (normalizedRole === 'hr') {
+      return `/hr-dashboard/${id}`;
+    } else if (normalizedRole === 'manager') {
+      return `/manager-dashboard/${id}`;
+    } else {
+      return `/employee-dashboard/${id}`;
+    }
+  };
   
   // Create a wrapper form action processing function
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -90,13 +106,11 @@ export function LoginForm() {
     }
   };
   
-  // Modify navigation target address - directly navigate to user-specific dashboard
+  // Handle direct navigation to dashboard
   const handleDirectNavigation = () => {
     try {
       // Get the target dashboard path based on user role
-      const dashboardPath = formState.role === 'hr' ? 
-        `/hr-dashboard/${userId}` : 
-        (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`);
+      const dashboardPath = getDashboardPath(formState.role, userId);
         
       if (window.top) {
         // Directly navigate to user-specific dashboard
@@ -110,12 +124,7 @@ export function LoginForm() {
       // Backup method: Create form and submit directly
       const form = document.createElement('form');
       form.method = 'GET';
-      
-      // Set action based on user role
-      form.action = formState.role === 'hr' ? 
-        `/hr-dashboard/${userId}` : 
-        (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`);
-        
+      form.action = getDashboardPath(formState.role, userId);
       form.target = '_top';
       document.body.appendChild(form);
       form.submit();
@@ -135,42 +144,9 @@ export function LoginForm() {
               onClick={handleDirectNavigation}
               className="w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors"
             >
-              Go directly to my dashboard
+              Go to my dashboard
             </button>
-            
-            <form action={formState.role === 'hr' ? 
-              `/hr-dashboard/${userId}` : 
-              (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`)} 
-              method="GET" 
-              target="_top"
-            >
-              <button 
-                type="submit"
-                className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors"
-              >
-                Go through form
-              </button>
-            </form>
-            
-            <a 
-              href={formState.role === 'hr' ? 
-                `/hr-dashboard/${userId}` : 
-                (formState.role === 'admin' ? `/admin-dashboard/${userId}` : `/employee-dashboard/${userId}`)}
-              className="block w-full bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center"
-            >
-              Use direct link
-            </a>
           </div>
-          
-          {/* Use iframe to preload static page */}
-          <iframe 
-            ref={iframeRef}
-            src={formState.role === 'hr' ? 
-              "/hr-dashboard/static" : 
-              (formState.role === 'admin' ? "/admin-dashboard/static" : "/employee-dashboard/static")}
-            style={{ display: 'none' }}
-            title="Preload Page"
-          />
         </div>
       </div>
     );
@@ -253,23 +229,12 @@ export function LoginForm() {
             />
           </div>
 
-          <SubmitButton
-            className="w-full py-2.5"
-            loading={formState.status === "in_progress" || isSubmitting}
+          <SubmitButton 
+            className="w-full"
+            loading={isSubmitting}
           >
-            Login
+            Log In
           </SubmitButton>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">
-                or
-              </span>
-            </div>
-          </div>
 
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">

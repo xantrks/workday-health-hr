@@ -20,7 +20,7 @@ export const Navbar = async () => {
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "";
   
-  // 只在注册页面隐藏导航栏，在登录页显示导航栏
+  // Only hide navbar on registration page, show it on login page
   if (pathname === "/register") {
     return null;
   }
@@ -78,7 +78,7 @@ export const Navbar = async () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Link href={session.user.role === 'hr' ? `/hr-dashboard/${session.user.id}` : `/employee-dashboard/${session.user.id}`} className="w-full">
+                  <Link href="/dashboard" className="w-full">
                     My Dashboard
                   </Link>
                 </DropdownMenuItem>

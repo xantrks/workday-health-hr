@@ -10,6 +10,10 @@ import { twMerge } from "tailwind-merge";
 
 import { Chat } from "@/db/schema";
 
+/**
+ * Combines multiple class names or class name objects into a single string
+ * Uses clsx and tailwind-merge for handling conditional classes and conflicting tailwind classes
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

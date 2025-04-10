@@ -18,6 +18,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 import { register } from "../../actions";
 import { RegisterActionState, RegisterFormData } from '../types';
@@ -35,6 +37,8 @@ export function RegisterForm() {
     email: "",
     password: "",
     confirmPassword: "",
+    subscriptionPlan: "basic",
+    isNewOrganization: true,
   });
   
   const [formState, setFormState] = useState<RegisterActionState>({
@@ -47,8 +51,9 @@ export function RegisterForm() {
     if (formState.status === "user_exists") {
       toast.error("Email already registered");
       setIsSubmitting(false);
-    } else if (formState.status === "failed") {
-      toast.error(formState.errors?.[0]?.message || "Failed to create account");
+    } else if (formState.status === "error" || formState.status === "failed_organization_creation" || 
+              formState.status === "failed_user_creation" || formState.status === "failed_role_assignment") {
+      toast.error(formState.message || "Failed to create account");
       setIsSubmitting(false);
     } else if (formState.status === "invalid_data") {
       formState.errors?.forEach(error => {
@@ -75,16 +80,18 @@ export function RegisterForm() {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
       confirmPassword: formData.get("confirmPassword") as string,
+      subscriptionPlan: formData.get("subscriptionPlan") as string || "basic",
+      isNewOrganization: formData.get("isNewOrganization") === "on",
     });
     
     try {
-      const result = await register(formState, formData);
+      const result = await register(null, formData);
       setFormState(result);
     } catch (error) {
       console.error("Registration error:", error);
       setFormState({
-        status: "failed",
-        errors: [{ message: "An unexpected error occurred" }]
+        status: "error",
+        message: "An unexpected error occurred"
       });
       setIsSubmitting(false);
     }
@@ -104,176 +111,169 @@ export function RegisterForm() {
         
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold tracking-tight">
-            Create Account
+            Create an Account
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Join FemTech to manage your health and work balance
+            Register your organization and start managing women&apos;s health
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">New Organization Setup</CardTitle>
-            <CardDescription>
-              You will create a new organization and be set as its administrator.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              As an administrator, you&apos;ll be able to:
-            </p>
-            <ul className="list-disc pl-5 text-sm text-muted-foreground mt-1">
-              <li>Invite team members</li>
-              <li>Manage organization settings</li>
-              <li>Configure health benefits</li>
-            </ul>
-          </CardContent>
-        </Card>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col items-center gap-2 mb-6">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary">
-              <div className="w-full h-full flex items-center justify-center bg-secondary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-12 h-12 text-primary"
-                >
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+          {/* Personal Information */}
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-lg">Your Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="First Name"
+                    autoComplete="given-name"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Last Name"
+                    autoComplete="family-name"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
-            </div>
-            <input
-              type="file"
-              name="profileImage"
-              accept="image/*"
-              className="hidden"
-              id="profileImage"
-            />
-            <Label
-              htmlFor="profileImage"
-              className="text-sm text-primary cursor-pointer hover:underline"
-            >
-              Upload Profile Image
+              
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Your Email"
+                  autoComplete="email"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Organization Information */}
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-lg">Organization Details</CardTitle>
+              <CardDescription>
+                You will be registered as the Organization Administrator
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start space-x-2">
+                <Checkbox 
+                  id="isNewOrganization" 
+                  name="isNewOrganization" 
+                  defaultChecked 
+                  disabled={isSubmitting}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label htmlFor="isNewOrganization" className="text-sm font-medium">
+                    Register a new organization
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Uncheck if you want to join an existing organization (requires admin approval)
+                  </p>
+                </div>
+              </div>
+              <Separator className="my-1" />
+              
+              <div>
+                <Label htmlFor="organizationName">Organization Name</Label>
+                <Input
+                  id="organizationName"
+                  name="organizationName"
+                  placeholder="Company or Organization Name"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="subscriptionPlan">Subscription Plan</Label>
+                <Select name="subscriptionPlan" defaultValue="basic" disabled={isSubmitting}>
+                  <SelectTrigger id="subscriptionPlan">
+                    <SelectValue placeholder="Select plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  You can upgrade or change your plan anytime
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Agreement */}
+          <div className="flex items-center space-x-2">
+            <Checkbox id="agreedToTerms" name="agreedToTerms" required disabled={isSubmitting} />
+            <Label htmlFor="agreedToTerms" className="text-sm font-medium leading-none">
+              I agree to the{" "}
+              <Link href="/terms" className="text-primary hover:underline">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-primary hover:underline">
+                Privacy Policy
+              </Link>
             </Label>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  placeholder="Enter first name"
-                  className="mt-1"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  placeholder="Enter last name"
-                  className="mt-1"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="organizationName" className="text-sm font-medium">Organization Name</Label>
-              <Input
-                id="organizationName"
-                name="organizationName"
-                type="text"
-                required
-                placeholder="Enter your organization name"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                This will be the name of your company or organization.
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="Enter your email"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                You&apos;ll use this email to log in and receive notifications.
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                placeholder="Set password (min 8 characters)"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                placeholder="Confirm your password"
-                className="mt-1"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="flex items-center gap-2 mt-4">
-              <Checkbox id="agreedToTerms" name="agreedToTerms" required disabled={isSubmitting} />
-              <Label htmlFor="agreedToTerms" className="text-sm">
-                I agree to the{" "}
-                <Link href="/terms" className="text-primary hover:underline">
-                  Terms of Service and Privacy Policy
-                </Link>
-              </Label>
-            </div>
-
-            <SubmitButton 
-              className="w-full py-2.5 mt-2"
-              loading={formState.status === "in_progress" || isSubmitting}
-            >
-              Create Account & Organization
-            </SubmitButton>
-
-            <p className="text-center text-sm text-muted-foreground mt-6 mb-4">
+          {/* Submit button */}
+          <SubmitButton loading={isSubmitting} className="w-full">
+            Create Account
+          </SubmitButton>
+          
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-primary hover:underline"
-              >
-                Sign In
+              <Link href="/login" className="text-primary hover:underline">
+                Log in
               </Link>
             </p>
           </div>

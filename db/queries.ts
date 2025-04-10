@@ -40,7 +40,11 @@ import {
   organization,
   Organization,
   employee,
-  userRole
+  userRole,
+  role,
+  organizationAdmin,
+  superAdmin,
+  hrManager
 } from "./schema";
 
 // Optionally, if not using email/pass login, you can
@@ -64,7 +68,37 @@ interface DbUser {
   is_super_admin?: boolean;
 }
 
-// Organization-related functions
+// Role management functions
+
+export async function getRoleByName(roleName: string) {
+  try {
+    const result = await sql`
+      SELECT * FROM "Role"
+      WHERE name = ${roleName}
+    `;
+    
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("Failed to get role by name:", error);
+    throw error;
+  }
+}
+
+export async function getAllRoles() {
+  try {
+    const result = await sql`
+      SELECT * FROM "Role"
+      ORDER BY level ASC
+    `;
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to get all roles:", error);
+    throw error;
+  }
+}
+
+// Organization management functions
 
 export async function createOrganization(data: {
   name: string;
@@ -162,6 +196,104 @@ export async function updateOrganization(id: string, data: {
   }
 }
 
+// Organization Admin functions
+
+export async function createOrganizationAdmin(data: {
+  userId: string;
+  organizationId: string;
+  isMainAdmin?: boolean;
+  createdById?: string;
+}) {
+  try {
+    const result = await sql`
+      INSERT INTO "OrganizationAdmin" (
+        user_id,
+        organization_id,
+        is_main_admin,
+        created_by_id
+      )
+      VALUES (
+        ${data.userId},
+        ${data.organizationId},
+        ${data.isMainAdmin || false},
+        ${data.createdById || null}
+      )
+      RETURNING *
+    `;
+
+    return result[0];
+  } catch (error) {
+    console.error("Failed to create organization admin:", error);
+    throw error;
+  }
+}
+
+export async function getOrganizationAdmins(organizationId: string) {
+  try {
+    const result = await sql`
+      SELECT oa.*, u.first_name, u.last_name, u.email
+      FROM "OrganizationAdmin" oa
+      JOIN "User" u ON oa.user_id = u.id
+      WHERE oa.organization_id = ${organizationId}
+      ORDER BY oa.is_main_admin DESC, u.first_name ASC
+    `;
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to get organization admins:", error);
+    throw error;
+  }
+}
+
+// User Role functions
+
+export async function createUserRole(data: {
+  userId: string;
+  roleId: string;
+  organizationId: string;
+  assignedById?: string;
+}) {
+  try {
+    const result = await sql`
+      INSERT INTO "UserRole" (
+        user_id,
+        role_id,
+        organization_id,
+        assigned_by_id
+      )
+      VALUES (
+        ${data.userId},
+        ${data.roleId},
+        ${data.organizationId},
+        ${data.assignedById || null}
+      )
+      RETURNING *
+    `;
+
+    return result[0];
+  } catch (error) {
+    console.error("Failed to create user role:", error);
+    throw error;
+  }
+}
+
+export async function getUserRoles(userId: string) {
+  try {
+    const result = await sql`
+      SELECT ur.*, r.name as role_name, r.level as role_level
+      FROM "UserRole" ur
+      JOIN "Role" r ON ur.role_id = r.id
+      WHERE ur.user_id = ${userId}
+      ORDER BY r.level ASC
+    `;
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to get user roles:", error);
+    throw error;
+  }
+}
+
 // Updated user functions
 
 export async function getUser(email: string): Promise<DbUser[]> {
@@ -236,6 +368,7 @@ export async function createUser(userData: {
   password: string;
   agreedToTerms: boolean;
   role?: string;
+  primaryRoleId?: string;
   organizationId?: string;
   isSuperAdmin?: boolean;
   profileImage?: File;
@@ -250,6 +383,7 @@ export async function createUser(userData: {
         password,
         agreed_to_terms,
         role,
+        primary_role_id,
         organization_id,
         is_super_admin
       )
@@ -260,6 +394,7 @@ export async function createUser(userData: {
         ${userData.password},
         ${userData.agreedToTerms},
         ${userData.role || 'employee'},
+        ${userData.primaryRoleId || null},
         ${userData.organizationId || null},
         ${userData.isSuperAdmin || false}
       )
@@ -296,18 +431,100 @@ export async function createUser(userData: {
   }
 }
 
-export async function updateUserRole(userId: string, role: string) {
+export async function updateUser(id: string, userData: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  agreedToTerms?: boolean;
+  role?: string;
+  primaryRoleId?: string;
+  organizationId?: string;
+  isSuperAdmin?: boolean;
+  profileImage?: File;
+}) {
   try {
+    // Build the update query dynamically
+    let updateFields = [];
+    
+    if (userData.firstName !== undefined) {
+      updateFields.push(`first_name = ${userData.firstName}`);
+    }
+    
+    if (userData.lastName !== undefined) {
+      updateFields.push(`last_name = ${userData.lastName}`);
+    }
+    
+    if (userData.email !== undefined) {
+      updateFields.push(`email = ${userData.email}`);
+    }
+    
+    if (userData.password !== undefined) {
+      updateFields.push(`password = ${userData.password}`);
+    }
+    
+    if (userData.agreedToTerms !== undefined) {
+      updateFields.push(`agreed_to_terms = ${userData.agreedToTerms}`);
+    }
+    
+    if (userData.role !== undefined) {
+      updateFields.push(`role = ${userData.role}`);
+    }
+    
+    if (userData.primaryRoleId !== undefined) {
+      updateFields.push(`primary_role_id = ${userData.primaryRoleId}`);
+    }
+    
+    if (userData.organizationId !== undefined) {
+      updateFields.push(`organization_id = ${userData.organizationId}`);
+    }
+    
+    if (userData.isSuperAdmin !== undefined) {
+      updateFields.push(`is_super_admin = ${userData.isSuperAdmin}`);
+    }
+    
+    // Add updated_at timestamp
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+    
+    if (updateFields.length === 0) {
+      return null; // Nothing to update
+    }
+    
+    const updateQuery = updateFields.join(', ');
+    
     const result = await sql`
       UPDATE "User"
-      SET role = ${role}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${userId}
+      SET ${sql`${updateQuery}`}
+      WHERE id = ${id}
       RETURNING *
     `;
-    
-    return result[0];
+
+    const updatedUser = result[0];
+
+    // Handle profile image upload if provided
+    if (userData.profileImage) {
+      try {
+        const { url } = await put(
+          `profile-images/${updatedUser.id}`, 
+          userData.profileImage,
+          { access: 'public' }
+        );
+        
+        await sql`
+          UPDATE "User"
+          SET profile_image_url = ${url}
+          WHERE id = ${updatedUser.id}
+        `;
+        
+        updatedUser.profileImageUrl = url;
+      } catch (uploadError) {
+        console.error("Failed to upload profile image:", uploadError);
+      }
+    }
+
+    return updatedUser;
   } catch (error) {
-    console.error("Failed to update user role:", error);
+    console.error("Failed to update user:", error);
     throw error;
   }
 }
