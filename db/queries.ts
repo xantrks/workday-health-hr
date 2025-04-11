@@ -1138,7 +1138,7 @@ export async function getChatById({ id }: { id: string }) {
     `;
     
     if (result.length === 0) {
-      throw new Error("Chat not found");
+      return null; // Return null instead of throwing an error
     }
     
     return result[0];
@@ -1182,7 +1182,7 @@ export async function saveChat({
           "createdAt",
           messages,
           "userId",
-          "organization_id"
+          organization_id
         )
         VALUES (
           ${id},

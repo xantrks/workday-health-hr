@@ -27,7 +27,14 @@ export default async function Page({
   }
 
   let chat: Chat;
-  const chatFromDb = await getChatById({ id });
+  let chatFromDb;
+  
+  try {
+    chatFromDb = await getChatById({ id });
+  } catch (error) {
+    console.error("Error fetching chat:", error);
+    // Continue with creating a new chat if retrieval fails
+  }
 
   if (!chatFromDb) {
     // If it's a new chat, create an initial chat with system message and welcome message
@@ -50,31 +57,38 @@ export default async function Page({
         });
       }
       
-      // Save new chat to database
-      await saveChat({
-        id,
-        messages: initialMessages,
-        userId: session.user.id,
-        organizationId: session.user.organizationId || null
-      });
+      // Get organization ID from session if available
+      const organizationId = session.user.organizationId || null;
+      
+      try {
+        // Save new chat to database
+        await saveChat({
+          id,
+          messages: initialMessages,
+          userId: session.user.id,
+          organizationId
+        });
+      } catch (error) {
+        console.error("Error saving new chat:", error);
+      }
       
       chat = {
         id,
         createdAt: new Date(),
         messages: initialMessages,
         userId: session.user.id,
-        organizationId: session.user.organizationId || null
+        organizationId
       };
     } else {
       return notFound();
     }
   } else {
-    // Use existing chat
+    // Use existing chat, ensuring organizationId is handled correctly
     chat = {
       id: chatFromDb.id,
       createdAt: chatFromDb.createdAt,
       userId: chatFromDb.userId,
-      organizationId: chatFromDb.organizationId,
+      organizationId: chatFromDb.organization_id || chatFromDb.organizationId || null, // Handle both field names
       messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
     };
 

@@ -121,178 +121,181 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const coreMessages = convertToCoreMessages(messages).filter(
-    (message) => message.content.length > 0,
-  );
+  try {
+    const coreMessages = convertToCoreMessages(messages).filter(
+      (message) => message.content.length > 0,
+    );
 
-  // Generate system prompt based on user role and language
-  const systemPrompt = generateSystemPrompt(messages, session.user.id);
+    // Generate system prompt based on user role and language
+    const systemPrompt = generateSystemPrompt(messages, session.user.id);
 
-  const result = await streamText({
-    model: geminiProModel,
-    system: systemPrompt,
-    messages: coreMessages,
-    tools: {
-      getWeather: {
-        description: "Get the current weather at a location",
-        parameters: z.object({
-          latitude: z.number().describe("Latitude coordinate"),
-          longitude: z.number().describe("Longitude coordinate"),
-        }),
-        execute: async ({ latitude, longitude }) => {
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
-          );
+    const result = await streamText({
+      model: geminiProModel,
+      system: systemPrompt,
+      messages: coreMessages,
+      tools: {
+        getWeather: {
+          description: "Get the current weather at a location",
+          parameters: z.object({
+            latitude: z.number().describe("Latitude coordinate"),
+            longitude: z.number().describe("Longitude coordinate"),
+          }),
+          execute: async ({ latitude, longitude }) => {
+            const response = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+            );
 
-          const weatherData = await response.json();
-          return weatherData;
+            const weatherData = await response.json();
+            return weatherData;
+          },
         },
-      },
-      getLeaveTypes: {
-        description: "Get available leave types for the employee",
-        parameters: z.object({
-          dummy: z.string().optional().describe("Optional parameter, not used")
-        }),
-        execute: async () => {
-          const { leaveTypes } = await generateLeaveTypeOptions();
-          return { leaveTypes };
+        getLeaveTypes: {
+          description: "Get available leave types for the employee",
+          parameters: z.object({
+            dummy: z.string().optional().describe("Optional parameter, not used")
+          }),
+          execute: async () => {
+            const { leaveTypes } = await generateLeaveTypeOptions();
+            return { leaveTypes };
+          },
         },
-      },
-      getLeaveReasonSuggestions: {
-        description: "Get suggestions for leave reason based on leave type",
-        parameters: z.object({
-          leaveType: z.string().describe("The type of leave selected by user"),
-        }),
-        execute: async ({ leaveType }) => {
-          const { suggestions } = await generateLeaveReasonSuggestions({ leaveType });
-          return { suggestions };
+        getLeaveReasonSuggestions: {
+          description: "Get suggestions for leave reason based on leave type",
+          parameters: z.object({
+            leaveType: z.string().describe("The type of leave selected by user"),
+          }),
+          execute: async ({ leaveType }) => {
+            const { suggestions } = await generateLeaveReasonSuggestions({ leaveType });
+            return { suggestions };
+          },
         },
-      },
-      validateLeaveRequest: {
-        description: "Validate the proposed leave request for reasonableness",
-        parameters: z.object({
-          startDate: z.string().describe("Start date of leave in YYYY-MM-DD format"),
-          endDate: z.string().describe("End date of leave in YYYY-MM-DD format"),
-          leaveType: z.string().describe("Type of leave requested"),
-          reason: z.string().describe("Reason for requesting leave"),
-        }),
-        execute: async ({ startDate, endDate, leaveType, reason }) => {
-          return await validateLeaveRequest({
-            startDate,
-            endDate,
-            leaveType,
-            reason
-          });
+        validateLeaveRequest: {
+          description: "Validate the proposed leave request for reasonableness",
+          parameters: z.object({
+            startDate: z.string().describe("Start date of leave in YYYY-MM-DD format"),
+            endDate: z.string().describe("End date of leave in YYYY-MM-DD format"),
+            leaveType: z.string().describe("Type of leave requested"),
+            reason: z.string().describe("Reason for requesting leave"),
+          }),
+          execute: async ({ startDate, endDate, leaveType, reason }) => {
+            return await validateLeaveRequest({
+              startDate,
+              endDate,
+              leaveType,
+              reason
+            });
+          },
         },
-      },
-      submitLeaveRequest: {
-        description: "Submit a formal leave request to the system",
-        parameters: z.object({
-          startDate: z.string().describe("Start date of leave in YYYY-MM-DD format"),
-          endDate: z.string().describe("End date of leave in YYYY-MM-DD format"),
-          leaveType: z.string().describe("Type of leave requested"),
-          reason: z.string().describe("Reason for requesting leave"),
-        }),
-        execute: async ({ startDate, endDate, leaveType, reason }) => {
-          try {
-            if (!session || !session.user) {
-              return { success: false, error: "User not authenticated" };
-            }
-            
-            // Mock the leave request creation if database is not properly set up
+        submitLeaveRequest: {
+          description: "Submit a formal leave request to the system",
+          parameters: z.object({
+            startDate: z.string().describe("Start date of leave in YYYY-MM-DD format"),
+            endDate: z.string().describe("End date of leave in YYYY-MM-DD format"),
+            leaveType: z.string().describe("Type of leave requested"),
+            reason: z.string().describe("Reason for requesting leave"),
+          }),
+          execute: async ({ startDate, endDate, leaveType, reason }) => {
             try {
-              const leaveRequest = await createLeaveRequest({
-                employeeId: session.user.id,
-                startDate: new Date(startDate),
-                endDate: new Date(endDate),
-                leaveType,
-                reason,
-              });
+              if (!session || !session.user) {
+                return { success: false, error: "User not authenticated" };
+              }
               
-              return { 
-                success: true, 
-                leaveRequest,
-                message: "Leave request has been successfully submitted. Please wait for approval."
-              };
-            } catch (dbError) {
-              console.error("Database error when submitting leave request:", dbError);
-              
-              // Return a mock response to ensure UI flow works even if DB fails
-              return { 
-                success: true, 
-                leaveRequest: {
-                  id: generateUUID(),
+              // Mock the leave request creation if database is not properly set up
+              try {
+                const leaveRequest = await createLeaveRequest({
                   employeeId: session.user.id,
                   startDate: new Date(startDate),
                   endDate: new Date(endDate),
                   leaveType,
                   reason,
-                  status: "pending",
-                  createdAt: new Date(),
-                  updatedAt: new Date()
-                },
-                message: "Leave request has been successfully submitted. Please wait for approval."
+                });
+                
+                return { 
+                  success: true, 
+                  leaveRequest,
+                  message: "Leave request has been successfully submitted. Please wait for approval."
+                };
+              } catch (dbError) {
+                console.error("Database error when submitting leave request:", dbError);
+                
+                // Return a mock response to ensure UI flow works even if DB fails
+                return { 
+                  success: true, 
+                  leaveRequest: {
+                    id: generateUUID(),
+                    employeeId: session.user.id,
+                    startDate: new Date(startDate),
+                    endDate: new Date(endDate),
+                    leaveType,
+                    reason,
+                    status: "pending",
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  },
+                  message: "Leave request has been successfully submitted. Please wait for approval."
+                };
+              }
+            } catch (error) {
+              console.error("Failed to submit leave request:", error);
+              return { 
+                success: false, 
+                error: "An error occurred while submitting the leave request. Please try again later."
               };
             }
-          } catch (error) {
-            console.error("Failed to submit leave request:", error);
+          },
+        },
+        getUserLeaveRequests: {
+          description: "Get the user's previous leave requests",
+          parameters: z.object({
+            dummy: z.string().optional().describe("Optional parameter, not used")
+          }),
+          execute: async () => {
+            // Note: Actual code should call the database query function, this is a temporary example
             return { 
-              success: false, 
-              error: "An error occurred while submitting the leave request. Please try again later."
+              leaveRequests: [
+                {
+                  id: "sample-id-1",
+                  leaveType: "Sick Leave",
+                  startDate: "2024-03-20",
+                  endDate: "2024-03-22",
+                  status: "approved",
+                  reason: "Cold, need rest"
+                },
+                {
+                  id: "sample-id-2",
+                  leaveType: "Menstrual Leave",
+                  startDate: "2024-02-15",
+                  endDate: "2024-02-16",
+                  status: "approved",
+                  reason: "Menstrual discomfort"
+                }
+              ] 
             };
-          }
+          },
         },
       },
-      getUserLeaveRequests: {
-        description: "Get the user's previous leave requests",
-        parameters: z.object({
-          dummy: z.string().optional().describe("Optional parameter, not used")
-        }),
-        execute: async () => {
-          // Note: Actual code should call the database query function, this is a temporary example
-          return { 
-            leaveRequests: [
-              {
-                id: "sample-id-1",
-                leaveType: "Sick Leave",
-                startDate: "2024-03-20",
-                endDate: "2024-03-22",
-                status: "approved",
-                reason: "Cold, need rest"
-              },
-              {
-                id: "sample-id-2",
-                leaveType: "Menstrual Leave",
-                startDate: "2024-02-15",
-                endDate: "2024-02-16",
-                status: "approved",
-                reason: "Menstrual discomfort"
-              }
-            ] 
-          };
-        },
-      },
-    },
-    onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
-        try {
-          await saveChat({
-            id,
-            messages: [...coreMessages, ...responseMessages],
-            userId: session.user.id,
-          });
-        } catch (error) {
-          console.error("Failed to save chat");
-        }
-      }
-    },
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "stream-text",
-    },
-  });
+    });
 
-  return result.toDataStreamResponse({});
+    // Save the updated chat with organizationId
+    await saveChat({
+      id,
+      messages: [
+        ...messages,
+        { id: generateUUID(), role: "assistant", content: result },
+      ],
+      userId: session.user.id,
+      organizationId: session.user.organizationId || null,
+    });
+
+    // Return the result using the toDataStreamResponse method provided by AI SDK
+    return result.toDataStreamResponse({});
+  } catch (error) {
+    console.error("Error in chat API:", error);
+    return new Response(
+      JSON.stringify({ error: "An error occurred processing your request" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
 
 export async function DELETE(request: Request) {
@@ -311,6 +314,10 @@ export async function DELETE(request: Request) {
 
   try {
     const chat = await getChatById({ id });
+
+    if (!chat) {
+      return new Response("Chat not found", { status: 404 });
+    }
 
     if (chat.userId !== session.user.id) {
       return new Response("Unauthorized", { status: 401 });

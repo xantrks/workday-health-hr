@@ -5,12 +5,12 @@ import { useSearchParams } from 'next/navigation';
 
 export default function RedirectPage() {
   const searchParams = useSearchParams();
-  const [redirectMessage, setRedirectMessage] = useState('正在准备重定向...');
+  const [redirectMessage, setRedirectMessage] = useState('Preparing to redirect...');
   const [countdown, setCountdown] = useState(3);
   
   useEffect(() => {
     const to = searchParams.get('to') || '/dashboard';
-    console.log('重定向页面加载，目标:', to);
+    console.log('Redirect page loaded, target:', to);
     
     // 显示倒计时
     const timer = setInterval(() => {
@@ -31,7 +31,7 @@ export default function RedirectPage() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-4">页面重定向</h1>
+        <h1 className="text-2xl font-bold mb-4">Page Redirection</h1>
         <p className="mb-6">{redirectMessage}</p>
         <div className="mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500 text-white text-2xl font-bold">

@@ -57,7 +57,7 @@ export const Message = ({
                       <LeaveRequestForm leaveTypes={result.leaveTypes} />
                     ) : toolName === "getLeaveReasonSuggestions" ? (
                       <div className="text-sm text-muted-foreground">
-                        <p className="font-medium mb-1">建议的请假理由：</p>
+                        <p className="font-medium mb-1">Suggested reasons for leave:</p>
                         <ul className="list-disc pl-6">
                           {result.suggestions.map((suggestion: string, i: number) => (
                             <li key={i}>{suggestion}</li>
