@@ -46,7 +46,7 @@ https://github.com/user-attachments/assets/5c283230-ea92-450b-8c80-aa28bb2045bc
 
 # 🌟 Introduction
 
-Sanicle-AI is a comprehensive women's health platform designed for workplace wellness. The platform offers personalized health tracking for female employees while providing HR departments with anonymized data insights for better workforce planning and employee support.
+Sanicle-AI is a comprehensive women's health platform designed for workplace wellness. The platform offers personalized health tracking for female employees while providing HR departments with anonymized data insights for better workforce planning and employee support. Built with a multi-tenant architecture, the system supports organizations of various sizes while maintaining strict data privacy and security.
 
 ## ✨ Key Features
 
@@ -60,6 +60,8 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
 - 🧠 **Mental Health Support** - Track mood and stress levels
 - 🎓 **Resource & Education Center** - Access health educational materials
 - 📅 **Events & Webinars Management** - Register for health-related events
+- 🌍 **Multi-Tenant Architecture** - Support for multiple organizations with isolated data
+- 📲 **Leave Management System** - Request and manage health-related leave
 
 > [!NOTE]
 > - Node.js >= 18.0.0 required
@@ -78,9 +80,11 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
     - [Installation](#installation)
     - [Environment Setup](#environment-setup)
     - [Running the Application](#running-the-application)
-  - [🖥️ Dual Dashboard System](#️-dual-dashboard-system)
+  - [🖥️ Multi-Level Dashboard System](#️-multi-level-dashboard-system)
     - [Employee Dashboard](#employee-dashboard)
     - [HR Dashboard](#hr-dashboard)
+    - [Organization Admin Dashboard](#organization-admin-dashboard)
+    - [Super Admin Dashboard](#super-admin-dashboard)
   - [🤖 AI Assistant Implementation](#-ai-assistant-implementation)
     - [Features](#features)
     - [Technology](#technology)
@@ -128,7 +132,7 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
 </div>
 
 > [!TIP]
-> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The AI functionality leverages Google's advanced AI models through Gemini API.
+> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The AI functionality leverages Google's Gemini AI models through the @ai-sdk/google integration.
 
 ## 📂 Project Structure
 
@@ -139,10 +143,15 @@ sanicle-ai/
 │   ├── api/              # API routes
 │   ├── employee-dashboard/ # Employee-facing features
 │   ├── hr-dashboard/     # HR management features
+│   ├── manager-dashboard/ # Manager dashboard features
+│   ├── admin-dashboard/  # Organization admin features
+│   ├── super-admin/      # System administration features
 │   ├── dashboard/        # Shared dashboard components
 │   └── (chat)/           # AI assistant chat functionality
 ├── components/          # Reusable UI components
 │   ├── custom/          # Custom project components
+│   ├── chat/            # Chat related components
+│   ├── leave/           # Leave management components
 │   └── ui/              # UI library components
 ├── db/                  # Database related files
 │   ├── migrations/      # Database migrations
@@ -155,6 +164,7 @@ sanicle-ai/
 ├── ai/                  # AI functionality
 │   ├── actions.ts       # AI actions and handlers
 │   └── custom-middleware.ts # Middleware for AI features
+├── types/               # TypeScript type definitions
 └── public/              # Static assets
 ```
 
@@ -197,9 +207,14 @@ cp .env.example .env.local
 
 3. Set up the database:
 ```bash
-npx drizzle-kit push:pg
-# or
+npm run db:generate
 npm run migrate
+npm run db:seed:roles
+```
+
+4. (Optional) Seed test data:
+```bash
+npm run db:seed:testdata
 ```
 
 ### Running the Application
@@ -215,7 +230,7 @@ yarn dev
 
 2. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🖥️ Dual Dashboard System
+## 🖥️ Multi-Level Dashboard System
 
 ### Employee Dashboard
 
@@ -227,6 +242,7 @@ The Employee Dashboard provides a personalized health management experience:
 - **Medical Appointments**: Schedule and manage healthcare visits
 - **Leave Management**: Request and track health-related leave
 - **Resource Library**: Access educational materials about women's health
+- **Events Registration**: Sign up for health-related workshops and webinars
 
 ### HR Dashboard
 
@@ -234,10 +250,32 @@ The HR Dashboard offers anonymized health data insights for better workforce pla
 
 - **Workforce Analytics**: View trends in employee health and leave patterns
 - **Leave Management**: Process and approve health-related leave requests
-- **Productivity Insights**: Correlate health patterns with work efficiency
-- **Health Education**: Access resources for supporting employee health
-- **Privacy-Focused Design**: All data is anonymized and aggregated
-- **Event Management**: Organize health-related webinars and workshops
+- **Resource Management**: Upload and manage educational materials
+- **Event Coordination**: Create and manage health-related events
+- **Health Benefits**: Configure and manage health benefit programs
+- **Team Management**: Oversee assigned employee groups
+- **Feedback Analysis**: Review anonymous employee feedback
+
+### Organization Admin Dashboard
+
+The Organization Admin Dashboard provides comprehensive organizational management:
+
+- **User Management**: Create, modify, and deactivate user accounts
+- **Role Assignment**: Assign HR managers and configure access permissions
+- **Subscription Management**: Manage organization subscription details
+- **Organization Settings**: Configure company-specific parameters
+- **Department Structure**: Manage departmental organization
+- **Analytics Overview**: View organization-wide usage statistics
+
+### Super Admin Dashboard
+
+The Super Admin Dashboard offers system-wide administration capabilities:
+
+- **Platform Management**: Monitor and manage the entire platform
+- **Organization Management**: Create and configure organizations
+- **System Health Monitoring**: Track system performance metrics
+- **Global Settings**: Configure platform-wide parameters
+- **Audit Logging**: Review system activity logs for security and compliance
 
 ## 🤖 AI Assistant Implementation
 
@@ -260,25 +298,31 @@ The AI assistant is powered by Google's Gemini AI models through the @ai-sdk/goo
 
 Sanicle-AI prioritizes user privacy with the following measures:
 
+- **Multi-Tenant Architecture**: Complete data isolation between organizations
 - **Data Anonymization**: HR dashboard only shows anonymized, aggregated data
 - **End-to-End Encryption**: Secure communication for all health data
 - **Role-Based Access**: Strict permission system for different user types
 - **GDPR Compliance**: All data handling adheres to GDPR principles
 - **Secure Authentication**: Advanced auth system with JWT and next-auth
+- **Audit Logging**: Comprehensive activity tracking for security monitoring
 
 ## 🗄️ Database Schema
 
 Our database design includes the following core tables:
 
+- `Organization`: Multi-tenant organization information
 - `User`: User profiles and authentication data
+- `Employee`: Employee-specific profile information
+- `Role` and `UserRole`: Role-based access control system
 - `HealthRecord`: Health tracking data including menstrual cycles, symptoms, etc.
+- `LeaveRequest`: Health-related leave management
 - `Chat`: AI assistant conversation history
 - `Reservation`: Medical appointment booking information
 - `ResourceFile`: Educational resources and policy documents
-- `Event`: Health-related events and webinars
-- `EventRegistration`: Tracking event attendance
+- `Event` and `EventRegistration`: Health-related events and webinars
 - `Feedback`: Anonymous employee feedback
 - `HealthBenefit`: Company health benefits information
+- `AuditLog`: System activity tracking for security and compliance
 
 ## 🤝 Contributing
 
