@@ -129,6 +129,9 @@ export const applyRecordStyles = (
   const dayNumberEl = el.querySelector('.fc-daygrid-day-top');
   const dayContentEl = el.querySelector('.fc-daygrid-day-frame');
   
+  // 判断是否为今天
+  const isToday = el.classList.contains('fc-day-today');
+  
   // 清除可能已存在的指示器，避免重复添加
   const existingIndicators = el.querySelectorAll('.flow-indicator, .symptom-indicator, .mood-indicator, .data-indicator, .simplified-indicator, .corner-indicator');
   existingIndicators.forEach(indicator => indicator.remove());
@@ -141,16 +144,27 @@ export const applyRecordStyles = (
     // 获取流量级别样式
     const flowStyle = getFlowLevelStyle(record.periodFlow);
     if (flowStyle) {
-      // 添加背景色
-      el.style.backgroundColor = flowStyle.color;
-      
-      // 为日期数字添加明显的样式
-      if (dayNumberEl) {
-        dayNumberEl.classList.add('font-medium');
-        
-        const dateNum = dayNumberEl.querySelector('a');
+      // 添加背景色 - 如果是今天则使用更透明的背景以不覆盖今天的高亮
+      if (isToday) {
+        // 混合经期背景色和今天的高亮色
+        el.style.backgroundColor = `linear-gradient(rgba(99, 102, 241, 0.15), ${flowStyle.color})`;
+        // 确保今天的日期数字保持高亮
+        const dateNum = dayNumberEl?.querySelector('a');
         if (dateNum) {
-          dateNum.style.color = '#e11d48'; // text-rose-600
+          dateNum.style.color = 'white'; // 保持白色文字
+        }
+      } else {
+        // 不是今天则使用正常的经期背景色
+        el.style.backgroundColor = flowStyle.color;
+        
+        // 为日期数字添加明显的样式
+        if (dayNumberEl) {
+          dayNumberEl.classList.add('font-medium');
+          
+          const dateNum = dayNumberEl.querySelector('a');
+          if (dateNum) {
+            dateNum.style.color = '#e11d48'; // text-rose-600
+          }
         }
       }
     }

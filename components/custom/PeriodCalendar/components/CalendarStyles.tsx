@@ -263,8 +263,73 @@ export const CalendarStyles: React.FC = () => {
         border-color: var(--border);
       }
       
+      /* Today's date highlight - more vibrant */
       .fc .fc-daygrid-day.fc-day-today {
-        background-color: var(--muted);
+        background-color: rgba(99, 102, 241, 0.15) !important; /* 更鲜艳的紫色背景 */
+        position: relative;
+        overflow: visible;
+      }
+      
+      /* Add special marker for today */
+      .fc .fc-daygrid-day.fc-day-today::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        border: 2px solid rgb(99, 102, 241);
+        border-radius: 4px;
+        z-index: 1;
+        pointer-events: none;
+        animation: todayPulse 2s infinite alternate;
+      }
+      
+      /* Add "TODAY" label to the date cell */
+      .fc .fc-daygrid-day.fc-day-today::after {
+        content: 'TODAY';
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        color: rgb(99, 102, 241);
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 1px 3px;
+        border-radius: 3px;
+        letter-spacing: -0.5px;
+        z-index: 2;
+      }
+      
+      /* Pulsing animation for today marker */
+      @keyframes todayPulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+        }
+        100% {
+          box-shadow: 0 0 0 5px rgba(99, 102, 241, 0);
+        }
+      }
+      
+      /* Make today's date number more prominent */
+      .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        background-color: rgb(99, 102, 241) !important;
+        color: white !important;
+        font-weight: 600 !important;
+      }
+      
+      /* Dark mode today highlight */
+      :root.dark .fc .fc-daygrid-day.fc-day-today {
+        background-color: rgba(99, 102, 241, 0.25) !important;
+      }
+      
+      :root.dark .fc .fc-daygrid-day.fc-day-today::before {
+        border-color: rgb(129, 140, 248);
+      }
+      
+      :root.dark .fc .fc-daygrid-day.fc-day-today::after {
+        background-color: rgba(30, 30, 35, 0.8);
+        color: rgb(165, 180, 252);
       }
       
       /* Cell hover effect */
@@ -276,6 +341,13 @@ export const CalendarStyles: React.FC = () => {
       .period-day {
         position: relative;
         transition: all 0.2s ease;
+      }
+      
+      /* Special styling for today if it's also a period day */
+      .fc .fc-daygrid-day.fc-day-today.period-day::before {
+        border-color: rgb(244, 63, 94) !important; /* Rose color border for period day that is also today */
+        border-width: 2px;
+        border-style: dashed;
       }
       
       /* Day with data styling */
@@ -362,6 +434,14 @@ export const CalendarStyles: React.FC = () => {
           width: 1.5rem !important;
           height: 1.5rem !important;
         }
+        
+        /* Adjust TODAY label for smaller screens */
+        .fc .fc-daygrid-day.fc-day-today::after {
+          font-size: 0.5rem;
+          top: 0;
+          right: 0;
+          padding: 0px 2px;
+        }
       }
       
       /* Medium small screens - hide text values */
@@ -388,6 +468,11 @@ export const CalendarStyles: React.FC = () => {
         .corner-indicator.bottom-left {
           left: 1px !important;
           bottom: 1px !important;
+        }
+        
+        /* Adjust today marker for small screens */
+        .fc .fc-daygrid-day.fc-day-today::before {
+          border-width: 1.5px;
         }
       }
       
@@ -421,6 +506,11 @@ export const CalendarStyles: React.FC = () => {
           width: 1.25rem !important;
           height: 1.25rem !important;
           font-size: 0.7rem !important;
+        }
+        
+        /* Hide TODAY label on very small screens */
+        .fc .fc-daygrid-day.fc-day-today::after {
+          display: none;
         }
       }
     `}</style>
