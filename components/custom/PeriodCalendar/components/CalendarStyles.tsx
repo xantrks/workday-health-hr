@@ -257,6 +257,172 @@ export const CalendarStyles: React.FC = () => {
           min-height: 50px !important;
         }
       }
+      
+      /* Base calendar styling */
+      .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--border);
+      }
+      
+      .fc .fc-daygrid-day.fc-day-today {
+        background-color: var(--muted);
+      }
+      
+      /* Cell hover effect */
+      .fc-daygrid-day:hover {
+        background-color: var(--accent-light);
+      }
+      
+      /* Period day styling */
+      .period-day {
+        position: relative;
+        transition: all 0.2s ease;
+      }
+      
+      /* Day with data styling */
+      .has-data {
+        cursor: pointer;
+      }
+      
+      /* Simplified indicators styling */
+      .simplified-indicator {
+        font-size: 0.7rem;
+        line-height: 1;
+        color: var(--foreground);
+      }
+      
+      .simplified-indicator div {
+        background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 0.25rem;
+        padding: 1px 3px;
+        backdrop-filter: blur(2px);
+        margin-bottom: 1px;
+      }
+      
+      /* Dark mode adjustments */
+      :root.dark .simplified-indicator div {
+        background-color: rgba(30, 30, 35, 0.6);
+      }
+      
+      /* Tooltip styling */
+      .period-tooltip {
+        max-width: 200px;
+      }
+      
+      /* Corner indicators styling */
+      .corner-indicator {
+        font-size: 0.7rem;
+        line-height: 1;
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 0.25rem;
+        padding: 1px 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(2px);
+      }
+      
+      /* Dark mode adjustments */
+      :root.dark .corner-indicator {
+        background-color: rgba(30, 30, 35, 0.75);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      
+      /* Make sure date number is not covered */
+      .fc-daygrid-day-top {
+        padding-top: 1.5rem !important;
+        justify-content: center !important;
+      }
+      
+      /* Mobile Responsive Adjustments */
+      @media (max-width: 768px) {
+        /* Smaller cell padding on mobile */
+        .fc-daygrid-day-frame {
+          padding: 0.15rem !important;
+          min-height: 50px !important;
+        }
+        
+        /* Smaller indicators for mobile */
+        .corner-indicator {
+          font-size: 0.65rem;
+          padding: 0px 2px;
+        }
+        
+        /* Reduce padding to fit more content */
+        .fc-daygrid-day-top {
+          padding-top: 1rem !important;
+        }
+        
+        /* Make the days of week header more compact */
+        .fc-col-header-cell {
+          padding: 2px 0 !important;
+        }
+        
+        /* Make the date number smaller */
+        .fc-daygrid-day-number {
+          font-size: 0.75rem !important;
+          width: 1.5rem !important;
+          height: 1.5rem !important;
+        }
+      }
+      
+      /* Medium small screens - hide text values */
+      @media (max-width: 600px) {
+        .corner-indicator span {
+          display: none;
+        }
+        
+        .corner-indicator svg {
+          margin-right: 0 !important;
+        }
+        
+        /* Adjust indicator positions */
+        .corner-indicator.top-left {
+          left: 1px !important;
+          top: 1px !important;
+        }
+        
+        .corner-indicator.top-right {
+          right: 1px !important;
+          top: 1px !important;
+        }
+        
+        .corner-indicator.bottom-left {
+          left: 1px !important;
+          bottom: 1px !important;
+        }
+      }
+      
+      /* Extra small screens - optimize space usage */
+      @media (max-width: 400px) {
+        /* Make icons even smaller on tiny screens */
+        .corner-indicator svg {
+          width: 10px !important;
+          height: 10px !important;
+        }
+        
+        /* Vertical stacked layout only on very small screens */
+        .corner-indicator.top-right {
+          right: 1px !important;
+          top: 1px !important;
+        }
+        
+        /* Move the date number down a bit */
+        .fc-daygrid-day-top {
+          padding-top: 0.75rem !important;
+        }
+        
+        /* Reduce the cell height */
+        .fc-daygrid-day-frame {
+          min-height: 40px !important;
+        }
+        
+        /* Stack days vertically more compactly */
+        .fc .fc-daygrid-day-number {
+          padding: 0 !important;
+          width: 1.25rem !important;
+          height: 1.25rem !important;
+          font-size: 0.7rem !important;
+        }
+      }
     `}</style>
   );
 }; 

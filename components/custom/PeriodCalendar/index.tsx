@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import React, { useState, useEffect, useRef } from "react";
 
 // Internal dependencies
-import { CalendarLegend } from "./components/CalendarLegend";
 import { CalendarStyles } from "./components/CalendarStyles";
 import { renderTooltip } from "./components/CalendarTooltip";
 import { PeriodCalendarProps } from "./types";
@@ -30,6 +29,23 @@ export function PeriodCalendar({
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [month, setMonth] = useState<number>(new Date().getMonth());
   const [initialized, setInitialized] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // 检测是否为移动设备
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // 初始检查
+    checkMobile();
+    
+    // 窗口大小变化时重新检查
+    window.addEventListener('resize', checkMobile);
+    
+    // 清理监听器
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Update local records when record data changes
   useEffect(() => {
@@ -139,13 +155,10 @@ export function PeriodCalendar({
         contentHeight="auto"
         fixedWeekCount={false}
         showNonCurrentDates={true}
-        dayHeaderFormat={{ weekday: 'short' }}
+        dayHeaderFormat={{ weekday: isMobile ? 'narrow' : 'short' }}
         events={convertRecordsToEvents(localRecords)}
         eventContent={eventContent}
       />
-      
-      {/* Legend component */}
-      <CalendarLegend />
       
       {/* Apply styles */}
       <CalendarStyles />

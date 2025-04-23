@@ -96,24 +96,11 @@ export const generateTooltipContent = (record: PeriodRecord): TooltipData => {
   
   if (record.periodFlow && record.periodFlow > 0) {
     const flowStyle = getFlowLevelStyle(record.periodFlow);
-    content += `Flow: ${flowStyle?.label || 'Light'}\n`;
-  }
-  
-  if (record.symptoms && record.symptoms.length > 0) {
-    const symptomLabels = record.symptoms.map(s => {
-      const symptom = SYMPTOM_ICONS[s] || SYMPTOM_ICONS.default;
-      return symptom.label;
-    });
-    content += `Symptoms: ${symptomLabels.join(", ")}\n`;
-  }
-  
-  if (record.mood && record.mood !== "none") {
-    const moodInfo = MOOD_ICONS[record.mood] || MOOD_ICONS.default;
-    content += `Mood: ${moodInfo.label}\n`;
+    content += `Period Flow: ${flowStyle?.label || 'Light'}\n`;
   }
   
   if (record.sleepHours) {
-    content += `Sleep: ${record.sleepHours} hours\n`;
+    content += `Sleep Duration: ${record.sleepHours} hours\n`;
   }
   
   if (record.stressLevel) {
@@ -143,7 +130,7 @@ export const applyRecordStyles = (
   const dayContentEl = el.querySelector('.fc-daygrid-day-frame');
   
   // 清除可能已存在的指示器，避免重复添加
-  const existingIndicators = el.querySelectorAll('.flow-indicator, .symptom-indicator, .mood-indicator, .data-indicator');
+  const existingIndicators = el.querySelectorAll('.flow-indicator, .symptom-indicator, .mood-indicator, .data-indicator, .simplified-indicator, .corner-indicator');
   existingIndicators.forEach(indicator => indicator.remove());
   
   // 添加经期背景色 - 整个单元格
@@ -166,68 +153,52 @@ export const applyRecordStyles = (
           dateNum.style.color = '#e11d48'; // text-rose-600
         }
       }
-      
-      // 创建流量指示器容器
-      const dataIndicator = document.createElement('div');
-      dataIndicator.className = 'data-indicator absolute bottom-1 left-0 right-0 flex items-center justify-center gap-1';
-      
-      // 添加流量指示点
-      let dots = '';
-      const dotCount = Math.min(Math.ceil(record.periodFlow), 3);
-      for (let i = 0; i < dotCount; i++) {
-        dots += `<span class="inline-block w-1.5 h-1.5 rounded-full ${flowStyle.dotClass}"></span>`;
-      }
-      
-      dataIndicator.innerHTML = dots;
-      
-      if (dayContentEl) {
-        dayContentEl.appendChild(dataIndicator);
-      }
     }
   }
   
-  // 添加顶部数据指示栏
-  const topIndicator = document.createElement('div');
-  topIndicator.className = 'absolute top-1 right-1 flex items-center justify-end gap-1';
-  
-  let hasIndicators = false;
-  
-  // 添加症状图标
-  if (record.symptoms && record.symptoms.length > 0) {
-    const primarySymptom = getPrimarySymptom(record.symptoms);
-    const symptomInfo = SYMPTOM_ICONS[primarySymptom] || SYMPTOM_ICONS.default;
+  // 1. Period Flow - 左上角 - 使用更合适的水滴图标
+  if (record.periodFlow && record.periodFlow > 0) {
+    const flowIndicator = document.createElement('div');
+    flowIndicator.className = 'corner-indicator top-left left-1 top-1 absolute flex items-center gap-1 text-xs';
     
-    // 创建症状图标
-    const symptomIcon = document.createElement('div');
-    symptomIcon.className = `symptom-indicator w-5 h-5 flex items-center justify-center rounded-full ${symptomInfo.color}`;
-    symptomIcon.setAttribute('title', `Symptoms: ${record.symptoms.join(', ')}`);
-    symptomIcon.innerHTML = symptomInfo.icon;
+    // 更合适的流量图标 - 使用水滴图标
+    const dropIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-rose-500 mr-0.5">
+      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
+    </svg>`;
     
-    topIndicator.appendChild(symptomIcon);
-    hasIndicators = true;
+    flowIndicator.innerHTML = `${dropIcon} <span class="font-medium text-rose-500">${record.periodFlow}</span>`;
+    el.appendChild(flowIndicator);
   }
   
-  // 添加情绪指示图标
-  if (record.mood && record.mood !== "none") {
-    const moodInfo = MOOD_ICONS[record.mood] || MOOD_ICONS.default;
+  // 2. Sleep Duration - 右上角 - 保持月亮图标不变
+  if (record.sleepHours) {
+    const sleepIndicator = document.createElement('div');
+    sleepIndicator.className = 'corner-indicator top-right right-1 top-1 absolute flex items-center gap-1 text-xs';
     
-    // 创建情绪图标
-    const moodIcon = document.createElement('div');
-    moodIcon.className = `mood-indicator w-5 h-5 flex items-center justify-center rounded-full ${moodInfo.color}`;
-    moodIcon.setAttribute('title', `Mood: ${moodInfo.label}`);
-    moodIcon.innerHTML = moodInfo.icon;
+    const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-indigo-500 mr-0.5">
+      <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" />
+    </svg>`;
     
-    topIndicator.appendChild(moodIcon);
-    hasIndicators = true;
+    sleepIndicator.innerHTML = `${moonIcon} <span class="font-medium text-indigo-500">${record.sleepHours}</span>`;
+    el.appendChild(sleepIndicator);
   }
   
-  // 只有存在指示器时才添加到DOM
-  if (hasIndicators) {
-    el.appendChild(topIndicator);
+  // 3. Stress Level - 左下角 - 使用更合适的压力图标
+  if (record.stressLevel) {
+    const stressIndicator = document.createElement('div');
+    stressIndicator.className = 'corner-indicator bottom-left left-1 bottom-1 absolute flex items-center gap-1 text-xs';
+    
+    // 更合适的压力图标 - 使用活动/心跳图标
+    const stressIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-amber-500 mr-0.5">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+    </svg>`;
+    
+    stressIndicator.innerHTML = `${stressIcon} <span class="font-medium text-amber-500">${record.stressLevel}</span>`;
+    el.appendChild(stressIndicator);
   }
   
   // 为单元格添加强调效果
-  if (record.periodFlow || record.symptoms?.length || (record.mood && record.mood !== "none")) {
+  if (record.periodFlow || record.sleepHours || record.stressLevel) {
     el.classList.add('has-data');
   }
   
