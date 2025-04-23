@@ -9,6 +9,10 @@ import {
 import MetricCard from '../MetricCard';
 import { MetricCardData } from '../../types';
 
+/**
+ * OverviewTab component for HR dashboard
+ * Enhanced for mobile responsiveness
+ */
 export default function OverviewTab() {
   // Mock data for the metric cards
   const metricCardsData: MetricCardData[] = [
@@ -47,29 +51,29 @@ export default function OverviewTab() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         {metricCardsData.map((card, index) => (
           <MetricCard key={index} data={card} />
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle>Monthly Health Overview</CardTitle>
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+            <CardTitle className="text-base sm:text-lg">Monthly Health Overview</CardTitle>
           </CardHeader>
-          <CardContent className="h-80 flex items-center justify-center border-t pt-4">
-            <p className="text-muted-foreground text-center">Health data chart will be displayed here</p>
+          <CardContent className="h-64 sm:h-80 flex items-center justify-center border-t pt-3 sm:pt-4 px-3 sm:px-6">
+            <p className="text-sm text-muted-foreground text-center">Health data chart will be displayed here</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardHeader>
-            <CardTitle>Department Distribution</CardTitle>
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+            <CardTitle className="text-base sm:text-lg">Department Distribution</CardTitle>
           </CardHeader>
-          <CardContent className="h-80 flex items-center justify-center border-t pt-4">
-            <p className="text-muted-foreground text-center">Department distribution chart will be displayed here</p>
+          <CardContent className="h-64 sm:h-80 flex items-center justify-center border-t pt-3 sm:pt-4 px-3 sm:px-6">
+            <p className="text-sm text-muted-foreground text-center">Department distribution chart will be displayed here</p>
           </CardContent>
         </Card>
       </div>

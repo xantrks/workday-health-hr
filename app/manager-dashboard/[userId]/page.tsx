@@ -30,17 +30,21 @@ export default async function ManagerDashboardPage({ params }: { params: { userI
   };
 
   return (
-    <DashboardShell>
+    <DashboardShell className="px-2 sm:px-4 py-2 sm:py-4">
       <DashboardHeader
         heading="Team Management Dashboard"
         text="Manage your team, track performance, and approve requests."
       >
-        <ButtonLink href={`/manager-dashboard/${params.userId}/reports`} variant="outline">
+        <ButtonLink 
+          href={`/manager-dashboard/${params.userId}/reports`} 
+          variant="outline"
+          className="text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto px-2 sm:px-4"
+        >
           Team Reports
         </ButtonLink>
       </DashboardHeader>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Team Size"
           value={teamMetrics.teamSize}
@@ -71,11 +75,11 @@ export default async function ManagerDashboardPage({ params }: { params: { userI
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-7">
-        <div className="col-span-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-1 md:grid-cols-7">
+        <div className="col-span-1 md:col-span-4">
           <TeamMetrics />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
           <TeamActivities userId={params.userId} />
         </div>
       </div>

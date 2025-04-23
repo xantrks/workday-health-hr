@@ -1,6 +1,9 @@
 'use client';
 
+import { formatDistanceToNow } from "date-fns";
 import { CalendarIcon, ClockIcon, UserCircleIcon, FileTextIcon, BookmarkIcon } from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -99,21 +102,35 @@ export function RecentActivities({ userId }: { userId: string }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Activities</CardTitle>
-        <CardDescription>Latest actions in your organization</CardDescription>
+    <Card className="w-full">
+      <CardHeader className="p-3 sm:p-6">
+        <CardTitle className="text-base sm:text-xl">Recent Activities</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
+          Latest actions across your organization
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-4">
-            {mockActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-4">
-                <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{activity.user}</p>
-                  <p className="text-sm text-muted-foreground">{activity.details}</p>
-                  <p className="text-xs text-muted-foreground">{formatRelativeTime(activity.timestamp)}</p>
+      <CardContent className="p-0 sm:p-3">
+        <ScrollArea className="h-[290px] sm:h-[350px] pr-2">
+          <div className="space-y-2 px-3">
+            {mockActivities.map((activity, index) => (
+              <div key={index} className="flex items-start space-x-2 sm:space-x-3 py-2 sm:py-3 border-b last:border-0">
+                <Avatar className="h-7 w-7 sm:h-9 sm:w-9">
+                  <AvatarImage src={`/avatars/${index + 1}.png`} alt={activity.user} />
+                  <AvatarFallback>
+                    {activity.user
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs sm:text-sm font-medium leading-none truncate">{activity.user}</p>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap ml-2">
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm line-clamp-2">{activity.details}</p>
                 </div>
               </div>
             ))}

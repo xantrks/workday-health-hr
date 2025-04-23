@@ -10,6 +10,10 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
 
+/**
+ * Chat component
+ * Enhanced for mobile responsiveness
+ */
 export function Chat({
   id,
   initialMessages,
@@ -34,12 +38,12 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+    <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-background">
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 pb-4"
+        className="flex-1 overflow-y-auto scrollbar-hide px-3 sm:px-4 md:px-6 pb-2 sm:pb-4 pt-2"
       >
-        <div className="flex flex-col gap-4 w-full items-center max-w-3xl mx-auto">
+        <div className="flex flex-col gap-3 sm:gap-4 w-full items-center max-w-3xl mx-auto">
           {messages.length === 0 && <Overview />}
 
           {messages.map((message) => (
@@ -60,8 +64,8 @@ export function Chat({
         </div>
       </div>
       
-      <div className="w-full border-t bg-background py-4 pb-8 fixed bottom-0 left-0 right-0 z-10 shadow-sm">
-        <form className="flex flex-row gap-2 relative items-end w-full max-w-[600px] mx-auto px-4 md:px-0">
+      <div className="w-full border-t bg-background py-2 sm:py-3 md:py-4 pb-6 sm:pb-8 fixed bottom-0 left-0 right-0 z-10 shadow-sm">
+        <form className="flex flex-row gap-2 relative items-end w-full max-w-[600px] mx-auto px-3 sm:px-4 md:px-0">
           <MultimodalInput
             input={input}
             setInput={setInput}
@@ -76,7 +80,7 @@ export function Chat({
         </form>
       </div>
       
-      <div className="h-24"></div>
+      <div className="h-16 sm:h-20 md:h-24"></div>
     </div>
   );
 }

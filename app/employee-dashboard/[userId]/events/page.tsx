@@ -1,25 +1,29 @@
 'use client';
 
-import { Calendar, List, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { Calendar, List, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-
-import MonthCalendarView from './components/MonthCalendarView';
-import ListCalendarView from './components/ListCalendarView';
-import EventDetailsSheet from './components/EventDetailsSheet';
-import EventLegend from './components/EventLegend';
-import DashboardLayout from "../../components/DashboardLayout";
-import { Event, Registration, CalendarViewType } from './types';
-import * as api from './services/api';
-import { isRegistered as checkIsRegistered } from './utils/eventUtils';
-import { generateCalendarDays, groupEventsByDate, goToPreviousMonth, goToNextMonth } from './utils/dateUtils';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import EventDetailsSheet from './components/EventDetailsSheet';
+import EventLegend from './components/EventLegend';
+import ListCalendarView from './components/ListCalendarView';
+import MonthCalendarView from './components/MonthCalendarView';
+import * as api from './services/api';
+import { Event, Registration, CalendarViewType } from './types';
+import { generateCalendarDays, groupEventsByDate, goToPreviousMonth, goToNextMonth } from './utils/dateUtils';
+import { isRegistered as checkIsRegistered } from './utils/eventUtils';
+import DashboardLayout from "../../components/DashboardLayout";
+
+/**
+ * Employee Events Page
+ * Enhanced for mobile responsiveness
+ */
 export default function EmployeeEventsPage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
     required: true,
@@ -38,23 +42,23 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState<CalendarViewType>('month');
 
-  // 加载数据
+  // Load data
   useEffect(() => {
     if (session?.user) {
       fetchData();
     }
   }, [session]);
 
-  // 获取所有数据
+  // Fetch all data
   const fetchData = async () => {
     setLoading(true);
     
-    // 获取事件数据
+    // Get event data
     const eventsData = await api.fetchEvents();
     setEvents(eventsData.events);
     setError(eventsData.error);
     
-    // 获取用户注册信息
+    // Get user registrations
     if (params.userId) {
       const registrationsData = await api.fetchUserRegistrations(params.userId);
       setRegistrations(registrationsData);
@@ -63,12 +67,12 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
     setLoading(false);
   };
 
-  // 注册事件
+  // Register for an event
   const handleRegisterForEvent = async (eventId: string) => {
     if (!session?.user?.id) return;
     
     const success = await api.registerForEvent(eventId, session.user.id, (eventId) => {
-      // 更新选定事件的参与者计数
+      // Update selected event participant count
       if (selectedEvent?.id === eventId) {
         setSelectedEvent({
           ...selectedEvent,
@@ -78,16 +82,16 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
     });
     
     if (success) {
-      // 刷新注册数据
+      // Refresh registration data
       const registrationsData = await api.fetchUserRegistrations(params.userId);
       setRegistrations(registrationsData);
     }
   };
 
-  // 取消注册
+  // Cancel registration
   const handleCancelRegistration = async (eventId: string) => {
     const success = await api.cancelRegistration(eventId, (eventId) => {
-      // 更新选定事件的参与者计数
+      // Update selected event participant count
       if (selectedEvent?.id === eventId) {
         setSelectedEvent({
           ...selectedEvent,
@@ -97,24 +101,24 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
     });
     
     if (success) {
-      // 刷新注册数据
+      // Refresh registration data
       const registrationsData = await api.fetchUserRegistrations(params.userId);
       setRegistrations(registrationsData);
     }
   };
 
-  // 打开事件详情
+  // Open event details
   const openEventDetails = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailsOpen(true);
   };
 
-  // 检查用户是否已注册该事件
+  // Check if user is registered for an event
   const isRegistered = (eventId: string) => {
     return checkIsRegistered(eventId, registrations);
   };
 
-  // 日历组件数据
+  // Calendar component data
   const calendarEvents = groupEventsByDate(events, currentDate);
   const calendarDays = generateCalendarDays(currentDate);
 
@@ -124,28 +128,28 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
       title="Health Events Calendar" 
       description="View, register and manage your health-related events"
     >
-      <div className="flex flex-col space-y-6">
-        {/* 日历视图控制和过滤器 */}
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => setCurrentDate(goToPreviousMonth(currentDate))}>
-              <ChevronLeft className="h-4 w-4" />
+      <div className="flex flex-col space-y-3 sm:space-y-6">
+        {/* Calendar view controls and filters */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between sm:items-center">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => setCurrentDate(goToPreviousMonth(currentDate))}>
+              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <h3 className="text-lg font-medium w-40 text-center">
-              {format(currentDate, 'MMMM yyyy')}
+            <h3 className="text-base sm:text-lg font-medium w-32 sm:w-40 text-center">
+              {format(currentDate, 'MMM yyyy')}
             </h3>
-            <Button variant="outline" size="icon" onClick={() => setCurrentDate(goToNextMonth(currentDate))}>
-              <ChevronRight className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => setCurrentDate(goToNextMonth(currentDate))}>
+              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10" onClick={() => setCurrentDate(new Date())}>
               Today
             </Button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between sm:justify-normal gap-2 sm:gap-4">
+            <div className="flex items-center">
               <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-32 sm:w-[160px] text-xs sm:text-sm h-8 sm:h-10">
                   <SelectValue placeholder="Filter events" />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,40 +166,40 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
             <div className="flex gap-1">
               <Button 
                 variant="outline" 
-                size="icon" 
-                onClick={() => setCalendarView('month')} 
-                className={calendarView === 'month' ? 'bg-muted' : ''}
+                size="icon"
+                className={`h-8 w-8 sm:h-10 sm:w-10 ${calendarView === 'month' ? 'bg-muted' : ''}`}
+                onClick={() => setCalendarView('month')}
               >
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
               <Button 
                 variant="outline" 
-                size="icon" 
-                onClick={() => setCalendarView('list')} 
-                className={calendarView === 'list' ? 'bg-muted' : ''}
+                size="icon"
+                className={`h-8 w-8 sm:h-10 sm:w-10 ${calendarView === 'list' ? 'bg-muted' : ''}`}
+                onClick={() => setCalendarView('list')}
               >
-                <List className="h-4 w-4" />
+                <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* 图例说明 */}
+        {/* Legend */}
         <EventLegend />
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-48 sm:h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading events...</p>
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary mx-auto mb-3 sm:mb-4"></div>
+              <p className="text-xs sm:text-sm text-muted-foreground">Loading events...</p>
             </div>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-48 sm:h-64">
             <div className="text-center">
-              <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
-              <p className="text-destructive">{error}</p>
-              <Button onClick={fetchData} variant="outline" className="mt-4">
+              <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-destructive mx-auto mb-3 sm:mb-4" />
+              <p className="text-xs sm:text-sm text-destructive">{error}</p>
+              <Button onClick={fetchData} variant="outline" className="mt-3 sm:mt-4 text-xs sm:text-sm h-8 sm:h-9">
                 Try Again
               </Button>
             </div>
@@ -224,7 +228,7 @@ export default function EmployeeEventsPage({ params }: { params: { userId: strin
         )}
       </div>
 
-      {/* 事件详情弹窗 */}
+      {/* Event details sheet */}
       <EventDetailsSheet 
         isOpen={isEventDetailsOpen}
         onOpenChange={setIsEventDetailsOpen}

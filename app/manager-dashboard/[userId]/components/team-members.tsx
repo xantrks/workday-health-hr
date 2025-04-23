@@ -120,24 +120,67 @@ export function TeamMembers({ managerId }: { managerId: string }) {
     }
   };
 
+  // Render team member card for mobile view
+  const renderMemberCard = (member: TeamMember) => (
+    <Card key={member.id} className="mb-2 overflow-hidden">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start gap-3">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarImage src={`https://avatar.vercel.sh/${member.id}.png`} alt={member.name} />
+            <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-sm truncate">{member.name}</h4>
+            <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              <Badge variant="outline" className="text-xs py-0">{member.position}</Badge>
+              <Badge variant="outline" className="text-xs py-0">{member.department}</Badge>
+            </div>
+            <div className="flex flex-wrap items-center gap-1 mt-2">
+              {getStatusBadge(member.status)}
+              {getPerformanceBadge(member.performance)}
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="text-xs h-7">
+            Review
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <CardTitle>Team Members</CardTitle>
-        <CardDescription>Manage your direct reports and their performance</CardDescription>
+    <Card className="mt-2 sm:mt-6">
+      <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+        <CardTitle className="text-base sm:text-lg">Team Members</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Manage your direct reports and their performance</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-full max-w-sm">
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+          <div className="w-full sm:max-w-sm">
             <Input
               placeholder="Search team members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm h-9"
             />
           </div>
-          <Button>Add Team Member</Button>
+          <Button className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">Add Team Member</Button>
         </div>
-        <div className="rounded-md border">
+        
+        {/* Mobile view - cards */}
+        <div className="sm:hidden">
+          {filteredMembers.length > 0 ? (
+            filteredMembers.map(member => renderMemberCard(member))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-sm text-muted-foreground">No team members found.</p>
+            </div>
+          )}
+        </div>
+        
+        {/* Desktop view - table */}
+        <div className="hidden sm:block rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>

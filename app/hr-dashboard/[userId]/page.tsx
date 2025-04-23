@@ -17,6 +17,10 @@ import DashboardHeader from './components/DashboardHeader';
 import OverviewTab from './components/tabs/OverviewTab';
 import ResourcesTab from './components/tabs/ResourcesTab';
 
+/**
+ * HR Dashboard Page
+ * Enhanced for mobile responsiveness
+ */
 export default function HRDashboard({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
     required: true,
@@ -82,7 +86,7 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
   if (!session?.user) return null;
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-[100vw] overflow-hidden">
       <DashboardHeader 
         userName={session.user.name || 'User'} 
         userId={params.userId} 
@@ -90,33 +94,33 @@ export default function HRDashboard({ params }: { params: { userId: string } }) 
       />
 
       <Tabs defaultValue={activeTab} className="w-full" onValueChange={(value) => setActiveTab(value as DashboardTab)}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="resources">Resources Management</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 overflow-x-auto max-w-[100vw] mb-1 sm:mb-2">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap">Overview</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap">Analytics</TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap">Reports</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap">Notifications</TabsTrigger>
+          <TabsTrigger value="resources" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap">Resources</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
           <OverviewTab />
         </TabsContent>
         
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">Analytics content will be displayed here</p>
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="text-center py-4 sm:py-10">
+            <p className="text-sm text-muted-foreground">Analytics content will be displayed here</p>
           </div>
         </TabsContent>
         
-        <TabsContent value="reports" className="space-y-6">
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">Reports content will be displayed here</p>
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
+          <div className="text-center py-4 sm:py-10">
+            <p className="text-sm text-muted-foreground">Reports content will be displayed here</p>
           </div>
         </TabsContent>
         
-        <TabsContent value="notifications" className="space-y-6">
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">Notifications content will be displayed here</p>
+        <TabsContent value="notifications" className="space-y-4 sm:space-y-6">
+          <div className="text-center py-4 sm:py-10">
+            <p className="text-sm text-muted-foreground">Notifications content will be displayed here</p>
           </div>
         </TabsContent>
         

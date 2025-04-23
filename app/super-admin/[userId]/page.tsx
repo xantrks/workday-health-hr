@@ -27,13 +27,13 @@ export default async function SuperAdminDashboardPage({ params }: { params: { us
   };
 
   return (
-    <DashboardShell>
+    <DashboardShell className="px-2 sm:px-4 py-2 sm:py-4">
       <DashboardHeader
         heading="Platform Administration"
         text="Manage the entire platform, organizations, users, and system settings."
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Organizations"
           value={platformMetrics.totalOrganizations}
@@ -64,43 +64,43 @@ export default async function SuperAdminDashboardPage({ params }: { params: { us
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-7">
-        <div className="col-span-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-1 md:grid-cols-7">
+        <div className="col-span-1 md:col-span-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Platform Statistics</CardTitle>
-              <CardDescription>Monitor key metrics across the entire platform</CardDescription>
+            <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg">Platform Statistics</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Monitor key metrics across the entire platform</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
-                <p className="text-muted-foreground">Platform statistics would appear here</p>
+            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="h-[200px] sm:h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
+                <p className="text-xs sm:text-sm text-muted-foreground">Platform statistics would appear here</p>
               </div>
             </CardContent>
           </Card>
         </div>
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
           <Card>
-            <CardHeader>
-              <CardTitle>System Events</CardTitle>
-              <CardDescription>Recent system-wide events and alerts</CardDescription>
+            <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg">System Events</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Recent system-wide events and alerts</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
-                <p className="text-muted-foreground">Recent system events would appear here</p>
+            <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="h-[200px] sm:h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
+                <p className="text-xs sm:text-sm text-muted-foreground">Recent system events would appear here</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Organizations</CardTitle>
-          <CardDescription>Manage all organizations on the platform</CardDescription>
+      <Card className="mt-2 sm:mt-6">
+        <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+          <CardTitle className="text-base sm:text-lg">Organizations</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Manage all organizations on the platform</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
-            <p className="text-muted-foreground">Organizations list would appear here</p>
+        <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+          <div className="h-[200px] sm:h-[300px] flex items-center justify-center bg-gray-100 rounded-md">
+            <p className="text-xs sm:text-sm text-muted-foreground">Organizations list would appear here</p>
           </div>
         </CardContent>
       </Card>

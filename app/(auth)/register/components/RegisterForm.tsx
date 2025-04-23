@@ -27,6 +27,7 @@ import { RegisterActionState, RegisterFormData } from '../types';
 /**
  * Register form component
  * Handles user registration with form submission and state management
+ * Enhanced for mobile responsiveness
  */
 export function RegisterForm() {
   const router = useRouter();
@@ -98,13 +99,13 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8">
+    <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md">       
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold tracking-tight">
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             Create an Account
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 sm:mt-2 text-sm text-muted-foreground">
             Register your organization and start managing women&apos;s health
           </p>
         </div>
@@ -112,11 +113,11 @@ export function RegisterForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Personal Information */}
           <Card>
-            <CardHeader className="py-3">
+            <CardHeader className="py-2 sm:py-3 px-4 sm:px-6">
               <CardTitle className="text-lg">Your Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
@@ -184,13 +185,13 @@ export function RegisterForm() {
 
           {/* Organization Information */}
           <Card>
-            <CardHeader className="py-3">
+            <CardHeader className="py-2 sm:py-3 px-4 sm:px-6">
               <CardTitle className="text-lg">Organization Details</CardTitle>
               <CardDescription>
                 You will be registered as the Organization Administrator
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
               <div className="flex items-start space-x-2">
                 <Checkbox 
                   id="isNewOrganization" 
@@ -198,72 +199,106 @@ export function RegisterForm() {
                   defaultChecked 
                   disabled={isSubmitting}
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <Label htmlFor="isNewOrganization" className="text-sm font-medium">
-                    Register a new organization
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Uncheck if you want to join an existing organization (requires admin approval)
-                  </p>
-                </div>
+                <Label htmlFor="isNewOrganization" className="text-sm font-normal">
+                  I am creating a new organization
+                </Label>
               </div>
-              <Separator className="my-1" />
-              
+
               <div>
                 <Label htmlFor="organizationName">Organization Name</Label>
                 <Input
                   id="organizationName"
                   name="organizationName"
-                  placeholder="Company or Organization Name"
+                  placeholder="Your organization's name"
                   required
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="subscriptionPlan">Subscription Plan</Label>
                 <Select name="subscriptionPlan" defaultValue="basic" disabled={isSubmitting}>
-                  <SelectTrigger id="subscriptionPlan">
-                    <SelectValue placeholder="Select plan" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="basic">Basic</SelectItem>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="basic">Basic (Free)</SelectItem>
+                    <SelectItem value="standard">Standard ($29/month)</SelectItem>
+                    <SelectItem value="premium">Premium ($49/month)</SelectItem>
+                    <SelectItem value="enterprise">Enterprise (Custom pricing)</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
-                  You can upgrade or change your plan anytime
+                  You can change your plan anytime after registration
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Agreement */}
-          <div className="flex items-center space-x-2">
-            <Checkbox id="agreedToTerms" name="agreedToTerms" required disabled={isSubmitting} />
-            <Label htmlFor="agreedToTerms" className="text-sm font-medium leading-none">
-              I agree to the{" "}
-              <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
-            </Label>
+          {/* Terms & Conditions */}
+          <div className="space-y-3">
+            <div className="flex items-start space-x-2">
+              <Checkbox 
+                id="termsAndConditions" 
+                name="termsAndConditions" 
+                required
+                disabled={isSubmitting}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label 
+                  htmlFor="termsAndConditions" 
+                  className="text-sm font-normal"
+                >
+                  I agree to the 
+                  <Link 
+                    href="/terms" 
+                    className="underline text-primary ml-1"
+                    target="_blank"
+                  >
+                    terms and conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link 
+                    href="/privacy" 
+                    className="underline text-primary"
+                    target="_blank"
+                  >
+                    privacy policy
+                  </Link>
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-2">
+              <Checkbox 
+                id="marketing" 
+                name="marketing"
+                disabled={isSubmitting}
+              />
+              <Label 
+                htmlFor="marketing" 
+                className="text-sm font-normal"
+              >
+                I agree to receive marketing communications
+              </Label>
+            </div>
           </div>
 
-          {/* Submit button */}
-          <SubmitButton loading={isSubmitting} className="w-full">
+          {/* Submit Button */}
+          <SubmitButton 
+            className="w-full" 
+            loading={isSubmitting}
+          >
             Create Account
           </SubmitButton>
-          
-          <div className="text-center">
+
+          <div className="text-center mt-4">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link 
+                href="/login" 
+                className="text-primary underline hover:text-primary/90 transition-colors"
+              >
                 Log in
               </Link>
             </p>

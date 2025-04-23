@@ -24,6 +24,10 @@ interface CycleTabProps {
   userId: string;
 }
 
+/**
+ * CycleTab component for tracking menstrual cycles
+ * Enhanced for mobile responsiveness
+ */
 export default function CycleTab({ userId }: CycleTabProps) {
   const { 
     periodRecords, 
@@ -127,30 +131,30 @@ export default function CycleTab({ userId }: CycleTabProps) {
   const frequentSymptoms = getFrequentSymptoms();
   
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Left Column - Calendar */}
         <Card className="border-border shadow-md dark:shadow-primary/5 lg:col-span-2 backdrop-blur-sm dark:bg-card/95">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
               <div>
-                <CardTitle className="text-lg font-bold text-foreground">Period Calendar</CardTitle>
-                <CardDescription className="text-muted-foreground mt-0.5">
+                <CardTitle className="text-base sm:text-lg font-bold text-foreground">Period Calendar</CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                   Track and predict your menstrual cycle
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="px-3 flex items-center gap-1 text-xs bg-primary/10 text-primary border-primary/30 dark:bg-primary/20">
+              <Badge variant="outline" className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-1 text-xs bg-primary/10 text-primary border-primary/30 dark:bg-primary/20 self-start sm:self-auto">
                 <TrendingUp className="h-3 w-3" />
-                <span>Next Period: {periodStats.nextPeriodDate || '--'}</span>
+                <span className="text-[10px] sm:text-xs">Next Period: {periodStats.nextPeriodDate || '--'}</span>
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-2 pb-3">
+          <CardContent className="pt-2 pb-3 px-2 sm:px-6">
             {isLoading ? (
-              <div className="flex items-center justify-center h-72 text-muted-foreground">
+              <div className="flex items-center justify-center h-56 sm:h-72 text-muted-foreground">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  <p>Loading calendar data...</p>
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+                  <p className="text-xs sm:text-sm">Loading calendar data...</p>
                 </div>
               </div>
             ) : (
@@ -170,63 +174,63 @@ export default function CycleTab({ userId }: CycleTabProps) {
         {/* Right Column - Analysis & Symptoms Combined */}
         <div className="lg:col-span-1">
           {/* Cycle Analysis Card */}
-          <Card className="border-border shadow-md dark:shadow-primary/5 mb-4 backdrop-blur-sm dark:bg-card/95">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-foreground">Cycle Analysis</CardTitle>
+          <Card className="border-border shadow-md dark:shadow-primary/5 mb-3 sm:mb-4 backdrop-blur-sm dark:bg-card/95">
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-4">
+              <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Cycle Analysis</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-2 px-3 sm:px-6 pb-3 sm:pb-4">
               {periodStats ? (
-                <div className="w-full space-y-3">
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
-                      <p className="text-xs text-muted-foreground">Average Cycle</p>
-                      <p className="text-xl font-bold text-foreground">{periodStats.avgCycleLength || '--'} <span className="text-xs font-normal">days</span></p>
+                <div className="w-full space-y-2 sm:space-y-3">
+                  <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center">
+                    <div className="bg-primary/10 dark:bg-primary/20 p-1.5 sm:p-2 rounded-lg transition-colors">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Average Cycle</p>
+                      <p className="text-base sm:text-xl font-bold text-foreground">{periodStats.avgCycleLength || '--'} <span className="text-[10px] sm:text-xs font-normal">days</span></p>
                     </div>
-                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
-                      <p className="text-xs text-muted-foreground">Period Length</p>
-                      <p className="text-xl font-bold text-foreground">{periodStats.avgPeriodLength || '--'} <span className="text-xs font-normal">days</span></p>
+                    <div className="bg-primary/10 dark:bg-primary/20 p-1.5 sm:p-2 rounded-lg transition-colors">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Period Length</p>
+                      <p className="text-base sm:text-xl font-bold text-foreground">{periodStats.avgPeriodLength || '--'} <span className="text-[10px] sm:text-xs font-normal">days</span></p>
                     </div>
-                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg transition-colors">
-                      <p className="text-xs text-muted-foreground">Fertility Window</p>
-                      <p className="text-sm font-semibold pt-0.5 text-foreground">Mar 3 - Mar 8</p>
+                    <div className="bg-primary/10 dark:bg-primary/20 p-1.5 sm:p-2 rounded-lg transition-colors">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Fertility Window</p>
+                      <p className="text-[11px] sm:text-sm font-semibold pt-0.5 text-foreground">Mar 3 - Mar 8</p>
                     </div>
                   </div>
-                  <div className="text-center text-xs text-muted-foreground mt-1">
+                  <div className="text-center text-[10px] sm:text-xs text-muted-foreground mt-1">
                     <p>Last period started on <span className="font-medium text-foreground">{periodStats.lastPeriodDate || '--'}</span></p>
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center text-sm py-2">Add more period records to see cycle analysis</p>
+                <p className="text-muted-foreground text-center text-xs sm:text-sm py-2">Add more period records to see cycle analysis</p>
               )}
             </CardContent>
           </Card>
           
           {/* Common Symptoms Card */}
           <Card className="border-border shadow-md dark:shadow-primary/5 backdrop-blur-sm dark:bg-card/95">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-foreground">Common Symptoms</CardTitle>
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-4">
+              <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Common Symptoms</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-2 px-3 sm:px-6 pb-3 sm:pb-4">
               {frequentSymptoms.length > 0 ? (
-                <div className="space-y-2.5">
+                <div className="space-y-2 sm:space-y-2.5">
                   {frequentSymptoms.map((symptom, index) => (
                     <div key={index} className="flex items-center">
-                      <p className="text-xs font-medium w-20 text-foreground">{symptom.label}</p>
-                      <div className="flex-1 mx-2">
-                        <div className="h-1.5 rounded-full bg-muted dark:bg-muted/40 overflow-hidden">
+                      <p className="text-[10px] sm:text-xs font-medium w-16 sm:w-20 text-foreground">{symptom.label}</p>
+                      <div className="flex-1 mx-1 sm:mx-2">
+                        <div className="h-1 sm:h-1.5 rounded-full bg-muted dark:bg-muted/40 overflow-hidden">
                           <div 
                             className="h-full bg-primary dark:bg-primary/80 transition-all" 
                             style={{ width: `${symptom.percentage}%` }}
                           ></div>
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground w-8 text-right">{symptom.percentage}%</span>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground w-6 sm:w-8 text-right">{symptom.percentage}%</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center py-4">
-                  <p className="text-muted-foreground text-center text-sm">Add period records to track symptoms</p>
+                <div className="flex items-center justify-center py-3 sm:py-4">
+                  <p className="text-muted-foreground text-center text-xs sm:text-sm">Add period records to track symptoms</p>
                 </div>
               )}
             </CardContent>

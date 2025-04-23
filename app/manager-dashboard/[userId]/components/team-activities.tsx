@@ -91,38 +91,38 @@ export function TeamActivities({ userId }: { userId: string }) {
   const getActivityIcon = (type: Activity["type"]) => {
     switch (type) {
       case "attendance":
-        return <ClockIcon className="h-5 w-5 text-blue-500" />;
+        return <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />;
       case "task_completed":
-        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
+        return <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />;
       case "leave_request":
-        return <CalendarIcon className="h-5 w-5 text-amber-500" />;
+        return <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />;
       case "document_submission":
-        return <FileIcon className="h-5 w-5 text-purple-500" />;
+        return <FileIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />;
       case "milestone":
-        return <CheckCircleIcon className="h-5 w-5 text-red-500" />;
+        return <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />;
       case "feedback":
-        return <MailOpenIcon className="h-5 w-5 text-gray-500" />;
+        return <MailOpenIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />;
       default:
-        return <UserIcon className="h-5 w-5 text-gray-500" />;
+        return <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />;
     }
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Team Activities</CardTitle>
-        <CardDescription>Recent activities from your team members</CardDescription>
+      <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-3">
+        <CardTitle className="text-base sm:text-lg">Team Activities</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Recent activities from your team members</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-4">
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <ScrollArea className="h-[250px] sm:h-[400px] pr-2 sm:pr-4">
+          <div className="space-y-3 sm:space-y-4">
             {mockActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-4">
-                <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{activity.user}</p>
-                  <p className="text-sm text-muted-foreground">{activity.details}</p>
-                  <p className="text-xs text-muted-foreground">{formatRelativeTime(activity.timestamp)}</p>
+              <div key={activity.id} className="flex items-start space-x-2 sm:space-x-4">
+                <div className="mt-0.5 flex-shrink-0">{getActivityIcon(activity.type)}</div>
+                <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium">{activity.user}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{activity.details}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{formatRelativeTime(activity.timestamp)}</p>
                 </div>
               </div>
             ))}

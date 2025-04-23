@@ -1,17 +1,19 @@
 'use client';
 
-import { BenefitItemProps } from '../types';
+interface BenefitItemProps {
+  title: string;
+  description: string;
+}
 
 /**
  * Benefit item component for displaying feature benefits
+ * Enhanced with title and description layout
  */
-export function BenefitItem({ text }: BenefitItemProps) {
+export function BenefitItem({ title, description }: BenefitItemProps) {
   return (
-    <li className="flex items-start">
-      <svg className="w-5 h-5 mr-2 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-      </svg>
-      <span>{text}</span>
-    </li>
+    <div className="bg-white/10 p-4 rounded-lg">
+      <h3 className="font-medium text-lg mb-2">{title}</h3>
+      <p className="text-sm opacity-80">{description}</p>
+    </div>
   );
 } 

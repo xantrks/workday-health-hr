@@ -108,33 +108,33 @@ export default function ManageEventsPage({ params }: { params: { userId: string 
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
       <HeaderSection 
         userId={params.userId} 
         onCreateEvent={handleCreateEvent} 
       />
 
-      <Tabs defaultValue="calendar" className="space-y-6">
-        <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 p-1 bg-muted/20 dark:bg-muted/10 rounded-lg shadow-sm">
+      <Tabs defaultValue="calendar" className="space-y-3 sm:space-y-6">
+        <TabsList className="w-full max-w-xs sm:max-w-md mx-auto grid grid-cols-2 p-0.5 sm:p-1 bg-muted/20 dark:bg-muted/10 rounded-lg shadow-sm">
           <TabsTrigger 
             value="calendar" 
-            className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
+            className="flex-1 py-1 sm:py-1.5 text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
           >
-            <Calendar className="h-4 w-4 mr-2" />
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Calendar View
           </TabsTrigger>
           <TabsTrigger 
             value="list" 
-            className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
+            className="flex-1 py-1 sm:py-1.5 text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-muted/20 transition-all duration-200"
           >
-            <List className="h-4 w-4 mr-2" />
+            <List className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             List View
           </TabsTrigger>
         </TabsList>
         
         <TabsContent 
           value="calendar" 
-          className="border border-muted/50 dark:border-muted/30 rounded-lg p-6 bg-card shadow-sm dark:shadow-primary/5 transition-all duration-200"
+          className="border border-muted/50 dark:border-muted/30 rounded-lg p-2 sm:p-6 bg-card shadow-sm dark:shadow-primary/5 transition-all duration-200"
         >
           <CalendarView
             ref={calendarRef}

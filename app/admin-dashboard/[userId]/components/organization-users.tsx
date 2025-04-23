@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,29 +50,30 @@ export function OrganizationUsers({ organizationId }: { organizationId: string }
   };
 
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <CardTitle>Organization Users</CardTitle>
-        <CardDescription>Manage users in your organization</CardDescription>
+    <Card className="mt-4 sm:mt-6 w-full">
+      <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+        <CardTitle className="text-lg sm:text-xl">Organization Users</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Manage users in your organization</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-full max-w-sm">
+      <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+          <div className="w-full sm:max-w-xs">
             <Input
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm"
             />
           </div>
-          <Button>Add User</Button>
+          <Button className="w-full sm:w-auto text-sm" size="sm" aria-label="Add User">Add User</Button>
         </div>
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Department</TableHead>
+                <TableHead className="hidden sm:table-cell">Role</TableHead>
+                <TableHead className="hidden md:table-cell">Department</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -80,35 +82,45 @@ export function OrganizationUsers({ organizationId }: { organizationId: string }
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8">
+                    <TableCell className="font-medium min-w-[180px]">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
                           <AvatarImage src={`https://avatar.vercel.sh/${user.id}.png`} alt={user.name} />
                           <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                          <div className="font-medium text-sm">{user.name}</div>
+                          <div className="text-xs text-muted-foreground">{user.email}</div>
+                          <div className="sm:hidden text-xs mt-1">
+                            <Badge variant="outline" className="text-xs px-1 py-0 h-5">
+                              {user.role}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.department}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant="outline">{user.role}</Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{user.department}</TableCell>
                     <TableCell>
-                      <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                      <Badge variant={user.status === "active" ? "default" : "secondary"} className="text-xs">
                         {user.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        Edit
+                      <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 p-0">
+                        <span className="hidden sm:inline">Edit</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center text-sm">
                     No users found.
                   </TableCell>
                 </TableRow>

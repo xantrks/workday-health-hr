@@ -18,6 +18,10 @@ import { AppointmentsTab } from '../components/AppointmentsTab';
 import ResourcesTab from './components/ResourcesTab';
 import { ChatWidgetWrapper } from '@/components/chat';
 
+/**
+ * Employee Dashboard Page
+ * Enhanced for mobile responsiveness
+ */
 export default function EmployeeDashboard({ params }: { params: { userId: string } }) {
   console.log("Employee dashboard page loading, user ID:", params.userId);
   
@@ -79,7 +83,7 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
   console.log("Dashboard rendering, user:", session.user.name, "ID:", session.user.id);
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-[100vw] overflow-hidden">
       <DashboardHeader 
         userName={session.user.name || 'User'} 
         userId={params.userId} 
@@ -92,12 +96,12 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         className="w-full" 
         onValueChange={(value) => setActiveTab(value as DashboardTab)}
       >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="cycle">Cycle</TabsTrigger>
-          <TabsTrigger value="health">Health</TabsTrigger>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 overflow-x-auto max-w-[100vw] mb-1 sm:mb-2">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm py-1.5 sm:py-2">Overview</TabsTrigger>
+          <TabsTrigger value="cycle" className="text-xs sm:text-sm py-1.5 sm:py-2">Cycle</TabsTrigger>
+          <TabsTrigger value="health" className="text-xs sm:text-sm py-1.5 sm:py-2">Health</TabsTrigger>
+          <TabsTrigger value="appointments" className="text-xs sm:text-sm py-1.5 sm:py-2">Appointments</TabsTrigger>
+          <TabsTrigger value="resources" className="text-xs sm:text-sm py-1.5 sm:py-2">Resources</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">

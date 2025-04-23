@@ -32,6 +32,10 @@ const suggestedActions = [
   },
 ];
 
+/**
+ * Multimodal input component for chat interface
+ * Enhanced for mobile responsiveness
+ */
 export function MultimodalInput({
   input,
   setInput,
@@ -152,11 +156,11 @@ export function MultimodalInput({
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
+    <div className="relative w-full flex flex-col gap-3 sm:gap-4">
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full md:px-0 mx-auto md:max-w-[500px]">
             {suggestedActions.map((suggestedAction, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -164,7 +168,7 @@ export function MultimodalInput({
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.05 * index }}
                 key={index}
-                className={index > 1 ? "hidden sm:block" : "block"}
+                className={index > 0 ? "hidden sm:block" : "block"}
               >
                 <button
                   onClick={async () => {
@@ -173,7 +177,7 @@ export function MultimodalInput({
                       content: suggestedAction.action,
                     });
                   }}
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-2.5 sm:p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
                   <span className="text-zinc-500 dark:text-zinc-400">
@@ -195,79 +199,93 @@ export function MultimodalInput({
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll">
+        <div className="flex flex-row gap-2 overflow-x-auto py-1 max-w-full">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
 
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: "",
-                name: filename,
-                contentType: "",
-              }}
-              isUploading={true}
-            />
-          ))}
+          {uploadQueue.length > 0 &&
+            uploadQueue.map((fileName, index) => (
+              <div
+                key={index}
+                className="p-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 rounded-md min-w-[150px] flex flex-row gap-2 items-center justify-center"
+              >
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium truncate max-w-[100px]">
+                    {fileName}
+                  </span>
+                  <span className="text-xs text-zinc-400">Uploading...</span>
+                </div>
+              </div>
+            ))}
         </div>
       )}
 
-      <Textarea
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className="min-h-[24px] max-h-[120px] overflow-y-auto resize-none rounded-lg text-base bg-muted border-none shadow-sm focus:ring-1 focus:ring-primary"
-        rows={1}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
+      <div className="flex-1 flex flex-row gap-2 items-end">
+        <Button
+          type="button"
+          className="rounded-full size-8 sm:size-10 p-0 flex items-center justify-center bg-transparent hover:bg-muted border border-input"
+          onClick={() => fileInputRef.current?.click()}
+          variant="outline"
+          disabled={isLoading}
+        >
+          <PaperclipIcon size={16} />
+        </Button>
 
-            if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
-            } else {
-              submitForm();
+        <div className="bg-background flex-1 flex flex-row items-center gap-0 border rounded-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+          <Textarea
+            role="textbox"
+            value={input}
+            onChange={handleInput}
+            className="min-h-9 sm:min-h-10 rounded-l-md rounded-r-none border-0 resize-none placeholder:text-muted-foreground bg-background focus-visible:ring-0 px-3 sm:px-4 py-2 sm:py-2.5 flex-1 disabled:cursor-not-allowed disabled:opacity-50 text-sm sm:text-base"
+            placeholder="Message Sani..."
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            ref={textareaRef}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.ctrlKey &&
+                !e.metaKey &&
+                !e.altKey
+              ) {
+                e.preventDefault();
+                if (input.trim() !== "" || attachments.length > 0) {
+                  submitForm();
+                }
+              }
+            }}
+            disabled={isLoading}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-l-none rounded-r-md h-full pr-2 sm:pr-3"
+            type="button"
+            onClick={
+              isLoading
+                ? () => {
+                    stop();
+                    textareaRef.current?.focus();
+                  }
+                : (e) => {
+                    e.preventDefault();
+                    if (input.trim() !== "" || attachments.length > 0) {
+                      submitForm();
+                    }
+                  }
             }
-          }
-        }}
-      />
-
-      {isLoading ? (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            stop();
-          }}
-        >
-          <StopIcon size={14} />
-        </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
-
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
+          >
+            {isLoading ? (
+              <StopIcon size={16} />
+            ) : (
+              <ArrowUpIcon size={16} />
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

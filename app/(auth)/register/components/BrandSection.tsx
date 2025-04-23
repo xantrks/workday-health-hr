@@ -1,46 +1,81 @@
 'use client';
 
-import Image from "next/image";
-
 import { BenefitItem } from './BenefitItem';
 
 /**
  * Brand section component for the register page
- * Displays the company logo, headline, description, and benefits list
+ * Displays the company logo, headline, description, and benefit items
+ * Enhanced with mobile-specific design
  */
 export function BrandSection() {
   const benefits = [
-    "Health management solutions designed for professional women",
-    "AI-powered health assistant providing personalized advice",
-    "Data security guarantee to protect your privacy",
-    "HR system integration for better work-health balance"
+    {
+      title: "User-friendly Interface",
+      description: "Easy to use platform for everyone in your organization"
+    },
+    {
+      title: "Multi-tenant Architecture",
+      description: "Separate spaces for different departments with role-based access"
+    },
+    {
+      title: "Data Security",
+      description: "Enterprise-grade security for all your sensitive information"
+    },
+    {
+      title: "AI-powered Assistant",
+      description: "Smart health assistant available 24/7 for all your questions"
+    }
   ];
 
   return (
-    <div 
-      className="hidden lg:flex w-1/2 relative items-center justify-center p-8 overflow-hidden"
-      style={{
-        backgroundImage: 'url(/images/a-black-woman-scheduling-a-hospital-check.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        position: 'relative',
-      }}
-    >
-      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-      <div className="max-w-md text-white relative z-10">
-        <h1 className="text-3xl font-bold mb-4">Join FemTech Health Platform</h1>
-        <p className="text-lg opacity-90 mb-6">
-          Create your account and start enjoying our tailored health management services for professional women.
-        </p>
-        <div className="bg-white/10 p-6 rounded-lg mt-8">
-          <h3 className="font-medium text-xl mb-4">Why Choose Us?</h3>
-          <ul className="space-y-4">
-            {benefits.map((benefit, index) => (
-              <BenefitItem key={index} text={benefit} />
-            ))}
-          </ul>
+    <>
+      {/* Mobile brand banner - visible only on small screens */}
+      <div 
+        className="block lg:hidden w-full relative p-4 text-center"
+        style={{
+          backgroundImage: 'url(/images/professional-corporate-setting.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+        <div className="relative z-10 py-8 text-white">
+          <h1 className="text-2xl font-bold mb-2">FemTech Health Platform</h1>
+          <p className="text-sm opacity-90">
+            Register your organization today
+          </p>
         </div>
       </div>
-    </div>
+
+      {/* Desktop brand section - hidden on small screens */}
+      <div 
+        className="hidden lg:flex w-1/2 relative items-center justify-center p-8 overflow-hidden"
+        style={{
+          backgroundImage: 'url(/images/professional-corporate-setting.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+        }}
+      >
+        <div className="absolute inset-0 bg-primary/70"></div>
+        <div className="max-w-md text-white relative z-10">
+          <h1 className="text-3xl font-bold mb-4">Register Your Organization</h1>
+          <p className="text-lg opacity-90 mb-6">
+            Join our platform and provide your employees with cutting-edge health management services
+          </p>
+          
+          <div className="grid grid-cols-1 gap-4 mt-8">
+            {benefits.map((benefit, index) => (
+              <BenefitItem 
+                key={index}
+                title={benefit.title}
+                description={benefit.description}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 } 

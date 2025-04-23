@@ -18,32 +18,34 @@ interface MetricCardProps {
   data: MetricCardData;
 }
 
+/**
+ * MetricCard component for dashboard statistics
+ * Enhanced for mobile responsiveness
+ */
 export default function MetricCard({ data }: MetricCardProps) {
   const renderIcon = () => {
-    const className = `h-4 w-4 text-${data.iconColor}`;
-    
     switch (data.icon) {
       case 'users': 
-        return <Users className={className} />;
+        return <Users className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-${data.iconColor}`} />;
       case 'activity': 
-        return <Activity className={className} />;
+        return <Activity className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-${data.iconColor}`} />;
       case 'calendar': 
-        return <Calendar className={className} />;
+        return <Calendar className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-${data.iconColor}`} />;
       case 'heart': 
-        return <Heart className={className} />;
+        return <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-${data.iconColor}`} />;
       default:
-        return <Activity className={className} />;
+        return <Activity className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-${data.iconColor}`} />;
     }
   };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{data.title}</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
+        <CardTitle className="text-xs sm:text-sm font-medium">{data.title}</CardTitle>
         {renderIcon()}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{data.value}</div>
+      <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
+        <div className="text-xl sm:text-2xl font-bold">{data.value}</div>
         <p className="text-xs text-muted-foreground">{data.change}</p>
       </CardContent>
     </Card>

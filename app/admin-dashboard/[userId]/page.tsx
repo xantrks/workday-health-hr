@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/custom/empty-state";
 import { StatCard } from "@/components/custom/stat-card";
 import { ButtonLink } from "@/components/ui/button-link";
 import { getUserById } from "@/db/queries";
+
 import { AdminMetrics } from "./components/admin-metrics";
 import { OrganizationUsers } from "./components/organization-users";
 import { RecentActivities } from "./components/recent-activities";
@@ -31,17 +32,21 @@ export default async function AdminDashboardPage({ params }: { params: { userId:
   };
 
   return (
-    <DashboardShell>
+    <DashboardShell className="px-1 sm:px-4 py-2 sm:py-4 max-w-full overflow-hidden">
       <DashboardHeader
-        heading="Organization Admin Dashboard"
+        heading="Admin Dashboard"
         text="Manage your organization, users, resources, and events."
       >
-        <ButtonLink href={`/admin-dashboard/${params.userId}/settings`} variant="outline">
+        <ButtonLink 
+          href={`/admin-dashboard/${params.userId}/settings`} 
+          variant="outline"
+          className="text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto px-2 sm:px-4"
+        >
           Organization Settings
         </ButtonLink>
       </DashboardHeader>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4 w-full overflow-x-auto">
         <StatCard
           title="Total Users"
           value={organizationMetrics.totalUsers}
@@ -72,16 +77,18 @@ export default async function AdminDashboardPage({ params }: { params: { userId:
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-7">
-        <div className="col-span-4">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-7 w-full">
+        <div className="col-span-1 md:col-span-4 w-full overflow-x-auto">
           <AdminMetrics />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3 w-full overflow-x-auto">
           <RecentActivities userId={params.userId} />
         </div>
       </div>
 
-      <OrganizationUsers organizationId={user.organization_id} />
+      <div className="w-full overflow-x-auto">
+        <OrganizationUsers organizationId={user.organization_id} />
+      </div>
     </DashboardShell>
   );
 } 

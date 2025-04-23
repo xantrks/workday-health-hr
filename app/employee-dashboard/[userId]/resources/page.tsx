@@ -60,6 +60,10 @@ const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
   all: "All Categories"
 };
 
+/**
+ * Employee Resources Page
+ * Enhanced for mobile responsiveness
+ */
 export default function EmployeeResourcesPage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession({
     required: true,
@@ -137,102 +141,104 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
       description="Access health resources, guides and policy documents to support your wellbeing"
     >
       {/* New Horizontal Search & Filter Bar */}
-      <Card className="mb-6 border shadow-sm bg-white/50 dark:bg-card/40 backdrop-blur-sm dark:border-border/40 dark:shadow-primary/5">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative w-full md:w-1/3">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Card className="mb-3 sm:mb-6 border shadow-sm bg-white/50 dark:bg-card/40 backdrop-blur-sm dark:border-border/40 dark:shadow-primary/5">
+        <CardContent className="p-2 sm:p-4">
+          <div className="flex flex-col gap-2 sm:gap-4">
+            <div className="relative w-full">
+              <Search className="absolute left-2 sm:left-3 top-2.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
               <Input
                 placeholder="Search resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 border-primary/10 focus:border-primary/30 focus:ring-primary/20 dark:border-primary/30 dark:focus:border-primary/50 dark:bg-background/50"
+                className="pl-7 sm:pl-9 text-xs sm:text-sm h-8 sm:h-10 border-primary/10 focus:border-primary/30 focus:ring-primary/20 dark:border-primary/30 dark:focus:border-primary/50 dark:bg-background/50"
               />
             </div>
             
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <Select 
-                value={categoryFilter} 
-                onValueChange={setCategoryFilter}
-              >
-                <SelectTrigger className={`w-full md:w-auto md:min-w-[200px] border ${getCategoryColorClass(categoryFilter)}`}>
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="policy_documents" className={CATEGORY_COLORS.policy_documents}>Policy Documents</SelectItem>
-                  <SelectItem value="menstrual_health_resources" className={CATEGORY_COLORS.menstrual_health_resources}>Menstrual Health Resources</SelectItem>
-                  <SelectItem value="menopause_health_resources" className={CATEGORY_COLORS.menopause_health_resources}>Menopause Health Resources</SelectItem>
-                  <SelectItem value="workshop_materials" className={CATEGORY_COLORS.workshop_materials}>Workshop Materials</SelectItem>
-                  <SelectItem value="others" className={CATEGORY_COLORS.others}>Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <Select 
-                value={fileTypeFilter} 
-                onValueChange={setFileTypeFilter}
-              >
-                <SelectTrigger className={`w-full md:w-auto md:min-w-[180px] border ${getFileTypeColorClass(fileTypeFilter)}`}>
-                  <SelectValue placeholder="All File Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All File Types</SelectItem>
-                  <SelectItem value="pdf" className={FILE_TYPE_COLORS.pdf}>PDF</SelectItem>
-                  <SelectItem value="word" className={FILE_TYPE_COLORS.word}>Word</SelectItem>
-                  <SelectItem value="presentation" className={FILE_TYPE_COLORS.presentation}>PPT</SelectItem>
-                  <SelectItem value="spreadsheet" className={FILE_TYPE_COLORS.spreadsheet}>Excel</SelectItem>
-                  <SelectItem value="image" className={FILE_TYPE_COLORS.image}>Image</SelectItem>
-                  <SelectItem value="video" className={FILE_TYPE_COLORS.video}>Video</SelectItem>
-                  <SelectItem value="text" className={FILE_TYPE_COLORS.text}>Text</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:gap-4">
+              <div className="flex-shrink-0 w-full sm:w-auto">
+                <Select 
+                  value={categoryFilter} 
+                  onValueChange={setCategoryFilter}
+                >
+                  <SelectTrigger className={`w-full text-xs sm:text-sm h-8 sm:h-10 md:w-auto md:min-w-[180px] sm:min-w-[150px] border ${getCategoryColorClass(categoryFilter)}`}>
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="policy_documents" className={CATEGORY_COLORS.policy_documents}>Policy Documents</SelectItem>
+                    <SelectItem value="menstrual_health_resources" className={CATEGORY_COLORS.menstrual_health_resources}>Menstrual Health Resources</SelectItem>
+                    <SelectItem value="menopause_health_resources" className={CATEGORY_COLORS.menopause_health_resources}>Menopause Health Resources</SelectItem>
+                    <SelectItem value="workshop_materials" className={CATEGORY_COLORS.workshop_materials}>Workshop Materials</SelectItem>
+                    <SelectItem value="others" className={CATEGORY_COLORS.others}>Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex-shrink-0 w-full sm:w-auto">
+                <Select 
+                  value={fileTypeFilter} 
+                  onValueChange={setFileTypeFilter}
+                >
+                  <SelectTrigger className={`w-full text-xs sm:text-sm h-8 sm:h-10 md:w-auto md:min-w-[150px] sm:min-w-[130px] border ${getFileTypeColorClass(fileTypeFilter)}`}>
+                    <SelectValue placeholder="All File Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All File Types</SelectItem>
+                    <SelectItem value="pdf" className={FILE_TYPE_COLORS.pdf}>PDF</SelectItem>
+                    <SelectItem value="word" className={FILE_TYPE_COLORS.word}>Word</SelectItem>
+                    <SelectItem value="presentation" className={FILE_TYPE_COLORS.presentation}>PPT</SelectItem>
+                    <SelectItem value="spreadsheet" className={FILE_TYPE_COLORS.spreadsheet}>Excel</SelectItem>
+                    <SelectItem value="image" className={FILE_TYPE_COLORS.image}>Image</SelectItem>
+                    <SelectItem value="video" className={FILE_TYPE_COLORS.video}>Video</SelectItem>
+                    <SelectItem value="text" className={FILE_TYPE_COLORS.text}>Text</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="flex gap-2 ml-auto">
-              <Button 
-                variant={viewMode === 'grid' ? "secondary" : "outline"} 
-                size="sm" 
-                onClick={() => setViewMode('grid')}
-                className="w-10 h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant={viewMode === 'list' ? "secondary" : "outline"} 
-                size="sm" 
-                onClick={() => setViewMode('list')}
-                className="w-10 h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+              <div className="col-span-2 flex justify-end sm:ml-auto sm:justify-start gap-2">
+                <Button 
+                  variant={viewMode === 'grid' ? "secondary" : "outline"} 
+                  size="sm" 
+                  onClick={() => setViewMode('grid')}
+                  className="w-8 h-8 sm:w-10 sm:h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
+                >
+                  <Grid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === 'list' ? "secondary" : "outline"} 
+                  size="sm" 
+                  onClick={() => setViewMode('list')}
+                  className="w-8 h-8 sm:w-10 sm:h-10 p-0 dark:border-border/50 dark:hover:bg-primary/10"
+                >
+                  <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-8">
         {/* Main Content Area */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-3 sm:space-y-6 order-2 lg:order-1">
           {loading ? (
-            <div className="flex justify-center items-center py-10">
+            <div className="flex justify-center items-center py-6 sm:py-10">
               <div className="text-center">
-                <div className="w-10 h-10 border-t-2 border-primary border-r-2 rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading resources...</p>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 border-t-2 border-primary border-r-2 rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+                <p className="text-xs sm:text-sm text-muted-foreground">Loading resources...</p>
               </div>
             </div>
           ) : error ? (
-            <div className="flex justify-center items-center py-10 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/30 dark:border-red-800/50 dark:text-red-300">
-              <p className="text-red-600 dark:text-red-300">{error}</p>
+            <div className="flex justify-center items-center py-6 sm:py-10 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/30 dark:border-red-800/50 dark:text-red-300">
+              <p className="text-xs sm:text-sm text-red-600 dark:text-red-300">{error}</p>
             </div>
           ) : filteredResources.length === 0 ? (
-            <div className="flex justify-center items-center py-12 border rounded-lg bg-gray-50/50 dark:bg-gray-800/30 dark:border-gray-700/50">
-              <div className="text-center px-4 py-8">
-                <Search className="h-12 w-12 text-gray-300 dark:text-gray-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No resources found</h3>
-                <p className="text-muted-foreground mb-2">We couldn&apos;t find any resources matching your search criteria</p>
-                <p className="text-xs text-muted-foreground">Try adjusting your filters or search term</p>
+            <div className="flex justify-center items-center py-8 sm:py-12 border rounded-lg bg-gray-50/50 dark:bg-gray-800/30 dark:border-gray-700/50">
+              <div className="text-center px-3 sm:px-4 py-6 sm:py-8">
+                <Search className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300 dark:text-gray-500 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium mb-2">No resources found</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">We couldn&apos;t find any resources matching your search criteria</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Try adjusting your filters or search term</p>
               </div>
             </div>
           ) : viewMode === 'grid' ? (
@@ -243,9 +249,9 @@ export default function EmployeeResourcesPage({ params }: { params: { userId: st
         </div>
         
         {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-3 sm:space-y-6 order-1 lg:order-2 mb-3 sm:mb-0">
           {/* Popular Resources */}
-          <div className="sticky top-24">
+          <div className="lg:sticky lg:top-24">
             <PopularResources resources={popularResources} />
           </div>
         </div>

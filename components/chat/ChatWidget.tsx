@@ -342,95 +342,105 @@ export function ChatWidget() {
     <div className="fixed bottom-4 right-4 z-50">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button 
-            size="icon" 
+          <Button
+            size="icon"
             className={cn(
-              "h-14 w-14 rounded-full shadow-button hover:shadow-button-hover transition-all duration-300",
-              "bg-primary hover:bg-primary-deep text-white",
-              "flex items-center justify-center relative",
-              !isOpen && "animate-bounce-subtle"
+              "w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md hover:shadow-lg transition-all",
+              isOpen
+                ? "bg-red-500 text-white hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600"
+                : "bg-primary text-white hover:bg-primary/90"
             )}
+            aria-label={isOpen ? "Close chat" : "Open chat"}
           >
-            {isOpen ? (
-              <X className="h-6 w-6 transition-transform duration-300" />
-            ) : (
-              <div className="relative">
-                <MessageSquare className="h-6 w-6" />
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
-                </span>
-              </div>
-            )}
+            {isOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />}
           </Button>
         </PopoverTrigger>
-        <PopoverContent 
-          side="top" 
-          align="end" 
+        <PopoverContent
           className={cn(
-            "w-[350px] sm:w-[450px] h-[500px] p-0 overflow-hidden flex flex-col",
-            "border border-primary/20 shadow-card-hover rounded-xl",
-            "animate-slide-up",
-            isDarkTheme ? "bg-neutral-900" : "bg-white"
+            "w-[320px] sm:w-[380px] p-0 rounded-xl shadow-lg border-0",
+            isDarkTheme ? "bg-gray-900/95 backdrop-blur-sm" : "bg-white/95 backdrop-blur-sm"
           )}
+          side="top"
+          align="end"
+          sideOffset={16}
         >
-          <div className={cn(
-            "p-4 text-white font-semibold rounded-t-xl flex justify-between items-center",
-            isDarkTheme 
-              ? "bg-primary-deep" 
-              : "bg-gradient-to-r from-primary to-primary-deep"
-          )}>
-            <div className="flex items-center gap-2">
-              <BotIcon className="h-5 w-5" />
-              <span>Sanicle WatsonX AI Assistant</span>
+          <div className="flex flex-col h-[450px] sm:h-[500px]">
+            {/* Chat header */}
+            <div 
+              className={cn(
+                "flex items-center p-3 sm:p-4 border-b",
+                isDarkTheme ? "border-gray-700" : "border-gray-200"
+              )}
+            >
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 bg-primary/10">
+                <AvatarFallback className="text-primary">
+                  <BotIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="text-sm sm:text-base font-medium">Sani Assistant</h3>
+                <p className="text-xs text-muted-foreground">WatsonX AI powered health assistant</p>
+              </div>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close chat"
+              >
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full text-white hover:bg-white/10"
-              onClick={() => setIsOpen(false)}
+            
+            {/* Messages container */}
+            <div 
+              className={cn(
+                "flex-1 overflow-y-auto p-3 sm:p-4",
+                isDarkTheme ? "bg-gray-900/30" : "bg-gray-50/50"
+              )}
             >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
+              {messages.map((message, index) => (
+                <ChatMessage
+                  key={index}
+                  message={message}
+                  isLastMessage={index === messages.length - 1}
+                />
+              ))}
+              
+              {isLoading && (
+                <div className="flex items-start gap-3 max-w-[85%] mb-3">
+                  <TypingIndicator />
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+            
+            {/* Input area */}
+            <form 
+              onSubmit={handleSubmitStandard} 
+              className={cn(
+                "p-2 sm:p-3 border-t flex items-center gap-2",
+                isDarkTheme ? "border-gray-700" : "border-gray-200"
+              )}
+            >
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 text-xs sm:text-sm h-8 sm:h-10 bg-transparent"
+                disabled={isLoading}
               />
-            ))}
-            {isLoading && <TypingIndicator />}
-            <div ref={messagesEndRef} />
+              <Button 
+                type="submit" 
+                size="icon" 
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
+                disabled={isLoading || input.trim() === ""}
+              >
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </form>
           </div>
-          
-          <form 
-            onSubmit={handleSubmit} 
-            className="p-4 border-t border-primary/10 bg-background/80 flex gap-2"
-          >
-            <Input
-              placeholder="Ask me anything..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className={cn(
-                "flex-1",
-                isDarkTheme ? "bg-neutral-800 border-neutral-700" : "bg-white border-primary/20"
-              )}
-              disabled={isLoading}
-            />
-            <Button 
-              type="submit" 
-              size="icon" 
-              disabled={isLoading || input.trim() === ""}
-              className={cn(
-                "shrink-0 rounded-full",
-                "bg-primary hover:bg-primary-deep text-white"
-              )}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
         </PopoverContent>
       </Popover>
     </div>

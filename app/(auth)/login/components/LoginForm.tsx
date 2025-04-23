@@ -23,6 +23,7 @@ import { LoginActionState } from '../types';
 /**
  * Login form component
  * Handles user login via email and password
+ * Enhanced for mobile responsiveness
  */
 export function LoginForm() {
   const router = useRouter();
@@ -134,10 +135,10 @@ export function LoginForm() {
   // If login is successful, display navigation interface
   if (loginSuccess && userId) {
     return (
-      <div className="w-full flex items-center justify-center p-6 md:p-8">
-        <div className="text-center max-w-md bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-2xl font-bold mb-4">Login Successful</h2>
-          <p className="mb-8 text-gray-600">Please select a way to go to your dashboard</p>
+      <div className="w-full flex items-center justify-center p-4 sm:p-6 md:p-8">
+        <div className="text-center w-full max-w-md bg-white shadow-lg rounded-lg p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Login Successful</h2>
+          <p className="mb-6 sm:mb-8 text-gray-600">Please select a way to go to your dashboard</p>
           
           <div className="space-y-4">
             <button 
@@ -153,25 +154,25 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8">
+    <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold tracking-tight">
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             Welcome Back
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 sm:mt-2 text-sm text-muted-foreground">
             Please log in to your account
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
             <CardTitle className="text-lg">Multi-Tenant Platform</CardTitle>
             <CardDescription>
               Access your organization&apos;s dashboard
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
             <p className="text-sm text-muted-foreground">
               Your login provides access to features based on your role:
             </p>
@@ -183,7 +184,7 @@ export function LoginForm() {
           </CardContent>
         </Card>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           <div>
             <Label htmlFor="email" className="text-sm font-medium">Email</Label>
             <Input
@@ -199,7 +200,7 @@ export function LoginForm() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-1">
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Link
                 href="/forgot-password"
@@ -227,7 +228,7 @@ export function LoginForm() {
             Log In
           </SubmitButton>
 
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-3 sm:space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?
             </p>
