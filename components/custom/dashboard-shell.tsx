@@ -1,14 +1,16 @@
-interface DashboardShellProps {
-  children: React.ReactNode;
-  className?: string;
-}
+import React from "react";
+
+import { cn } from "@/lib/utils";
+
+interface DashboardShellProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function DashboardShell({
   children,
   className,
+  ...props
 }: DashboardShellProps) {
   return (
-    <div className="grid items-start gap-8 p-4 md:p-8">
+    <div className={cn("grid gap-6", className)} {...props}>
       {children}
     </div>
   );

@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/custom/navbar";
 
-// This layout will be used for all non-auth pages
+// This layout will be used for main pages
 export default function MainLayout({
   children,
 }: {

@@ -41,7 +41,10 @@ export async function middleware(request: NextRequest) {
                       path.includes('/_next/') || 
                       path.includes('/api/auth/') ||
                       path.includes('/images/') ||
-                      path === '/favicon.ico';
+                      path.includes('/fonts/') ||
+                      path === '/favicon.ico' ||
+                      path === '/terms' ||
+                      path === '/privacy';
   
   // Get token to check authentication and roles with explicit secret
   const token = await getToken({ 
