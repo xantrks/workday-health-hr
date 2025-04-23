@@ -99,16 +99,7 @@ export function RegisterForm() {
 
   return (
     <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8">
-      <div className="w-full max-w-md">
-        <div className="lg:hidden flex justify-center mb-8">
-          <Image 
-            src="/images/sanicle_logo.svg" 
-            alt="Sanicle Logo" 
-            width={150} 
-            height={50}
-          />
-        </div>
-        
+      <div className="w-full max-w-md">       
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold tracking-tight">
             Create an Account

@@ -40,13 +40,6 @@ export function BrandSection() {
     >
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="max-w-md text-white relative z-10">
-        <Image 
-          src="/images/sanicle_logo_white.svg" 
-          alt="Sanicle Logo" 
-          width={180} 
-          height={60}
-          className="mb-8"
-        />
         <h1 className="text-3xl font-bold mb-4">Welcome to FemTech Health Platform</h1>
         <p className="text-lg opacity-90 mb-6">
           We are dedicated to providing comprehensive health management solutions for professional women, helping you better balance work and health.
