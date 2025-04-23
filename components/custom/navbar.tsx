@@ -40,10 +40,26 @@ export const Navbar = async () => {
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "";
   
-  // Only hide navbar on registration page, show it on login page
-  if (pathname === "/register") {
+  // Log the pathname for debugging
+  console.log("[Navbar] Current pathname:", pathname);
+  
+  // Explicitly detect login and register pages
+  const isAuthPage = pathname === "/login" || 
+                     pathname === "/register" || 
+                     pathname.startsWith("/login/") || 
+                     pathname.startsWith("/register/");
+                     
+  // Don't show navbar for register page
+  if (pathname === "/register" || pathname.startsWith("/register/")) {
     return null;
   }
+  
+  // Don't show Sign In button on login page when user is not logged in
+  const shouldShowSignIn = !isAuthPage && !session?.user;
+  
+  console.log("[Navbar] Should show sign in:", shouldShowSignIn);
+  console.log("[Navbar] Is auth page:", isAuthPage);
+  console.log("[Navbar] User session:", session?.user ? "Exists" : "None");
 
   // Get the correct dashboard path for this user
   const dashboardPath = session?.user ? getDashboardPath(session.user) : "/dashboard";
@@ -127,9 +143,11 @@ export const Navbar = async () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button className="py-1.5 px-5 h-fit font-medium text-white bg-primary hover:bg-primary/90 shadow-sm" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
+            shouldShowSignIn && (
+              <Button className="py-1.5 px-5 h-fit font-medium text-white bg-primary hover:bg-primary/90 shadow-sm" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+            )
           )}
         </div>
       </div>

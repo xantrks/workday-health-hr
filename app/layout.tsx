@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 
 import { Navbar } from "@/components/custom/navbar";
-
 import { Providers } from "./providers";
 
 import "./globals.css";

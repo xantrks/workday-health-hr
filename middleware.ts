@@ -1,4 +1,5 @@
 import { getToken } from 'next-auth/jwt';
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -16,11 +17,31 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
   
+  // Create a response object to pass through the request
+  // This will allow us to add headers to ALL requests
+  const response = NextResponse.next();
+  
+  // Add the x-pathname header to every response for use in the Navbar component
+  response.headers.set("x-pathname", path);
+  
   // Handle root path access - always redirect to login page
   if (path === '/' || path === '') {
     console.log("[Middleware] Root path access, redirecting to login page");
-    return NextResponse.redirect(new URL('/login', origin));
+    const redirectResponse = NextResponse.redirect(new URL('/login', origin));
+    // Add x-pathname to redirects as well
+    redirectResponse.headers.set("x-pathname", "/login");
+    return redirectResponse;
   }
+  
+  // Define public paths that don't require authentication
+  const isPublicPath = path === '/login' || 
+                      path === '/register' || 
+                      path.startsWith('/login/') || 
+                      path.startsWith('/register/') ||
+                      path.includes('/_next/') || 
+                      path.includes('/api/auth/') ||
+                      path.includes('/images/') ||
+                      path === '/favicon.ico';
   
   // Get token to check authentication and roles with explicit secret
   const token = await getToken({ 
@@ -28,7 +49,16 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET 
   }) as Token;
   
-  // Handle role-specific access control
+  // Redirect unauthenticated users to login page except for public paths
+  if (!token && !isPublicPath) {
+    console.log("[Middleware] Unauthenticated access to protected path, redirecting to login page");
+    const redirectResponse = NextResponse.redirect(new URL('/login', origin));
+    // Add x-pathname to redirects as well
+    redirectResponse.headers.set("x-pathname", "/login");
+    return redirectResponse;
+  }
+  
+  // Handle role-specific access control for authenticated users
   if (token) {
     // Super Admin paths
     if (path.startsWith('/super-admin') && !token.isSuperAdmin) {
@@ -96,13 +126,20 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  // No processing for all other paths
-  return NextResponse.next();
+  // Return the response with the x-pathname header for all other requests
+  return response;
 }
 
+// This matcher allows us to run the middleware on all paths
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
     '/',
-    '/((?!api|_next/static|_next/image|favicon.ico|login|register).*)',
-  ]
+  ],
 };
