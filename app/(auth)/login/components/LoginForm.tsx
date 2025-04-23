@@ -203,7 +203,7 @@ export function LoginForm() {
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-primary hover:underline"
+                className="text-sm font-medium text-primary underline hover:text-primary/80 transition-colors px-1 py-0.5 rounded"
               >
                 Forgot password?
               </Link>
