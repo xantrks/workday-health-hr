@@ -70,7 +70,7 @@ export const Navbar = async () => {
         <div className="flex items-center gap-3">
           <History user={session?.user} />
           <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center">
+            <Link href={session?.user ? dashboardPath : "/"} className="flex items-center">
               <Image
                 src="/images/sanicle_logo.svg"
                 height={28}
