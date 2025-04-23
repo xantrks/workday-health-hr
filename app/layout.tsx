@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 
+import { Navbar } from "@/components/custom/navbar";
 import { Providers } from "./providers";
 
 import "./globals.css";
@@ -23,7 +24,8 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
           <Toaster />
-          <main className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="min-h-[calc(100vh-4rem)] flex flex-col">
             {children}
           </main>
         </Providers>

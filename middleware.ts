@@ -24,8 +24,20 @@ export async function middleware(request: NextRequest) {
   // Add the x-pathname header to every response for use in the Navbar component
   response.headers.set("x-pathname", path);
   
-  // Handle root path access - always redirect to login page
+  // Handle root path access
   if (path === '/' || path === '') {
+    // Check referer to see if user is coming from terms or privacy pages
+    const referer = request.headers.get('referer') || '';
+    console.log("[Middleware] Referer:", referer);
+    
+    if (referer.includes('/terms') || referer.includes('/privacy')) {
+      console.log("[Middleware] Coming from terms/privacy, redirecting to register page");
+      const redirectResponse = NextResponse.redirect(new URL('/register', origin));
+      redirectResponse.headers.set("x-pathname", "/register");
+      return redirectResponse;
+    }
+    
+    // Default root redirection
     console.log("[Middleware] Root path access, redirecting to login page");
     const redirectResponse = NextResponse.redirect(new URL('/login', origin));
     // Add x-pathname to redirects as well

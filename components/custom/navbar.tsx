@@ -63,6 +63,15 @@ export const Navbar = async () => {
 
   // Get the correct dashboard path for this user
   const dashboardPath = session?.user ? getDashboardPath(session.user) : "/dashboard";
+  
+  // Determine where the logo should link to based on the current page
+  let logoLinkPath = session?.user ? dashboardPath : "/";
+  
+  // If on terms or privacy pages, link directly to the register page
+  if (pathname === "/terms" || pathname === "/privacy") {
+    logoLinkPath = "/register";
+    console.log("[Navbar] On terms/privacy page, setting logo link to:", logoLinkPath);
+  }
 
   return (
     <header className="sticky top-0 w-full bg-background border-b z-50 shadow-sm">
@@ -70,7 +79,7 @@ export const Navbar = async () => {
         <div className="flex items-center gap-3">
           <History user={session?.user} />
           <div className="flex items-center gap-2">
-            <Link href={session?.user ? dashboardPath : "/"} className="flex items-center">
+            <Link href={logoLinkPath} className="flex items-center">
               <Image
                 src="/images/sanicle_logo.svg"
                 height={28}
