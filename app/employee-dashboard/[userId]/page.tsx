@@ -96,13 +96,15 @@ export default function EmployeeDashboard({ params }: { params: { userId: string
         className="w-full" 
         onValueChange={(value) => setActiveTab(value as DashboardTab)}
       >
-        <TabsList className="grid w-full grid-cols-5 overflow-x-auto max-w-[100vw] mb-1 sm:mb-2">
-          <TabsTrigger value="overview" className="text-xs sm:text-sm py-1.5 sm:py-2">Overview</TabsTrigger>
-          <TabsTrigger value="cycle" className="text-xs sm:text-sm py-1.5 sm:py-2">Cycle</TabsTrigger>
-          <TabsTrigger value="health" className="text-xs sm:text-sm py-1.5 sm:py-2">Health</TabsTrigger>
-          <TabsTrigger value="appointments" className="text-xs sm:text-sm py-1.5 sm:py-2">Appointments</TabsTrigger>
-          <TabsTrigger value="resources" className="text-xs sm:text-sm py-1.5 sm:py-2">Resources</TabsTrigger>
-        </TabsList>
+        <div className="relative w-full max-h-full overflow-hidden">
+          <TabsList className="flex md:grid w-full md:grid-cols-5 overflow-x-auto overflow-y-hidden scrollbar-hide max-w-[100vw] mb-1 sm:mb-2">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap flex-shrink-0">Overview</TabsTrigger>
+            <TabsTrigger value="cycle" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap flex-shrink-0">Cycle</TabsTrigger>
+            <TabsTrigger value="health" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap flex-shrink-0">Health</TabsTrigger>
+            <TabsTrigger value="appointments" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap flex-shrink-0">Appointments</TabsTrigger>
+            <TabsTrigger value="resources" className="text-xs sm:text-sm py-1.5 sm:py-2 whitespace-nowrap flex-shrink-0">Resources</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="overview">
           <OverviewTab userId={params.userId} userName={session.user.name || ''} />

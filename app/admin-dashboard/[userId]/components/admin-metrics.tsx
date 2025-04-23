@@ -19,36 +19,38 @@ export function AdminMetrics() {
       <CardContent className="px-2 sm:px-4 pb-2 sm:pb-4">
         <div className="space-y-3 sm:space-y-4 min-w-[250px]">
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto">
-              <TabsTrigger
-                value="users"
-                className="text-xs sm:text-sm py-1 sm:py-2 px-1 sm:px-3"
-                onClick={() => setActiveTab("users")}
-              >
-                Users
-              </TabsTrigger>
-              <TabsTrigger
-                value="events"
-                className="text-xs sm:text-sm py-1 sm:py-2 px-1 sm:px-3"
-                onClick={() => setActiveTab("events")}
-              >
-                Events
-              </TabsTrigger>
-              <TabsTrigger
-                value="resources"
-                className="text-xs sm:text-sm py-1 sm:py-2 px-1 sm:px-3"
-                onClick={() => setActiveTab("resources")}
-              >
-                Resources
-              </TabsTrigger>
-              <TabsTrigger
-                value="health"
-                className="text-xs sm:text-sm py-1 sm:py-2 px-1 sm:px-3"
-                onClick={() => setActiveTab("health")}
-              >
-                Health
-              </TabsTrigger>
-            </TabsList>
+            <div className="relative w-full max-h-full overflow-hidden">
+              <TabsList className="flex sm:grid sm:grid-cols-4 w-full overflow-x-auto overflow-y-hidden scrollbar-hide h-auto">
+                <TabsTrigger
+                  value="users"
+                  className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 whitespace-nowrap flex-shrink-0"
+                  onClick={() => setActiveTab("users")}
+                >
+                  Users
+                </TabsTrigger>
+                <TabsTrigger
+                  value="events"
+                  className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 whitespace-nowrap flex-shrink-0"
+                  onClick={() => setActiveTab("events")}
+                >
+                  Events
+                </TabsTrigger>
+                <TabsTrigger
+                  value="resources"
+                  className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 whitespace-nowrap flex-shrink-0"
+                  onClick={() => setActiveTab("resources")}
+                >
+                  Resources
+                </TabsTrigger>
+                <TabsTrigger
+                  value="health"
+                  className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 whitespace-nowrap flex-shrink-0"
+                  onClick={() => setActiveTab("health")}
+                >
+                  Health
+                </TabsTrigger>
+              </TabsList>
+            </div>
             <TabsContent value="users" className="mt-3 sm:mt-4">
               <div className="flex items-center justify-center h-32 sm:h-56 border rounded-md">
                 <p className="text-xs sm:text-sm text-muted-foreground">Visualization for user metrics coming soon</p>
