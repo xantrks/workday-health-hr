@@ -96,11 +96,14 @@ export function PeriodRecordDialog({
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  
+  // 强制确保选择的日期被设置（解决今天日期问题）
+  const ensuredSelectedDate = selectedDate || new Date();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: selectedDate || new Date(),
+      date: ensuredSelectedDate,
       periodFlow: 0,
       symptoms: [],
       mood: "none",
@@ -110,9 +113,29 @@ export function PeriodRecordDialog({
     },
   });
 
+  // 当对话框打开时重置表单
+  useEffect(() => {
+    if (open) {
+      console.log("PeriodRecordDialog - Dialog opened, resetting form");
+      
+      // 确保日期是设置的
+      if (selectedDate) {
+        form.setValue("date", selectedDate);
+        console.log("PeriodRecordDialog - Form date set on dialog open:", selectedDate);
+      } else {
+        // 如果没有提供日期，设置为今天
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        form.setValue("date", today);
+        console.log("PeriodRecordDialog - No date provided, using today:", today);
+      }
+    }
+  }, [open, selectedDate, form]);
+
   // Update form values when selected date or record changes
   useEffect(() => {
     console.log("PeriodRecordDialog - useEffect - selectedDate:", selectedDate ? format(selectedDate, "yyyy-MM-dd") : null);
+    console.log("PeriodRecordDialog - useEffect - form.date:", form.getValues("date") ? format(form.getValues("date"), "yyyy-MM-dd") : "no date");
     console.log("PeriodRecordDialog - useEffect - record:", record);
     
     if (selectedDate) {
@@ -127,6 +150,9 @@ export function PeriodRecordDialog({
       
       console.log("PeriodRecordDialog - Setting date:", format(localDate, "yyyy-MM-dd"));
       form.setValue("date", localDate);
+      
+      // 显式触发表单验证，确保日期字段被正确验证
+      form.trigger("date");
     }
 
     if (record) {
@@ -182,6 +208,13 @@ export function PeriodRecordDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log("PeriodRecordDialog - onSubmit - values:", values);
     
+    // 日期验证 - 如果没有日期值，使用今天的日期
+    if (!values.date) {
+      console.log("PeriodRecordDialog - No date found, using today's date");
+      values.date = new Date();
+      values.date.setHours(0, 0, 0, 0);
+    }
+    
     // Ensure date format is consistent, not affected by timezone
     const year = values.date.getFullYear();
     const month = values.date.getMonth();
@@ -212,6 +245,15 @@ export function PeriodRecordDialog({
     onSave(newRecord);
   };
 
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
@@ -227,7 +269,7 @@ export function PeriodRecordDialog({
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Date <span className="text-xs text-muted-foreground">(Required)</span></FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -235,11 +277,17 @@ export function PeriodRecordDialog({
                           variant={"outline"}
                           className={cn(
                             "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
+                            field.value && isToday(field.value) && "border-primary text-primary font-medium"
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "yyyy-MM-dd")
+                            <>
+                              {format(field.value, "MMMM d, yyyy")}
+                              {isToday(field.value) && (
+                                <span className="ml-2 text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-sm">Today</span>
+                              )}
+                            </>
                           ) : (
                             <span>Select date</span>
                           )}
@@ -251,8 +299,36 @@ export function PeriodRecordDialog({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date || new Date());
+                          // 显式触发验证以确保日期被正确验证
+                          setTimeout(() => form.trigger("date"), 0);
+                        }}
                         initialFocus
+                        disabled={(date) => date > new Date()} // 禁用未来日期
+                        modifiersClassNames={{
+                          today: "bg-primary/20 text-primary font-bold border-primary",
+                          selected: "bg-primary text-primary-foreground"
+                        }}
+                        footer={
+                          <Button
+                            className="w-full mt-2 text-xs" 
+                            size="sm"
+                            onClick={() => {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              field.onChange(today);
+                              setTimeout(() => form.trigger("date"), 0);
+                              const popoverInstance = document.querySelector('[data-radix-popper-content-wrapper]');
+                              if (popoverInstance) {
+                                // 模拟点击外部关闭弹窗
+                                document.body.click();
+                              }
+                            }}
+                          >
+                            Use Today&apos;s Date
+                          </Button>
+                        }
                       />
                     </PopoverContent>
                   </Popover>
@@ -432,24 +508,85 @@ export function PeriodRecordDialog({
               )}
             />
 
-            <DialogFooter className="gap-2 sm:gap-0 pt-2">
-              {record?.id && onDelete && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => {
-                    if (showDeleteConfirm) {
-                      onDelete(record.id as string);
-                    } else {
-                      setShowDeleteConfirm(true);
-                    }
-                  }}
-                  className="mr-auto"
-                >
-                  {showDeleteConfirm ? "Confirm Delete" : "Delete"}
-                </Button>
-              )}
-              <Button type="submit">Save</Button>
+            <DialogFooter className="mt-4">
+              <div className="flex w-full justify-between">
+                <div>
+                  {record?.id && onDelete && (
+                    <>
+                      {/* Show delete confirmation */}
+                      {showDeleteConfirm ? (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            onClick={() => {
+                              onDelete(record.id!);
+                              setShowDeleteConfirm(false);
+                            }}
+                            variant="destructive"
+                            size="sm"
+                            type="button"
+                          >
+                            Confirm
+                          </Button>
+                          <Button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => {
+                      // 关闭对话框前确保日期字段被清理
+                      form.reset();
+                      onOpenChange(false);
+                    }}
+                    variant="outline"
+                    type="button"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                    onClick={() => {
+                      // 在提交前检查并修复日期问题
+                      const currentDate = form.getValues("date");
+                      if (!currentDate) {
+                        // 如果没有日期，使用今天的日期
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        form.setValue("date", today);
+                        form.trigger("date");
+                      }
+                    }}
+                  >
+                    {form.formState.isSubmitting ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                        Saving...
+                      </span>
+                    ) : (
+                      <span>Save</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </DialogFooter>
           </form>
         </Form>

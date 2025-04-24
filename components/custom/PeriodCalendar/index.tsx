@@ -95,7 +95,21 @@ export function PeriodCalendar({
   // Handle date click
   const handleDateClick = (info: any) => {
     const date = new Date(info.date);
+    console.log("Date clicked:", date.toISOString());
+    
+    // 确保当日期为今天时也能正确处理
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    
     onSelectDate(date);
+  };
+
+  // Add today record button handler
+  const handleAddTodayRecord = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    onSelectDate(today);
   };
 
   // Custom date cell render
@@ -103,11 +117,20 @@ export function PeriodCalendar({
     const { date, el } = info;
     const record = getRecordForDate(date, localRecords);
     
-    // If no record, return
-    if (!record) return;
+    // Apply styles even if no record
+    if (record) {
+      applyRecordStyles(el, record, onSelectDate, renderTooltip);
+    }
     
-    // Apply styles
-    applyRecordStyles(el, record, onSelectDate, renderTooltip);
+    // 确保今天的单元格可点击，添加点击事件监听器
+    if (el.classList.contains('fc-day-today')) {
+      el.classList.add('clickable');
+      el.addEventListener('click', () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        onSelectDate(today);
+      });
+    }
   };
   
   // Clean up tooltips when cell unmounts
@@ -158,7 +181,19 @@ export function PeriodCalendar({
         dayHeaderFormat={{ weekday: isMobile ? 'narrow' : 'short' }}
         events={convertRecordsToEvents(localRecords)}
         eventContent={eventContent}
+        selectable={true}
+        unselectAuto={false}
       />
+      
+      {/* 添加今日记录按钮 */}
+      <div className="mt-2 flex justify-center">
+        <button 
+          onClick={handleAddTodayRecord}
+          className="text-xs px-2 py-1 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Add Today&apos;s Record
+        </button>
+      </div>
       
       {/* Apply styles */}
       <CalendarStyles />

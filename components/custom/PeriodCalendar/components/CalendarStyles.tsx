@@ -268,6 +268,8 @@ export const CalendarStyles: React.FC = () => {
         background-color: rgba(99, 102, 241, 0.15) !important; /* 更鲜艳的紫色背景 */
         position: relative;
         overflow: visible;
+        cursor: pointer !important; /* 确保今天的日期显示为可点击状态 */
+        z-index: 5 !important; /* 提高层级以确保可点击 */
       }
       
       /* Add special marker for today */
@@ -512,6 +514,28 @@ export const CalendarStyles: React.FC = () => {
         .fc .fc-daygrid-day.fc-day-today::after {
           display: none;
         }
+      }
+      
+      /* Make clickable elements more obvious */
+      .clickable {
+        cursor: pointer !important;
+      }
+      
+      /* Add Today Record Button */
+      .add-today-record-btn {
+        background-color: rgb(99, 102, 241);
+        color: white;
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+      
+      .add-today-record-btn:hover {
+        background-color: rgb(79, 82, 221);
       }
     `}</style>
   );
