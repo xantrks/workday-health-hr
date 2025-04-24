@@ -37,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -55,13 +56,13 @@ const formSchema = z.object({
 });
 
 const symptoms = [
-  { id: "cramps", label: "Cramps" },
-  { id: "headache", label: "Headache" },
-  { id: "bloating", label: "Bloating" },
-  { id: "fatigue", label: "Fatigue" },
-  { id: "mood", label: "Mood Swings" },
-  { id: "appetite", label: "Appetite Changes" },
-  { id: "swelling", label: "Swelling" },
+  { id: "cramps", label: "Cramps", icon: "💫" },
+  { id: "headache", label: "Headache", icon: "🤕" },
+  { id: "bloating", label: "Bloating", icon: "🫨" },
+  { id: "fatigue", label: "Fatigue", icon: "😮‍💨" },
+  { id: "mood", label: "Mood Swings", icon: "🎭" },
+  { id: "appetite", label: "Appetite Changes", icon: "🍴" },
+  { id: "swelling", label: "Swelling", icon: "🫠" },
 ];
 
 const flowLevels = [
@@ -96,8 +97,9 @@ export function PeriodRecordDialog({
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
-  // 强制确保选择的日期被设置（解决今天日期问题）
+  // Enforce ensure selected date is set (solving today's date issue)
   const ensuredSelectedDate = selectedDate || new Date();
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -113,17 +115,17 @@ export function PeriodRecordDialog({
     },
   });
 
-  // 当对话框打开时重置表单
+  // Reset form when dialog opens
   useEffect(() => {
     if (open) {
       console.log("PeriodRecordDialog - Dialog opened, resetting form");
       
-      // 确保日期是设置的
+      // Ensure date is set
       if (selectedDate) {
         form.setValue("date", selectedDate);
         console.log("PeriodRecordDialog - Form date set on dialog open:", selectedDate);
       } else {
-        // 如果没有提供日期，设置为今天
+        // If no date provided, set to today
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         form.setValue("date", today);
@@ -151,8 +153,8 @@ export function PeriodRecordDialog({
       console.log("PeriodRecordDialog - Setting date:", format(localDate, "yyyy-MM-dd"));
       form.setValue("date", localDate);
       
-      // 显式触发表单验证，确保日期字段被正确验证
-      form.trigger("date");
+      // Explicitly trigger validation to ensure date is correctly validated
+      setTimeout(() => form.trigger("date"), 0);
     }
 
     if (record) {
@@ -208,7 +210,7 @@ export function PeriodRecordDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log("PeriodRecordDialog - onSubmit - values:", values);
     
-    // 日期验证 - 如果没有日期值，使用今天的日期
+    // Date validation - if no date value, use today's date
     if (!values.date) {
       console.log("PeriodRecordDialog - No date found, using today's date");
       values.date = new Date();
@@ -256,20 +258,25 @@ export function PeriodRecordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6">
+        <DialogHeader className="pb-4 mb-2 border-b">
+          <DialogTitle className="text-xl font-semibold">
             {record ? "Edit Period Record" : "Add Period Record"}
           </DialogTitle>
+          <p className="text-muted-foreground text-sm mt-1">
+            Track your period details, symptoms, and well-being
+          </p>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date <span className="text-xs text-muted-foreground">(Required)</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    Date <span className="text-xs text-muted-foreground font-normal">(Required)</span>
+                  </FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -301,11 +308,11 @@ export function PeriodRecordDialog({
                         selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date || new Date());
-                          // 显式触发验证以确保日期被正确验证
+                          // Explicitly trigger validation to ensure date is correctly validated
                           setTimeout(() => form.trigger("date"), 0);
                         }}
                         initialFocus
-                        disabled={(date) => date > new Date()} // 禁用未来日期
+                        disabled={(date) => date > new Date()} // Disable future dates
                         modifiersClassNames={{
                           today: "bg-primary/20 text-primary font-bold border-primary",
                           selected: "bg-primary text-primary-foreground"
@@ -321,7 +328,7 @@ export function PeriodRecordDialog({
                               setTimeout(() => form.trigger("date"), 0);
                               const popoverInstance = document.querySelector('[data-radix-popper-content-wrapper]');
                               if (popoverInstance) {
-                                // 模拟点击外部关闭弹窗
+                                // Simulate clicking outside to close popup
                                 document.body.click();
                               }
                             }}
@@ -337,178 +344,378 @@ export function PeriodRecordDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="periodFlow"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Period Flow</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(Number(value))}
-                    defaultValue={field.value?.toString()}
-                    value={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select flow level" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="0">None</SelectItem>
-                      <SelectItem value="1">Light</SelectItem>
-                      <SelectItem value="2">Moderate Light</SelectItem>
-                      <SelectItem value="3">Moderate</SelectItem>
-                      <SelectItem value="4">Moderate Heavy</SelectItem>
-                      <SelectItem value="5">Heavy</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 gap-6 mt-6">
+              <FormField
+                control={form.control}
+                name="periodFlow"
+                render={({ field }) => {
+                  const periodFlowValue = field.value !== undefined ? field.value : 0;
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">Period Flow</FormLabel>
+                      <div className="space-y-3">
+                        <FormControl>
+                          <div className="space-y-3">
+                            <Slider 
+                              min={0} 
+                              max={5} 
+                              step={1} 
+                              value={[periodFlowValue]} 
+                              onValueChange={(values) => field.onChange(values[0])}
+                              className={cn(
+                                periodFlowValue === 0 && "bg-secondary",
+                                periodFlowValue === 1 && "[&>.bg-primary]:bg-red-200",
+                                periodFlowValue === 2 && "[&>.bg-primary]:bg-red-300",
+                                periodFlowValue === 3 && "[&>.bg-primary]:bg-red-400",
+                                periodFlowValue === 4 && "[&>.bg-primary]:bg-red-500",
+                                periodFlowValue === 5 && "[&>.bg-primary]:bg-red-600"
+                              )}
+                            />
+                            {/* Custom flow level indicators */}
+                            <div className="grid grid-cols-6 gap-0.5 mt-3">
+                              <div 
+                                className={cn(
+                                  "h-2 rounded-l-full", 
+                                  periodFlowValue === 0 ? "bg-secondary border border-gray-300" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(0)}
+                              ></div>
+                              <div 
+                                className={cn(
+                                  "h-2", 
+                                  periodFlowValue >= 1 ? "bg-red-200" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(1)}
+                              ></div>
+                              <div 
+                                className={cn(
+                                  "h-2", 
+                                  periodFlowValue >= 2 ? "bg-red-300" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(2)}
+                              ></div>
+                              <div 
+                                className={cn(
+                                  "h-2", 
+                                  periodFlowValue >= 3 ? "bg-red-400" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(3)}
+                              ></div>
+                              <div 
+                                className={cn(
+                                  "h-2", 
+                                  periodFlowValue >= 4 ? "bg-red-500" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(4)}
+                              ></div>
+                              <div 
+                                className={cn(
+                                  "h-2 rounded-r-full", 
+                                  periodFlowValue >= 5 ? "bg-red-600" : "bg-gray-200"
+                                )}
+                                onClick={() => field.onChange(5)}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>None</span>
+                              <span>Light</span>
+                              <span className="text-center">Medium</span>
+                              <span className="text-right">Heavy</span>
+                            </div>
+                            <div className="text-center font-medium">
+                              {periodFlowValue === 0 && "None"}
+                              {periodFlowValue === 1 && "Light"}
+                              {periodFlowValue === 2 && "Moderate Light"}
+                              {periodFlowValue === 3 && "Moderate"}
+                              {periodFlowValue === 4 && "Moderate Heavy"}
+                              {periodFlowValue === 5 && "Heavy"}
+                            </div>
+                          </div>
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
-            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="mood"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mood</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select mood status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="happy">Happy</SelectItem>
-                          <SelectItem value="calm">Calm</SelectItem>
-                          <SelectItem value="sad">Sad</SelectItem>
-                          <SelectItem value="anxious">Anxious</SelectItem>
-                          <SelectItem value="irritable">Irritable</SelectItem>
-                          <SelectItem value="tired">Tired</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sleepHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sleep Duration (hours)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="24"
-                        step="0.5"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                          field.onChange(value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="stressLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stress Level (0-10)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="1"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                          field.onChange(value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="symptoms"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Symptoms</FormLabel>
-                  <div className="grid grid-cols-2 gap-2">
-                    {symptoms.map((symptom) => (
+                    <FormLabel className="text-base font-medium">Mood</FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
                       <Button
-                        key={symptom.id}
                         type="button"
-                        variant={
-                          field.value?.includes(symptom.id)
-                            ? "default"
-                            : "outline"
-                        }
+                        variant={field.value === "none" ? "default" : "outline"}
                         className={cn(
-                          "justify-start",
-                          field.value?.includes(symptom.id) &&
-                            "bg-primary text-primary-foreground"
+                          "justify-center py-6",
+                          field.value === "none" && "bg-primary text-primary-foreground"
                         )}
-                        onClick={() => {
-                          const currentValues = field.value || [];
-                          const newValues = currentValues.includes(symptom.id)
-                            ? currentValues.filter((id) => id !== symptom.id)
-                            : [...currentValues, symptom.id];
-                          field.onChange(newValues);
-                        }}
+                        onClick={() => field.onChange("none")}
                       >
-                        {symptom.label}
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😐</span>
+                          </span>
+                          <span>None</span>
+                        </span>
                       </Button>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <Button
+                        type="button"
+                        variant={field.value === "happy" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "happy" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("happy")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😊</span>
+                          </span>
+                          <span>Happy</span>
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "calm" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "calm" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("calm")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😌</span>
+                          </span>
+                          <span>Calm</span>
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "sad" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "sad" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("sad")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😢</span>
+                          </span>
+                          <span>Sad</span>
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "anxious" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "anxious" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("anxious")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😰</span>
+                          </span>
+                          <span>Anxious</span>
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "irritable" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "irritable" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("irritable")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😠</span>
+                          </span>
+                          <span>Irritable</span>
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "tired" ? "default" : "outline"}
+                        className={cn(
+                          "justify-center py-6",
+                          field.value === "tired" && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => field.onChange("tired")}
+                      >
+                        <span className="flex flex-col items-center gap-1.5">
+                          <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">😴</span>
+                          </span>
+                          <span>Tired</span>
+                        </span>
+                      </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="sleepHours"
+                  render={({ field }) => {
+                    const sleepValue = field.value !== undefined ? field.value : 0;
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">Sleep Duration</FormLabel>
+                        <FormControl>
+                          <div className="space-y-3">
+                            <Slider 
+                              min={0} 
+                              max={24} 
+                              step={0.5} 
+                              value={[sleepValue]} 
+                              onValueChange={(values) => field.onChange(values[0])}
+                              className={cn(
+                                sleepValue >= 7 && sleepValue <= 9 && "[&>.bg-primary]:bg-green-500",
+                                (sleepValue < 7 || sleepValue > 9) && "[&>.bg-primary]:bg-amber-500",
+                                (sleepValue < 5 || sleepValue > 11) && "[&>.bg-primary]:bg-red-500"
+                              )}
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>0</span>
+                              <span>12</span>
+                              <span>24</span>
+                            </div>
+                            <div className="text-center font-medium">
+                              {sleepValue} hours
+                              {sleepValue >= 7 && sleepValue <= 9 && " (Optimal)"}
+                              {(sleepValue < 7 && sleepValue >= 5) && " (Low)"}
+                              {(sleepValue > 9 && sleepValue <= 11) && " (High)"}
+                              {sleepValue < 5 && " (Very low)"}
+                              {sleepValue > 11 && " (Very high)"}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add any additional notes here"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="stressLevel"
+                  render={({ field }) => {
+                    const stressValue = field.value !== undefined ? field.value : 0;
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">Stress Level</FormLabel>
+                        <FormControl>
+                          <div className="space-y-3">
+                            <Slider 
+                              min={0} 
+                              max={10} 
+                              step={1} 
+                              value={[stressValue]} 
+                              onValueChange={(values) => field.onChange(values[0])}
+                              className={cn(
+                                stressValue >= 8 && "[&>.bg-primary]:bg-red-500",
+                                stressValue >= 5 && stressValue < 8 && "[&>.bg-primary]:bg-amber-500",
+                                stressValue > 0 && stressValue < 5 && "[&>.bg-primary]:bg-green-500"
+                              )}
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>0</span>
+                              <span>5</span>
+                              <span>10</span>
+                            </div>
+                            <div className="text-center font-medium">
+                              {stressValue}
+                              {stressValue === 0 && " - None"}
+                              {stressValue >= 1 && stressValue <= 3 && " - Low"}
+                              {stressValue >= 4 && stressValue <= 6 && " - Moderate"}
+                              {stressValue >= 7 && stressValue <= 9 && " - High"}
+                              {stressValue === 10 && " - Extreme"}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
 
-            <DialogFooter className="mt-4">
+              <FormField
+                control={form.control}
+                name="symptoms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">Symptoms</FormLabel>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {symptoms.map((symptom) => (
+                        <Button
+                          key={symptom.id}
+                          type="button"
+                          variant={
+                            field.value?.includes(symptom.id)
+                              ? "default"
+                              : "outline"
+                          }
+                          className={cn(
+                            "justify-start h-auto py-3",
+                            field.value?.includes(symptom.id) &&
+                              "bg-primary text-primary-foreground"
+                          )}
+                          onClick={() => {
+                            const currentValues = field.value || [];
+                            const newValues = currentValues.includes(symptom.id)
+                              ? currentValues.filter((id) => id !== symptom.id)
+                              : [...currentValues, symptom.id];
+                            field.onChange(newValues);
+                          }}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="text-base">{symptom.icon}</span>
+                            <span>{symptom.label}</span>
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add any additional notes here"
+                        className="resize-none min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter className="mt-8 pt-4 border-t">
               <div className="flex w-full justify-between">
                 <div>
                   {record?.id && onDelete && (
@@ -518,20 +725,33 @@ export function PeriodRecordDialog({
                         <div className="flex items-center space-x-2">
                           <Button
                             onClick={() => {
+                              setIsDeleting(true);
                               onDelete(record.id!);
-                              setShowDeleteConfirm(false);
+                              setTimeout(() => {
+                                setIsDeleting(false);
+                                setShowDeleteConfirm(false);
+                              }, 500);
                             }}
                             variant="destructive"
                             size="sm"
                             type="button"
+                            disabled={isDeleting}
                           >
-                            Confirm
+                            {isDeleting ? (
+                              <span className="flex items-center gap-1">
+                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                                <span>Deleting...</span>
+                              </span>
+                            ) : (
+                              <span>Confirm</span>
+                            )}
                           </Button>
                           <Button
                             onClick={() => setShowDeleteConfirm(false)}
                             variant="outline"
                             size="sm"
                             type="button"
+                            disabled={isDeleting}
                           >
                             Cancel
                           </Button>
@@ -543,7 +763,9 @@ export function PeriodRecordDialog({
                           size="sm"
                           type="button"
                         >
-                          Delete
+                          <span className="flex items-center gap-1">
+                            <span>Delete</span>
+                          </span>
                         </Button>
                       )}
                     </>
@@ -552,23 +774,24 @@ export function PeriodRecordDialog({
                 <div className="flex space-x-2">
                   <Button
                     onClick={() => {
-                      // 关闭对话框前确保日期字段被清理
+                      // Close the dialog after ensuring the date field is cleared
                       form.reset();
                       onOpenChange(false);
                     }}
                     variant="outline"
                     type="button"
+                    disabled={form.formState.isSubmitting || isDeleting}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit"
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || isDeleting}
                     onClick={() => {
-                      // 在提交前检查并修复日期问题
+                      // Check and fix date issue before submitting
                       const currentDate = form.getValues("date");
                       if (!currentDate) {
-                        // 如果没有日期，使用今天的日期
+                        // If no date, use today's date
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         form.setValue("date", today);
@@ -579,10 +802,12 @@ export function PeriodRecordDialog({
                     {form.formState.isSubmitting ? (
                       <span className="flex items-center gap-1">
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                        Saving...
+                        <span>Saving...</span>
                       </span>
                     ) : (
-                      <span>Save</span>
+                      <span className="flex items-center gap-1">
+                        <span>Save</span>
+                      </span>
                     )}
                   </Button>
                 </div>
@@ -595,26 +820,42 @@ export function PeriodRecordDialog({
       {/* Delete confirmation dialog */}
       {record?.id && onDelete && (
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto p-6">
+            <DialogHeader className="pb-4 mb-2 border-b">
+              <DialogTitle className="text-xl text-destructive font-semibold">Confirm Delete</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <p>Are you sure you want to delete this period record? This action cannot be undone.</p>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+            <DialogFooter className="mt-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
                 Cancel
               </Button>
               <Button 
                 variant="destructive" 
                 onClick={() => {
+                  setIsDeleting(true);
                   onDelete(record.id as string);
-                  setShowDeleteConfirm(false);
-                  onOpenChange(false);
+                  setTimeout(() => {
+                    setIsDeleting(false);
+                    setShowDeleteConfirm(false);
+                    onOpenChange(false);
+                  }, 500);
                 }}
+                disabled={isDeleting}
               >
-                Delete
+                {isDeleting ? (
+                  <span className="flex items-center gap-1">
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                    <span>Deleting...</span>
+                  </span>
+                ) : (
+                  <span>Delete</span>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
