@@ -1,12 +1,13 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BotIcon, User } from "lucide-react";
+import { useTheme } from "next-themes";
+import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
-import { useTheme } from "next-themes";
+import remarkGfm from "remark-gfm";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 // Define message type
 export interface Message {
@@ -16,6 +17,7 @@ export interface Message {
 
 interface ChatMessageProps {
   message: Message;
+  isLastMessage?: boolean;
 }
 
 // Optimize markdown formatting to handle various markdown issues from IBM watsonx.ai
@@ -44,7 +46,7 @@ function formatMarkdown(text: string): string {
   return formattedText;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
   const { theme } = useTheme();
   const isDarkTheme = theme === 'dark';
 
