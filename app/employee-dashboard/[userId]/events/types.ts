@@ -1,4 +1,4 @@
-// 定义事件类型接口
+// Event type interface
 export interface Event {
   id: string;
   title: string;
@@ -16,7 +16,7 @@ export interface Event {
   currentAttendees?: number;
 }
 
-// 定义注册类型
+// Registration type
 export interface Registration {
   id: string;
   eventId: string;
@@ -25,13 +25,13 @@ export interface Registration {
   attended: boolean;
 }
 
-// 定义事件过滤器类型
+// Event filter type
 export type EventFilter = 'all' | 'webinar' | 'workshop' | 'seminar' | 'training' | 'meeting';
 
-// 定义日历视图类型
+// Calendar view type
 export type CalendarViewType = 'month' | 'list';
 
-// 定义日历日期项目类型
+// Calendar day item type
 export interface CalendarDay {
   date: Date | null;
   isCurrentMonth: boolean;
@@ -39,7 +39,7 @@ export interface CalendarDay {
   dateString?: string;
 }
 
-// 定义分组事件类型
+// Grouped events type
 export interface GroupedEvents {
   [dateKey: string]: Event[];
 } 

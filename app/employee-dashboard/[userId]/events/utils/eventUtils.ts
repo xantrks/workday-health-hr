@@ -1,6 +1,6 @@
 import { Event, Registration } from "../types";
 
-// 获取事件类型颜色
+// Get event type color
 export const getEventTypeColor = (eventType: string): string => {
   switch (eventType) {
     case 'webinar':
@@ -18,22 +18,22 @@ export const getEventTypeColor = (eventType: string): string => {
   }
 };
 
-// 检查用户是否已注册事件
+// Check if user has registered for the event
 export const isRegistered = (eventId: string, registrations: Registration[]): boolean => {
   return registrations.some(reg => reg.eventId === eventId);
 };
 
-// 确定事件是否可以注册
+// Determine if event registration is available
 export const isRegistrationAvailable = (event: Event): boolean => {
   const eventStart = new Date(event.startDate);
   const now = new Date();
   
-  // 检查事件是否在未来或今天
+  // Check if event is in the future or today
   if (eventStart < now && !isSameDay(eventStart, now)) {
     return false;
   }
   
-  // 检查事件是否已达到最大参与人数
+  // Check if event has reached maximum attendees
   if (event.maxAttendees !== null && event.currentAttendees !== undefined) {
     return event.currentAttendees < event.maxAttendees;
   }
@@ -41,7 +41,7 @@ export const isRegistrationAvailable = (event: Event): boolean => {
   return true;
 };
 
-// 辅助函数：检查两个日期是否是同一天
+// Helper function: Check if two dates are the same day
 function isSameDay(date1: Date, date2: Date): boolean {
   return (
     date1.getFullYear() === date2.getFullYear() &&

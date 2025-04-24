@@ -1,5 +1,5 @@
+import { ArrowRight, Calendar } from "lucide-react";
 import Link from "next/link";
-import { Calendar, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Event } from "../events/utils/types";
+import { Event } from "../events/types";
 
 interface EventsCardProps {
   userId: string;
