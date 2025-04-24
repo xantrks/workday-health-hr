@@ -6,28 +6,44 @@ const nextConfig = {
     }
   },
   serverExternalPackages: ['bcryptjs'],
-  // Add rewrite rules to support custom routing
+  // 添加重写规则以支持自定义路由
   async rewrites() {
     return [
-      // Redirect root path to login page
+      // 根路径重定向到登录页
       {
         source: '/',
         destination: '/login',
       },
-      // Redirect dashboard to role-specific dashboard based on session
+      // 如果用户已登录，访问/login时重定向到dashboard
+      {
+        source: '/login',
+        destination: '/api/auth/session?redirect=/dashboard',
+        has: [
+          {
+            type: 'cookie',
+            key: '__Secure-authjs.session-token',
+          },
+        ],
+      },
+      // 从dashboard重定向到适当的仪表盘
       {
         source: '/dashboard',
-        destination: '/api/redirect/dashboard',
+        destination: '/api/auth/session?redirect=/employee-dashboard',
+      },
+      // 确保可以直接访问用户仪表盘
+      {
+        source: '/employee-dashboard/:userId',
+        destination: '/employee-dashboard/:userId',
       },
     ];
   },
-  // Disable strict mode to avoid double rendering issues in development
+  // 关闭严格模式以排除开发过程中的双重渲染问题
   reactStrictMode: false,
-  // Configure image domains
+  // 配置图像域
   images: {
     domains: ['sanicle-ai.vercel.app'],
   },
-  // Ensure correct output directory
+  // 确保输出目录正确
   distDir: '.next'
 }
 

@@ -49,21 +49,8 @@ export function LoginForm() {
         try {
           // Get the target dashboard path based on user role
           const dashboardPath = getDashboardPath(formState.role, formState.userId);
-          console.log('Redirecting to dashboard:', dashboardPath);
-          
-          // Use multiple redirection approaches for reliability
-          // 1. Add timestamp to prevent caching issues
-          const ts = new Date().getTime();
-          
-          // 2. Use direct navigation to dashboard with timestamp to force fresh load
-          // Using top-level window location for better reliability in iframes/embedded contexts
-          window.top ? window.top.location.href = `${dashboardPath}?t=${ts}` : window.location.href = `${dashboardPath}?t=${ts}`;
-          
-          // 3. Record login success in local storage as backup detection mechanism
-          localStorage.setItem('loginSuccess', 'true');
-          localStorage.setItem('loginRole', formState.role || '');
-          localStorage.setItem('loginUserId', formState.userId || '');
-          localStorage.setItem('loginTimestamp', String(ts));
+          // Navigate to appropriate dashboard
+          window.location.href = dashboardPath;
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
           // No action on failure, user will see manual choice buttons
@@ -79,26 +66,23 @@ export function LoginForm() {
       toast.error("Please check your input");
       setIsSubmitting(false);
     }
-  }, [formState, router]);
+  }, [formState]);
   
   // Function to determine dashboard path based on role
   const getDashboardPath = (role?: string | null, id?: string | null) => {
     if (!role || !id) return "/dashboard";
     
-    // Normalize the role to lowercase and trim any whitespace
-    const normalizedRole = (role || "").toLowerCase().trim();
+    const normalizedRole = role.toLowerCase();
     
-    // Check for each role type and return the appropriate path
     if (normalizedRole === 'superadmin') {
       return `/super-admin/${id}`;
-    } else if (normalizedRole === 'orgadmin' || normalizedRole === 'admin') {
+    } else if (normalizedRole === 'orgadmin') {
       return `/admin-dashboard/${id}`;
     } else if (normalizedRole === 'hr') {
       return `/hr-dashboard/${id}`;
     } else if (normalizedRole === 'manager') {
       return `/manager-dashboard/${id}`;
     } else {
-      // Default to employee dashboard
       return `/employee-dashboard/${id}`;
     }
   };
@@ -126,31 +110,25 @@ export function LoginForm() {
   // Handle direct navigation to dashboard
   const handleDirectNavigation = () => {
     try {
-      // Get the target dashboard path and add timestamp
+      // Get the target dashboard path based on user role
       const dashboardPath = getDashboardPath(formState.role, userId);
-      const ts = new Date().getTime();
-      const fullPath = `${dashboardPath}?t=${ts}`;
-      
-      console.log('Manual navigation to:', fullPath);
-      
-      // Force navigation with top-level location
+        
       if (window.top) {
-        window.top.location.href = fullPath;
+        // Directly navigate to user-specific dashboard
+        window.top.location.href = dashboardPath;
       } else {
-        window.location.href = fullPath;
+        window.location.href = dashboardPath;
       }
-      
-      // Record login success in local storage
-      localStorage.setItem('loginSuccess', 'true');
-      localStorage.setItem('loginRole', formState.role || '');
-      localStorage.setItem('loginUserId', formState.userId || '');
-      localStorage.setItem('loginTimestamp', String(ts));
     } catch (error) {
       console.error("Navigation failed:", error);
       
-      // Last resort - try router navigation
-      const dashboardPath = getDashboardPath(formState.role, userId);
-      router.push(dashboardPath);
+      // Backup method: Create form and submit directly
+      const form = document.createElement('form');
+      form.method = 'GET';
+      form.action = getDashboardPath(formState.role, userId);
+      form.target = '_top';
+      document.body.appendChild(form);
+      form.submit();
     }
   };
 
