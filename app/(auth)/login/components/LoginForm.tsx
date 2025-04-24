@@ -52,17 +52,18 @@ export function LoginForm() {
           console.log('Redirecting to dashboard:', dashboardPath);
           
           // Use multiple redirection approaches for reliability
-          // 1. Use the API redirect endpoint which is most reliable in production
-          const apiRedirectUrl = `/api/redirect/dashboard?t=${new Date().getTime()}`;
-          window.location.href = apiRedirectUrl;
+          // 1. Add timestamp to prevent caching issues
+          const ts = new Date().getTime();
           
-          // 2. Fallback to direct path after a short delay
-          setTimeout(() => {
-            // If still on the same page, try direct location
-            if (window.location.pathname.includes('/login')) {
-              window.location.href = dashboardPath;
-            }
-          }, 1000);
+          // 2. Use direct navigation to dashboard with timestamp to force fresh load
+          // Using top-level window location for better reliability in iframes/embedded contexts
+          window.top ? window.top.location.href = `${dashboardPath}?t=${ts}` : window.location.href = `${dashboardPath}?t=${ts}`;
+          
+          // 3. Record login success in local storage as backup detection mechanism
+          localStorage.setItem('loginSuccess', 'true');
+          localStorage.setItem('loginRole', formState.role || '');
+          localStorage.setItem('loginUserId', formState.userId);
+          localStorage.setItem('loginTimestamp', String(ts));
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
           // No action on failure, user will see manual choice buttons
@@ -125,24 +126,29 @@ export function LoginForm() {
   // Handle direct navigation to dashboard
   const handleDirectNavigation = () => {
     try {
-      // Try API redirect first (most reliable in production)
-      const apiRedirectUrl = `/api/redirect/dashboard?t=${new Date().getTime()}`;
-      window.location.href = apiRedirectUrl;
+      // Get the target dashboard path and add timestamp
+      const dashboardPath = getDashboardPath(formState.role, userId);
+      const ts = new Date().getTime();
+      const fullPath = `${dashboardPath}?t=${ts}`;
       
-      // Fallback to calculated path after a short delay
-      setTimeout(() => {
-        // If still on the same page, try direct calculation
-        if (window.location.pathname.includes('/login')) {
-          // Get the target dashboard path based on user role
-          const dashboardPath = getDashboardPath(formState.role, userId);
-          console.log('Manual navigation to:', dashboardPath);
-          window.location.href = dashboardPath;
-        }
-      }, 1000);
+      console.log('Manual navigation to:', fullPath);
+      
+      // Force navigation with top-level location
+      if (window.top) {
+        window.top.location.href = fullPath;
+      } else {
+        window.location.href = fullPath;
+      }
+      
+      // Record login success in local storage
+      localStorage.setItem('loginSuccess', 'true');
+      localStorage.setItem('loginRole', formState.role || '');
+      localStorage.setItem('loginUserId', userId || '');
+      localStorage.setItem('loginTimestamp', String(ts));
     } catch (error) {
       console.error("Navigation failed:", error);
       
-      // Backup method: Use the dashboard path with router redirection
+      // Last resort - try router navigation
       const dashboardPath = getDashboardPath(formState.role, userId);
       router.push(dashboardPath);
     }
