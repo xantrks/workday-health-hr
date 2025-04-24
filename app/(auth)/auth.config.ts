@@ -22,8 +22,14 @@ export const authConfig = {
                            nextUrl.pathname.startsWith('/super-admin');
       const isOnAuth = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register');
+      
+      // If user is logged in and trying to access login/register page,
+      // redirect them to dashboard unless explicitly allowed by query param
+      if (isLoggedIn && isOnAuth && !nextUrl.searchParams.has('allow')) {
+        return false; // This will trigger redirection to default page (/dashboard)
+      }
 
-      // Allow access to login and registration pages
+      // Allow access to login and registration pages for non-logged in users
       if (isOnAuth) return true;
 
       // Dashboard pages require authentication
