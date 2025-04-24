@@ -62,7 +62,7 @@ export function LoginForm() {
           // 3. Record login success in local storage as backup detection mechanism
           localStorage.setItem('loginSuccess', 'true');
           localStorage.setItem('loginRole', formState.role || '');
-          localStorage.setItem('loginUserId', formState.userId);
+          localStorage.setItem('loginUserId', formState.userId || '');
           localStorage.setItem('loginTimestamp', String(ts));
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
@@ -143,7 +143,7 @@ export function LoginForm() {
       // Record login success in local storage
       localStorage.setItem('loginSuccess', 'true');
       localStorage.setItem('loginRole', formState.role || '');
-      localStorage.setItem('loginUserId', userId || '');
+      localStorage.setItem('loginUserId', formState.userId || '');
       localStorage.setItem('loginTimestamp', String(ts));
     } catch (error) {
       console.error("Navigation failed:", error);
