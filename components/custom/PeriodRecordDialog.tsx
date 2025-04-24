@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { AlertTriangle, CalendarIcon, CheckCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
 import { PeriodRecord } from "./PeriodCalendar";
@@ -98,6 +99,9 @@ export function PeriodRecordDialog({
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+  const [isSaveError, setIsSaveError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
   // Enforce ensure selected date is set (solving today's date issue)
   const ensuredSelectedDate = selectedDate || new Date();
@@ -207,8 +211,13 @@ export function PeriodRecordDialog({
     }
   }, [selectedDate, record, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log("PeriodRecordDialog - onSubmit - values:", values);
+    
+    // Reset states
+    setIsSaveSuccess(false);
+    setIsSaveError(false);
+    setErrorMessage("");
     
     // Date validation - if no date value, use today's date
     if (!values.date) {
@@ -217,34 +226,70 @@ export function PeriodRecordDialog({
       values.date.setHours(0, 0, 0, 0);
     }
     
-    // Ensure date format is consistent, not affected by timezone
-    const year = values.date.getFullYear();
-    const month = values.date.getMonth();
-    const day = values.date.getDate();
-    
-    // Format as YYYY-MM-DD
-    const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    
-    // Ensure correct handling even if the value is undefined, explicitly set to 0 instead of undefined
-    const sleepHours = values.sleepHours !== undefined ? values.sleepHours : 0;
-    const stressLevel = values.stressLevel !== undefined ? values.stressLevel : 0;
-    
-    console.log("PeriodRecordDialog - onSubmit - sleepHours:", sleepHours);
-    console.log("PeriodRecordDialog - onSubmit - stressLevel:", stressLevel);
-    
-    const newRecord: PeriodRecord = {
+    // Clean the date value
+    const dateObject = new Date(values.date);
+    dateObject.setHours(0, 0, 0, 0);
+
+    // Ensure numeric values are integers for database compatibility
+    const sleepHours = typeof values.sleepHours === 'number' 
+      ? Math.round(values.sleepHours) 
+      : values.sleepHours;
+      
+    const stressLevel = typeof values.stressLevel === 'number' 
+      ? Math.round(values.stressLevel) 
+      : values.stressLevel;
+      
+    const periodFlow = typeof values.periodFlow === 'number' 
+      ? Math.round(values.periodFlow) 
+      : values.periodFlow;
+
+    const newRecord = {
       id: record?.id,
-      date: formattedDate,
-      periodFlow: values.periodFlow,
+      date: format(dateObject, "yyyy-MM-dd"),
+      recordType: "period",
+      periodFlow: periodFlow,
       symptoms: values.symptoms,
       mood: values.mood,
       sleepHours: sleepHours,
       stressLevel: stressLevel,
-      notes: values.notes,
+      notes: values.notes || "",
     };
 
     console.log("PeriodRecordDialog - onSubmit - newRecord:", newRecord);
-    onSave(newRecord);
+    
+    try {
+      // First, save the record to ensure it gets saved to the calendar
+      await onSave(newRecord);
+      
+      // Only show success UI after saving
+      setIsSaveSuccess(true);
+      
+      // Show toast notification but don't close the dialog automatically
+      // This gives the parent component time to process the save
+      toast({
+        title: record?.id ? "Record Updated" : "Record Created",
+        description: `Your period record for ${format(values.date, "MMMM d, yyyy")} has been saved.`,
+        variant: "default",
+        duration: 3000,
+      });
+      
+      // Close the dialog after showing success state for a moment
+      setTimeout(() => {
+        setIsSaveSuccess(false);
+        onOpenChange(false);
+      }, 1500); // Increased timeout to allow more time for saving
+    } catch (error) {
+      console.error("Error saving record:", error);
+      setIsSaveError(true);
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error occurred");
+      
+      toast({
+        title: "Error Saving Record",
+        description: "There was a problem saving your period record. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   };
 
   const isToday = (date: Date) => {
@@ -580,9 +625,9 @@ export function PeriodRecordDialog({
                             <Slider 
                               min={0} 
                               max={24} 
-                              step={0.5} 
+                              step={1} 
                               value={[sleepValue]} 
-                              onValueChange={(values) => field.onChange(values[0])}
+                              onValueChange={(values) => field.onChange(Math.round(values[0]))}
                               className={cn(
                                 sleepValue >= 7 && sleepValue <= 9 && "[&>.bg-primary]:bg-green-500",
                                 (sleepValue < 7 || sleepValue > 9) && "[&>.bg-primary]:bg-amber-500",
@@ -776,17 +821,18 @@ export function PeriodRecordDialog({
                     onClick={() => {
                       // Close the dialog after ensuring the date field is cleared
                       form.reset();
+                      setIsSaveError(false);
                       onOpenChange(false);
                     }}
                     variant="outline"
                     type="button"
-                    disabled={form.formState.isSubmitting || isDeleting}
+                    disabled={form.formState.isSubmitting || isDeleting || isSaveSuccess}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit"
-                    disabled={form.formState.isSubmitting || isDeleting}
+                    disabled={form.formState.isSubmitting || isDeleting || isSaveSuccess}
                     onClick={() => {
                       // Check and fix date issue before submitting
                       const currentDate = form.getValues("date");
@@ -799,10 +845,14 @@ export function PeriodRecordDialog({
                       }
                     }}
                   >
-                    {form.formState.isSubmitting ? (
+                    {form.formState.isSubmitting || isSaveSuccess ? (
                       <span className="flex items-center gap-1">
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                        <span>Saving...</span>
+                        {form.formState.isSubmitting ? (
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                        ) : (
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        )}
+                        <span>{form.formState.isSubmitting ? "Saving..." : "Saved!"}</span>
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
@@ -812,10 +862,58 @@ export function PeriodRecordDialog({
                   </Button>
                 </div>
               </div>
+              {isSaveError && (
+                <div className="w-full mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+                  <AlertTriangle size={16} />
+                  <span className="text-sm">
+                    Failed to save record. Please check your input and try again.
+                  </span>
+                </div>
+              )}
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
+      
+      {/* Save success dialog */}
+      <Dialog open={isSaveSuccess}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="pb-4 mb-2 border-b">
+            <DialogTitle className="text-xl text-green-600 font-semibold">
+              {record?.id ? "Record Updated" : "Record Created"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 flex flex-col items-center justify-center">
+            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+            <p className="text-center">
+              Your period record has been successfully {record?.id ? "updated" : "created"}.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Error dialog - only shown when there is an error saving */}
+      <Dialog open={isSaveError} onOpenChange={setIsSaveError}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="pb-4 mb-2 border-b">
+            <DialogTitle className="text-xl text-red-600 font-semibold">
+              Error Saving Record
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 flex flex-col items-center justify-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+            <p className="text-center">
+              There was a problem saving your period record.
+              {errorMessage && <span className="block mt-2 text-sm text-red-500">{errorMessage}</span>}
+            </p>
+          </div>
+          <DialogFooter className="mt-4 pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsSaveError(false)}>
+              Ok
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Delete confirmation dialog */}
       {record?.id && onDelete && (
