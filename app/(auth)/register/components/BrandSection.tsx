@@ -33,7 +33,7 @@ export function BrandSection() {
       <div 
         className="block lg:hidden w-full relative p-4 text-center"
         style={{
-          backgroundImage: 'url(/images/professional-corporate-setting.jpg)',
+          backgroundImage: 'url(/images/a-black-woman-scheduling-a-hospital-check.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           position: 'relative',
@@ -52,13 +52,13 @@ export function BrandSection() {
       <div 
         className="hidden lg:flex w-1/2 relative items-center justify-center p-8 overflow-hidden"
         style={{
-          backgroundImage: 'url(/images/professional-corporate-setting.jpg)',
+          backgroundImage: 'url(/images/a-black-woman-scheduling-a-hospital-check.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           position: 'relative',
         }}
       >
-        <div className="absolute inset-0 bg-primary/70"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         <div className="max-w-md text-white relative z-10">
           <h1 className="text-3xl font-bold mb-4">Register Your Organization</h1>
           <p className="text-lg opacity-90 mb-6">
