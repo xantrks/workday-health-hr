@@ -1,7 +1,7 @@
-import { getToken } from 'next-auth/jwt';
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+import { getToken } from 'next-auth/jwt';
 
 interface Token {
   id?: string;
@@ -20,6 +20,12 @@ export async function middleware(request: NextRequest) {
   // Create a response object for adding headers
   const response = NextResponse.next();
   response.headers.set("x-pathname", path);
+  
+  // Allow API routes to pass through without authentication checks
+  if (path.startsWith('/api/')) {
+    console.log("[Middleware] API path, skipping auth checks");
+    return response;
+  }
   
   // Handle root path access - always redirect to login page
   if (path === '/' || path === '') {
@@ -48,11 +54,25 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET 
   }) as Token;
   
+  // Debug token information
+  console.log("[Middleware] Token info:", token ? 
+    `ID: ${token.id}, Role: ${token.role}, SuperAdmin: ${token.isSuperAdmin}` : 
+    "No token"
+  );
+  
   // Redirect unauthenticated users to login page except for public paths
   if (!token && !isPublicPath) {
     console.log("[Middleware] Unauthenticated access to protected path, redirecting to login page");
     const redirectResponse = NextResponse.redirect(new URL('/login', origin));
     redirectResponse.headers.set("x-pathname", "/login");
+    return redirectResponse;
+  }
+  
+  // If logged in user tries to access login or register, redirect to dashboard if not explicitly allowing it
+  if (token && (path === '/login' || path === '/register') && !request.nextUrl.searchParams.has('allow')) {
+    console.log("[Middleware] Logged-in user accessing login/register, redirecting to dashboard");
+    const redirectResponse = NextResponse.redirect(new URL('/dashboard', origin));
+    redirectResponse.headers.set("x-pathname", "/dashboard");
     return redirectResponse;
   }
   
@@ -93,24 +113,6 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = getDashboardPath(token);
       return NextResponse.redirect(new URL(redirectUrl, origin));
     }
-    
-    // API access control for organization-specific data
-    if (path.startsWith('/api') && !token.isSuperAdmin) {
-      // Extract organization ID from URL if it exists
-      const orgIdMatch = path.match(/\/organizations\/([^\/]+)/);
-      const requestedOrgId = orgIdMatch ? orgIdMatch[1] : null;
-      
-      // If accessing organization-specific data, check if user belongs to that organization
-      if (requestedOrgId && requestedOrgId !== token.organizationId) {
-        console.log("[Middleware] Cross-organization API access denied");
-        return new NextResponse(JSON.stringify({ error: "Access denied" }), {
-          status: 403,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-    }
   }
   
   // Return the response with headers for authenticated paths
@@ -123,7 +125,7 @@ function getDashboardPath(token: Token): string {
   
   if (token.isSuperAdmin) {
     return `/super-admin/${token.id}`;
-  } else if (token.role === 'orgadmin') {
+  } else if (token.role === 'orgadmin' || token.role === 'admin') {
     return `/admin-dashboard/${token.id}`;
   } else if (token.role === 'manager') {
     return `/manager-dashboard/${token.id}`;

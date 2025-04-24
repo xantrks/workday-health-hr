@@ -50,12 +50,19 @@ export function LoginForm() {
           // Get the target dashboard path based on user role
           const dashboardPath = getDashboardPath(formState.role, formState.userId);
           console.log('Redirecting to dashboard:', dashboardPath);
-          // Use router for client-side navigation first
-          router.push(dashboardPath);
-          // Fallback to direct location change if router fails
+          
+          // Use multiple redirection approaches for reliability
+          // 1. Use the API redirect endpoint which is most reliable in production
+          const apiRedirectUrl = `/api/redirect/dashboard?t=${new Date().getTime()}`;
+          window.location.href = apiRedirectUrl;
+          
+          // 2. Fallback to direct path after a short delay
           setTimeout(() => {
-            window.location.href = dashboardPath;
-          }, 100);
+            // If still on the same page, try direct location
+            if (window.location.pathname.includes('/login')) {
+              window.location.href = dashboardPath;
+            }
+          }, 1000);
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
           // No action on failure, user will see manual choice buttons
@@ -83,7 +90,7 @@ export function LoginForm() {
     // Check for each role type and return the appropriate path
     if (normalizedRole === 'superadmin') {
       return `/super-admin/${id}`;
-    } else if (normalizedRole === 'orgadmin') {
+    } else if (normalizedRole === 'orgadmin' || normalizedRole === 'admin') {
       return `/admin-dashboard/${id}`;
     } else if (normalizedRole === 'hr') {
       return `/hr-dashboard/${id}`;
@@ -118,32 +125,26 @@ export function LoginForm() {
   // Handle direct navigation to dashboard
   const handleDirectNavigation = () => {
     try {
-      // Get the target dashboard path based on user role
-      const dashboardPath = getDashboardPath(formState.role, userId);
-      console.log('Manual navigation to:', dashboardPath);
-        
-      // First try router navigation
-      router.push(dashboardPath);
+      // Try API redirect first (most reliable in production)
+      const apiRedirectUrl = `/api/redirect/dashboard?t=${new Date().getTime()}`;
+      window.location.href = apiRedirectUrl;
       
-      // Then fallback to direct methods
+      // Fallback to calculated path after a short delay
       setTimeout(() => {
-        if (window.top) {
-          // Directly navigate to user-specific dashboard
-          window.top.location.href = dashboardPath;
-        } else {
+        // If still on the same page, try direct calculation
+        if (window.location.pathname.includes('/login')) {
+          // Get the target dashboard path based on user role
+          const dashboardPath = getDashboardPath(formState.role, userId);
+          console.log('Manual navigation to:', dashboardPath);
           window.location.href = dashboardPath;
         }
-      }, 100);
+      }, 1000);
     } catch (error) {
       console.error("Navigation failed:", error);
       
-      // Backup method: Create form and submit directly
-      const form = document.createElement('form');
-      form.method = 'GET';
-      form.action = getDashboardPath(formState.role, userId);
-      form.target = '_top';
-      document.body.appendChild(form);
-      form.submit();
+      // Backup method: Use the dashboard path with router redirection
+      const dashboardPath = getDashboardPath(formState.role, userId);
+      router.push(dashboardPath);
     }
   };
 

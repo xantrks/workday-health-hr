@@ -22,22 +22,10 @@ import {
 
 // Function to determine dashboard path based on user role
 const getDashboardPath = (user: any) => {
-  if (!user?.id) return "/dashboard";
+  if (!user?.id) return "/api/redirect/dashboard";
   
-  const role = user.role?.toLowerCase();
-  const userId = user.id;
-  
-  if (role === 'superadmin') {
-    return `/super-admin/${userId}`;
-  } else if (role === 'admin' || role === 'orgadmin') {
-    return `/admin-dashboard/${userId}`;
-  } else if (role === 'hr') {
-    return `/hr-dashboard/${userId}`;
-  } else if (role === 'manager') {
-    return `/manager-dashboard/${userId}`;
-  } else {
-    return `/employee-dashboard/${userId}`;
-  }
+  // For authenticated users, use the API endpoint for reliable redirection
+  return "/api/redirect/dashboard";
 };
 
 /**
