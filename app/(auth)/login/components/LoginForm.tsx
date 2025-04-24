@@ -44,18 +44,27 @@ export function LoginForm() {
       setUserId(formState.userId);
       toast.success("Login successful!");
       
-      // Try automatic redirection (but keep backup UI in case of failure)
+      // Try multiple automatic redirection approaches with a delay
+      // The delay gives auth state time to propagate
       const timer = setTimeout(() => {
         try {
           // Get the target dashboard path based on user role
           const dashboardPath = getDashboardPath(formState.role, formState.userId);
-          // Navigate to appropriate dashboard
-          window.location.href = dashboardPath;
+          console.log('Attempting redirect to:', dashboardPath);
+          
+          // Try multiple navigation methods to increase chances of success
+          if (typeof window !== 'undefined') {
+            // Method 1: Direct location change
+            window.location.href = dashboardPath;
+            
+            // If the above doesn't immediately redirect, the user will see
+            // the success UI with manual options
+          }
         } catch (error) {
-          console.error("Automatic redirection failed, waiting for user manual selection:", error);
-          // No action on failure, user will see manual choice buttons
+          console.error("Automatic redirection failed:", error);
+          // No action needed on failure - user will see manual navigation UI
         }
-      }, 800); // Give toast enough time to display
+      }, 800); // Give time for auth state to propagate
       
       // Clean up timer
       return () => clearTimeout(timer);
@@ -112,33 +121,49 @@ export function LoginForm() {
     try {
       // Get the target dashboard path based on user role
       const dashboardPath = getDashboardPath(formState.role, userId);
-        
+      console.log('Manual navigation to:', dashboardPath);
+      
+      // Try multiple approaches to increase chances of successful navigation
       if (window.top) {
-        // Directly navigate to user-specific dashboard
+        // Approach 1: Top window navigation (handles iframe scenarios)
         window.top.location.href = dashboardPath;
       } else {
+        // Approach 2: Standard window navigation
         window.location.href = dashboardPath;
       }
     } catch (error) {
-      console.error("Navigation failed:", error);
+      console.error("Navigation failed, trying backup method:", error);
       
-      // Backup method: Create form and submit directly
-      const form = document.createElement('form');
-      form.method = 'GET';
-      form.action = getDashboardPath(formState.role, userId);
-      form.target = '_top';
-      document.body.appendChild(form);
-      form.submit();
+      // Approach 3: Form-based navigation (most compatible)
+      try {
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = getDashboardPath(formState.role, userId);
+        form.target = '_top';
+        document.body.appendChild(form);
+        form.submit();
+      } catch (backupError) {
+        console.error("All navigation methods failed:", backupError);
+        
+        // Approach 4: Static page fallback
+        try {
+          window.location.href = '/employee-dashboard/static';
+        } catch {
+          // If even this fails, user will need to navigate manually
+          console.error("Static fallback navigation failed");
+        }
+      }
     }
   };
 
-  // If login is successful, display navigation interface
+  // If login is successful, display navigation interface with multiple options
   if (loginSuccess && userId) {
     return (
       <div className="w-full flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="text-center w-full max-w-md bg-white shadow-lg rounded-lg p-6 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-4">Login Successful</h2>
-          <p className="mb-6 sm:mb-8 text-gray-600">Please select a way to go to your dashboard</p>
+          <p className="mb-4 text-gray-600">You will be redirected to your dashboard shortly...</p>
+          <p className="mb-6 sm:mb-8 text-gray-600">If you are not redirected automatically, please use the button below.</p>
           
           <div className="space-y-4">
             <button 
@@ -147,6 +172,22 @@ export function LoginForm() {
             >
               Go to my dashboard
             </button>
+            
+            <a 
+              href={getDashboardPath(formState.role, userId)}
+              className="block w-full bg-green-600 text-white px-4 py-3 rounded-md text-center hover:bg-green-700 transition-colors"
+            >
+              Direct link to dashboard
+            </a>
+          </div>
+          
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <a
+              href="/dashboard"
+              className="text-blue-600 hover:underline"
+            >
+              Go to main dashboard
+            </a>
           </div>
         </div>
       </div>

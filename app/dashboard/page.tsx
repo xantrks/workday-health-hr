@@ -12,13 +12,22 @@ export default function Dashboard() {
   useEffect(() => {
     // Confirm code is running on client
     setIsClient(true);
-    console.log('Dashboard page mounted successfully');
+    console.log('Dashboard page mounted, session status:', status);
     
-    // Add debug information
+    // Add enhanced debug information
     if (status === 'authenticated' && session?.user) {
-      console.log('User logged in:', session.user);
-    } else {
-      console.log('Session status:', status);
+      console.log('User info:', {
+        id: session.user.id,
+        name: session.user.name,
+        role: session.user.role
+      });
+      
+      // Auto-attempt navigation after a delay
+      const timer = setTimeout(() => {
+        handleDirectNavigation();
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [status, session]);
 
@@ -51,16 +60,51 @@ export default function Dashboard() {
     try {
       // Get appropriate dashboard path based on role
       const dashboardPath = getDashboardPath();
+      console.log('Attempting navigation to:', dashboardPath);
+      
       if (dashboardPath) {
-        // Direct navigation to user-specific dashboard
+        // Try multiple navigation methods for increased reliability
+        
+        // Method 1: Direct window location navigation
         window.location.href = dashboardPath;
+        
+        // If the above doesn't work immediately, the following code won't execute
+        // because the page will have navigated away
       } else {
         console.error("Could not determine dashboard path");
         setIsRedirecting(false);
       }
     } catch (error) {
-      console.error("Navigation failed:", error);
-      setIsRedirecting(false);
+      console.error("Navigation failed, trying alternative method:", error);
+      
+      // Method 2: Form submission (more compatible)
+      try {
+        const role = session.user.role?.toLowerCase();
+        const userId = session.user.id;
+        let fallbackPath = '/employee-dashboard/static'; // Default fallback
+        
+        // Determine a direct path based on role
+        if (role === 'hr') {
+          fallbackPath = `/hr-dashboard/${userId}`;
+        } else if (role === 'manager') {
+          fallbackPath = `/manager-dashboard/${userId}`;
+        } else if (role === 'admin' || role === 'orgadmin') {
+          fallbackPath = `/admin-dashboard/${userId}`;
+        } else if (role === 'superadmin') {
+          fallbackPath = `/super-admin/${userId}`;
+        } else {
+          fallbackPath = `/employee-dashboard/${userId}`;
+        }
+        
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = fallbackPath;
+        document.body.appendChild(form);
+        form.submit();
+      } catch (fallbackError) {
+        console.error("All navigation methods failed:", fallbackError);
+        setIsRedirecting(false);
+      }
     }
   };
   
@@ -87,12 +131,12 @@ export default function Dashboard() {
       ) : status === 'authenticated' ? (
         <div className="bg-white shadow-md rounded p-6">
           <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
-            <h2 className="text-xl font-semibold text-blue-800">Welcome back, {session?.user?.name || 'User'}!</h2>
-            <p className="text-blue-700 mt-2">You can use the button below to directly access your personal dashboard.</p>
+            <h2 className="text-xl sm:text-2xl font-semibold text-blue-800">Welcome back, {session?.user?.name || 'User'}!</h2>
+            <p className="text-blue-700 mt-2">You can use any of these options to access your personal dashboard.</p>
           </div>
           
-          <div className="mb-8">
-            <button
+          <div className="space-y-4 mb-8">
+            <button 
               onClick={handleDirectNavigation}
               disabled={isRedirecting}
               className="w-full bg-blue-600 text-white px-6 py-3 rounded text-center hover:bg-blue-700 transition-colors disabled:bg-blue-400"
@@ -115,9 +159,16 @@ export default function Dashboard() {
                 type="submit" 
                 className="w-full bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 transition-colors"
               >
-                Go to my personal dashboard
+                Form-based navigation
               </button>
             </form>
+            
+            <a 
+              href="/employee-dashboard/static"
+              className="bg-yellow-600 text-white px-4 py-3 rounded text-center hover:bg-yellow-700 transition-colors col-span-full"
+            >
+              Go to static fallback dashboard
+            </a>
           </div>
         </div>
       ) : (

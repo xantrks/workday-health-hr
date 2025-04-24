@@ -18,63 +18,22 @@ export async function middleware(request: NextRequest) {
   const origin = request.nextUrl.origin;
   
   // Create a response object to pass through the request
-  // This will allow us to add headers to ALL requests
   const response = NextResponse.next();
   
   // Add the x-pathname header to every response for use in the Navbar component
   response.headers.set("x-pathname", path);
   
-  // Handle root path access
-  if (path === '/' || path === '') {
-    // Check referer to see if user is coming from terms or privacy pages
-    const referer = request.headers.get('referer') || '';
-    console.log("[Middleware] Referer:", referer);
-    
-    if (referer.includes('/terms') || referer.includes('/privacy')) {
-      console.log("[Middleware] Coming from terms/privacy, redirecting to register page");
-      const redirectResponse = NextResponse.redirect(new URL('/register', origin));
-      redirectResponse.headers.set("x-pathname", "/register");
-      return redirectResponse;
-    }
-    
-    // Default root redirection
-    console.log("[Middleware] Root path access, redirecting to login page");
-    const redirectResponse = NextResponse.redirect(new URL('/login', origin));
-    // Add x-pathname to redirects as well
-    redirectResponse.headers.set("x-pathname", "/login");
-    return redirectResponse;
-  }
-  
-  // Define public paths that don't require authentication
-  const isPublicPath = path === '/login' || 
-                      path === '/register' || 
-                      path.startsWith('/login/') || 
-                      path.startsWith('/register/') ||
-                      path.includes('/_next/') || 
-                      path.includes('/api/auth/') ||
-                      path.includes('/images/') ||
-                      path.includes('/fonts/') ||
-                      path === '/favicon.ico' ||
-                      path === '/terms' ||
-                      path === '/privacy';
-  
-  // Get token to check authentication and roles with explicit secret
+  // Get token to check authentication and roles
   const token = await getToken({ 
     req: request,
     secret: process.env.NEXTAUTH_SECRET 
-  }) as Token;
+  }) as Token | null;
   
-  // Redirect unauthenticated users to login page except for public paths
-  if (!token && !isPublicPath) {
-    console.log("[Middleware] Unauthenticated access to protected path, redirecting to login page");
-    const redirectResponse = NextResponse.redirect(new URL('/login', origin));
-    // Add x-pathname to redirects as well
-    redirectResponse.headers.set("x-pathname", "/login");
-    return redirectResponse;
-  }
-  
-  // Handle role-specific access control for authenticated users
   if (token) {
+    console.log("[Middleware] Token exists:", token.id, "role:", token.role || "unknown");
+    
+    // Handle role-specific access control
+    
     // Super Admin paths
     if (path.startsWith('/super-admin') && !token.isSuperAdmin) {
       console.log("[Middleware] Unauthorized super admin access, redirecting to unauthorized page");
@@ -121,23 +80,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(`/employee-dashboard/${token.id}`, origin));
       }
     }
-    
-    // API access control for organization-specific data
-    if (path.startsWith('/api') && !token.isSuperAdmin) {
-      // Extract organization ID from URL if it exists
-      const orgIdMatch = path.match(/\/organizations\/([^\/]+)/);
-      const requestedOrgId = orgIdMatch ? orgIdMatch[1] : null;
-      
-      // If accessing organization-specific data, check if user belongs to that organization
-      if (requestedOrgId && requestedOrgId !== token.organizationId) {
-        console.log("[Middleware] Cross-organization API access denied");
-        return new NextResponse(JSON.stringify({ error: "Access denied" }), {
-          status: 403,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-      }
+  } else {
+    // Only handle the root path redirect for non-authenticated users
+    if (path === '/' || path === '') {
+      console.log("[Middleware] Root path access, redirecting to login page");
+      return NextResponse.redirect(new URL('/login', origin));
     }
   }
   
@@ -145,16 +92,10 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// This matcher allows us to run the middleware on all paths
+// This matcher restricts middleware to only run on necessary paths
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
     '/',
   ],
 };
