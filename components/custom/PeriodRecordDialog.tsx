@@ -303,7 +303,7 @@ export function PeriodRecordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6 pb-24 md:pb-6">
         <DialogHeader className="pb-4 mb-2 border-b">
           <DialogTitle className="text-xl font-semibold">
             {record ? "Edit Period Record" : "Add Period Record"}
@@ -760,7 +760,121 @@ export function PeriodRecordDialog({
               />
             </div>
 
-            <DialogFooter className="mt-8 pt-4 border-t">
+            {/* Fixed position footer for mobile */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 shadow-lg md:hidden z-50">
+              <div className="flex w-full justify-between max-w-[600px] mx-auto">
+                <div>
+                  {record?.id && onDelete && (
+                    <>
+                      {/* Show delete confirmation */}
+                      {showDeleteConfirm ? (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            onClick={() => {
+                              setIsDeleting(true);
+                              onDelete(record.id!);
+                              setTimeout(() => {
+                                setIsDeleting(false);
+                                setShowDeleteConfirm(false);
+                              }, 500);
+                            }}
+                            variant="destructive"
+                            size="sm"
+                            type="button"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <span className="flex items-center gap-1">
+                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                                <span>Deleting...</span>
+                              </span>
+                            ) : (
+                              <span>Confirm</span>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                            disabled={isDeleting}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                        >
+                          <span className="flex items-center gap-1">
+                            <span>Delete</span>
+                          </span>
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => {
+                      // Close the dialog after ensuring the date field is cleared
+                      form.reset();
+                      setIsSaveError(false);
+                      onOpenChange(false);
+                    }}
+                    variant="outline"
+                    type="button"
+                    disabled={form.formState.isSubmitting || isDeleting || isSaveSuccess}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={form.formState.isSubmitting || isDeleting || isSaveSuccess}
+                    onClick={() => {
+                      // Check and fix date issue before submitting
+                      const currentDate = form.getValues("date");
+                      if (!currentDate) {
+                        // If no date, use today's date
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        form.setValue("date", today);
+                        form.trigger("date");
+                      }
+                    }}
+                  >
+                    {form.formState.isSubmitting || isSaveSuccess ? (
+                      <span className="flex items-center gap-1">
+                        {form.formState.isSubmitting ? (
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                        ) : (
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        )}
+                        <span>{form.formState.isSubmitting ? "Saving..." : "Saved!"}</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <span>Save</span>
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              {isSaveError && (
+                <div className="w-full mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+                  <AlertTriangle size={16} />
+                  <span className="text-sm">
+                    Failed to save record. Please check your input and try again.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop footer - hidden on mobile */}
+            <DialogFooter className="mt-8 pt-4 border-t hidden md:block">
               <div className="flex w-full justify-between">
                 <div>
                   {record?.id && onDelete && (
