@@ -16,13 +16,13 @@ export const authConfig = {
       
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/hr-dashboard') || 
-                           nextUrl.pathname.startsWith('/employee-dashboard') ||
-                           nextUrl.pathname.startsWith('/admin-dashboard') ||
-                           nextUrl.pathname.startsWith('/manager-dashboard') ||
-                           nextUrl.pathname.startsWith('/super-admin');
+                           nextUrl.pathname.startsWith('/employee-dashboard');
       const isOnAuth = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register');
 
+      // 不再重定向已登录用户离开登录页面
+      // 修改：允许已登录用户访问登录页面
+      
       // 允许访问登录和注册页面
       if (isOnAuth) return true;
 
