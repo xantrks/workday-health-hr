@@ -11,25 +11,25 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      console.log("auth.config authorized被调用，路径:", nextUrl.pathname);
-      console.log("认证状态:", auth?.user ? "已登录" : "未登录");
+      console.log("Auth config authorized called, path:", nextUrl.pathname);
+      console.log("Auth status:", auth?.user ? "logged in" : "not logged in");
       
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/hr-dashboard') || 
-                           nextUrl.pathname.startsWith('/employee-dashboard');
+                           nextUrl.pathname.startsWith('/employee-dashboard') ||
+                           nextUrl.pathname.startsWith('/admin-dashboard') ||
+                           nextUrl.pathname.startsWith('/manager-dashboard') ||
+                           nextUrl.pathname.startsWith('/super-admin');
       const isOnAuth = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register');
 
-      // 不再重定向已登录用户离开登录页面
-      // 修改：允许已登录用户访问登录页面
-      
-      // 允许访问登录和注册页面
+      // Allow access to login and registration pages
       if (isOnAuth) return true;
 
-      // 仪表盘页面需要登录
+      // Dashboard pages require authentication
       if (isOnDashboard) return isLoggedIn;
 
-      // 其他页面默认允许访问
+      // Default allow access to other pages
       return true;
     },
   },

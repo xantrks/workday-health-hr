@@ -17,30 +17,14 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const origin = request.nextUrl.origin;
   
-  // Create a response object to pass through the request
-  // This will allow us to add headers to ALL requests
+  // Create a response object for adding headers
   const response = NextResponse.next();
-  
-  // Add the x-pathname header to every response for use in the Navbar component
   response.headers.set("x-pathname", path);
   
-  // Handle root path access
+  // Handle root path access - always redirect to login page
   if (path === '/' || path === '') {
-    // Check referer to see if user is coming from terms or privacy pages
-    const referer = request.headers.get('referer') || '';
-    console.log("[Middleware] Referer:", referer);
-    
-    if (referer.includes('/terms') || referer.includes('/privacy')) {
-      console.log("[Middleware] Coming from terms/privacy, redirecting to register page");
-      const redirectResponse = NextResponse.redirect(new URL('/register', origin));
-      redirectResponse.headers.set("x-pathname", "/register");
-      return redirectResponse;
-    }
-    
-    // Default root redirection
     console.log("[Middleware] Root path access, redirecting to login page");
     const redirectResponse = NextResponse.redirect(new URL('/login', origin));
-    // Add x-pathname to redirects as well
     redirectResponse.headers.set("x-pathname", "/login");
     return redirectResponse;
   }
@@ -68,7 +52,6 @@ export async function middleware(request: NextRequest) {
   if (!token && !isPublicPath) {
     console.log("[Middleware] Unauthenticated access to protected path, redirecting to login page");
     const redirectResponse = NextResponse.redirect(new URL('/login', origin));
-    // Add x-pathname to redirects as well
     redirectResponse.headers.set("x-pathname", "/login");
     return redirectResponse;
   }
@@ -107,19 +90,8 @@ export async function middleware(request: NextRequest) {
     
     // Dashboard redirect for all users (handles My Dashboard button)
     if (path === '/dashboard' && token.id) {
-      // Redirect to the appropriate dashboard based on user role
-      if (token.isSuperAdmin) {
-        return NextResponse.redirect(new URL(`/super-admin/${token.id}`, origin));
-      } else if (token.role === 'orgadmin') {
-        return NextResponse.redirect(new URL(`/admin-dashboard/${token.id}`, origin));
-      } else if (token.role === 'manager') {
-        return NextResponse.redirect(new URL(`/manager-dashboard/${token.id}`, origin));
-      } else if (token.role === 'hr') {
-        return NextResponse.redirect(new URL(`/hr-dashboard/${token.id}`, origin));
-      } else {
-        // Default to employee dashboard
-        return NextResponse.redirect(new URL(`/employee-dashboard/${token.id}`, origin));
-      }
+      const redirectUrl = getDashboardPath(token);
+      return NextResponse.redirect(new URL(redirectUrl, origin));
     }
     
     // API access control for organization-specific data
@@ -141,11 +113,29 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  // Return the response with the x-pathname header for all other requests
+  // Return the response with headers for authenticated paths
   return response;
 }
 
-// This matcher allows us to run the middleware on all paths
+// Helper function to get the dashboard path based on user role
+function getDashboardPath(token: Token): string {
+  if (!token || !token.id) return "/dashboard";
+  
+  if (token.isSuperAdmin) {
+    return `/super-admin/${token.id}`;
+  } else if (token.role === 'orgadmin') {
+    return `/admin-dashboard/${token.id}`;
+  } else if (token.role === 'manager') {
+    return `/manager-dashboard/${token.id}`;
+  } else if (token.role === 'hr') {
+    return `/hr-dashboard/${token.id}`;
+  } else {
+    // Default to employee dashboard
+    return `/employee-dashboard/${token.id}`;
+  }
+}
+
+// This matcher allows us to run the middleware on all paths except static assets
 export const config = {
   matcher: [
     /*

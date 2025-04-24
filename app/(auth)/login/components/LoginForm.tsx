@@ -49,8 +49,13 @@ export function LoginForm() {
         try {
           // Get the target dashboard path based on user role
           const dashboardPath = getDashboardPath(formState.role, formState.userId);
-          // Navigate to appropriate dashboard
-          window.location.href = dashboardPath;
+          console.log('Redirecting to dashboard:', dashboardPath);
+          // Use router for client-side navigation first
+          router.push(dashboardPath);
+          // Fallback to direct location change if router fails
+          setTimeout(() => {
+            window.location.href = dashboardPath;
+          }, 100);
         } catch (error) {
           console.error("Automatic redirection failed, waiting for user manual selection:", error);
           // No action on failure, user will see manual choice buttons
@@ -66,14 +71,16 @@ export function LoginForm() {
       toast.error("Please check your input");
       setIsSubmitting(false);
     }
-  }, [formState]);
+  }, [formState, router]);
   
   // Function to determine dashboard path based on role
   const getDashboardPath = (role?: string | null, id?: string | null) => {
     if (!role || !id) return "/dashboard";
     
-    const normalizedRole = role.toLowerCase();
+    // Normalize the role to lowercase and trim any whitespace
+    const normalizedRole = (role || "").toLowerCase().trim();
     
+    // Check for each role type and return the appropriate path
     if (normalizedRole === 'superadmin') {
       return `/super-admin/${id}`;
     } else if (normalizedRole === 'orgadmin') {
@@ -83,6 +90,7 @@ export function LoginForm() {
     } else if (normalizedRole === 'manager') {
       return `/manager-dashboard/${id}`;
     } else {
+      // Default to employee dashboard
       return `/employee-dashboard/${id}`;
     }
   };
@@ -112,13 +120,20 @@ export function LoginForm() {
     try {
       // Get the target dashboard path based on user role
       const dashboardPath = getDashboardPath(formState.role, userId);
+      console.log('Manual navigation to:', dashboardPath);
         
-      if (window.top) {
-        // Directly navigate to user-specific dashboard
-        window.top.location.href = dashboardPath;
-      } else {
-        window.location.href = dashboardPath;
-      }
+      // First try router navigation
+      router.push(dashboardPath);
+      
+      // Then fallback to direct methods
+      setTimeout(() => {
+        if (window.top) {
+          // Directly navigate to user-specific dashboard
+          window.top.location.href = dashboardPath;
+        } else {
+          window.location.href = dashboardPath;
+        }
+      }, 100);
     } catch (error) {
       console.error("Navigation failed:", error);
       

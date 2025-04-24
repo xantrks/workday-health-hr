@@ -87,6 +87,7 @@ export async function login(
     `;
     
     const userData = userRoleData[0];
+    console.log("User role data:", userData);
 
     // Compare the password
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -111,6 +112,10 @@ export async function login(
       }
     });
 
+    // Determine the user's role - prioritize role_name if available
+    const userRole = (userData.role_name || userData.role || "employee").toLowerCase().trim();
+    console.log("Determined user role:", userRole);
+
     // Sign the user in
     await signIn("credentials", {
       redirect: false,
@@ -120,7 +125,7 @@ export async function login(
 
     return {
       status: "success",
-      role: userData.role_name || userData.role || "employee",
+      role: userRole,
       userId: user.id,
     };
   } catch (error) {
