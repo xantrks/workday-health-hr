@@ -47,7 +47,7 @@ export default function DashboardHeader({ userName, userId, profileImageUrl }: D
         onClick={() => router.push(`/chat/new?userId=${userId}&role=employee`)}
       >
         <MessageSquare className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-        Consult Sani Assistant
+        Women's Health Assistant
       </Button>
     </div>
   );

@@ -34,7 +34,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi, I'm Sanicle's WatsonX AI assistant. How can I help you today?",
+      content: "Hi, I'm Sanicle's women's health assistant. I'm here to chat with you about physiological and psychological health topics. How can I support you today?",
     },
   ]);
   
@@ -379,7 +379,7 @@ export function ChatWidget() {
               </Avatar>
               <div className="flex-1">
                 <h3 className="text-sm sm:text-base font-medium">Sani Assistant</h3>
-                <p className="text-xs text-muted-foreground">WatsonX AI powered health assistant</p>
+                <p className="text-xs text-muted-foreground">Women's Health Assistant</p>
               </div>
               <Button 
                 size="icon" 

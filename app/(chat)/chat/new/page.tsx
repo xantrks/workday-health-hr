@@ -33,15 +33,17 @@ I maintain strict confidentiality and only work with anonymized data. I can resp
 
 How can I assist you with your HR management tasks today?`;
   } else {
-    return `I am Sani Assistant, your personal health advisor. I'm here to help you manage your health and wellbeing in the workplace.
+    return `I am Sanicle's women's health assistant, your personal health advisor. I'm here to help you with physiological and psychological health topics.
 
 My capabilities include:
-- Providing information about menstrual health and cycle management
-- Offering guidance on common health concerns
-- Suggesting self-care strategies for workplace wellbeing
-- Helping you prepare for medical appointments
+- Providing information about menstrual health and cycle tracking
+- Discussing reproductive health topics in general terms
+- Offering guidance on mental wellbeing and stress management
+- Suggesting self-care strategies and lifestyle choices for women's health
 
-Everything you share with me is confidential. I can respond in multiple languages, including English and Chinese, based on your input language.
+I focus on evidence-based information while providing compassionate, judgment-free support. For personal medical concerns, please consult with a healthcare provider.
+
+Everything you share with me is confidential. I aim to support your overall wellbeing through informative conversation.
 
 How can I support your health journey today?`;
   }

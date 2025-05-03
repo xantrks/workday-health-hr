@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Import these modules from lib
 import { WATSONX_CONFIG } from '@/lib/env';
-import { getWatsonxResponse, ChatMessage } from "@/lib/watsonx";
+import { getWatsonxResponse, ChatMessage, DEFAULT_SYSTEM_MESSAGE } from "@/lib/watsonx";
 
 // Enable detailed debugging for deployed environments
 const DEBUG = true;
@@ -13,19 +13,6 @@ function debugLog(message: string, data?: any): void {
     console.log(`[WATSONX_API_DEBUG] ${message}`, data || '');
   }
 }
-
-// System message guiding the AI to use correct Markdown formatting
-const SYSTEM_MESSAGE: ChatMessage = {
-  role: "system",
-  content: `You are Sanicle's WatsonX AI assistant. Format your responses using Markdown:
-  - Use proper headers with ## for main titles and ### for subtitles
-  - Format lists correctly with proper spacing
-  - Use **bold** for emphasis
-  - Separate paragraphs with blank lines
-  - Use bullet points with * or - followed by a space
-  - Number lists with 1. 2. etc. followed by a space
-  - Format your response clearly and concisely`
-};
 
 export async function POST(req: NextRequest) {
   debugLog("API route called");
@@ -82,7 +69,7 @@ export async function POST(req: NextRequest) {
     
     // Add system message to guide AI's markdown formatting
     const messagesWithSystem = [
-      SYSTEM_MESSAGE,
+      DEFAULT_SYSTEM_MESSAGE,
       ...messages
     ];
     
@@ -240,36 +227,36 @@ function generateMockResponseText(input: string): string {
   const inputLower = input.toLowerCase();
   
   if (inputLower.includes("hello") || inputLower.includes("hi")) {
-    return "Hello! I'm the Sanicle AI assistant. How can I help you today?";
+    return "Hello! I'm Sanicle's women's health assistant powered by WatsonX AI. I can chat with you about physiological and psychological health topics. How are you feeling today?";
   }
   
   if (inputLower.includes("who are you") || inputLower.includes("what are you")) {
-    return "I'm an AI assistant powered by IBM's WatsonX technology. I'm here to help with information about Sanicle Health.";
+    return "I'm an AI assistant focused on women's health, powered by IBM's WatsonX technology. I'm here to provide supportive conversation and general information about physiological and psychological health topics.";
   }
   
   if (inputLower.includes("sanicle") || inputLower.includes("company") || inputLower.includes("business")) {
-    return "Sanicle is a healthcare technology company focused on improving clinical workflows and enhancing patient care through innovative AI solutions.";
+    return "Sanicle is a healthcare technology company focused on improving women's health through innovative AI solutions that help track, understand, and support both physiological and psychological wellbeing.";
   }
   
   if (inputLower.includes("watsonx") || inputLower.includes("model")) {
-    return "I'm powered by IBM's WatsonX, an enterprise-grade AI platform that provides robust, secure, and scalable AI capabilities for businesses.";
+    return "I'm powered by IBM's WatsonX, an enterprise-grade AI platform that provides robust, secure, and scalable AI capabilities. My purpose is to offer supportive conversations about women's health topics.";
   }
   
   if (inputLower.includes("help") || inputLower.includes("support")) {
-    return "I can help answer questions about Sanicle, our services, and how our technology works. What specific information are you looking for?";
+    return "I can help with information about menstrual health, cycle tracking, mood changes, stress management, general wellness, and other topics related to women's physiological and psychological health. What would you like to discuss?";
   }
   
   if (inputLower.includes("contact") || inputLower.includes("email") || inputLower.includes("phone")) {
-    return "You can contact the Sanicle team through the contact form on our website, or by emailing info@sanicle.ai";
+    return "You can contact the Sanicle team through the contact form on our website, or by emailing support@sanicle.ai for any questions about our women's health platform.";
   }
   
-  // Generic responses for other inputs
+  // Generic responses for other inputs related to women's health
   const genericResponses = [
-    "That's an interesting question. While I'm just a demo assistant, the actual Sanicle AI platform provides advanced clinical decision support.",
-    "The Sanicle platform uses AI to analyze clinical data and provide actionable insights to healthcare providers.",
-    "Sanicle's technology helps reduce administrative burden for healthcare professionals, allowing them to focus more on patient care.",
-    "As a demo, I have limited knowledge. But Sanicle's actual AI solutions are designed to improve clinical workflows and patient outcomes.",
-    "Sanicle's mission is to enhance healthcare delivery through intelligent technology solutions that support clinical decision-making."
+    "Taking care of both your physical and mental health is important. Regular check-ups, balanced nutrition, adequate sleep, and stress management all contribute to overall wellbeing.",
+    "Tracking your menstrual cycle can help you understand patterns in your body and mood. Many find it helpful for managing symptoms and planning activities.",
+    "Stress can affect both physical and mental health. Techniques like deep breathing, mindfulness, and regular exercise can help manage stress levels.",
+    "Self-care isn't selfish—it's necessary for maintaining health and wellbeing. Even small moments of self-care throughout your day can make a difference.",
+    "Sleep plays a vital role in both physical and mental health. Most adults benefit from 7-9 hours of quality sleep each night."
   ];
   
   // Return a response based on input length to create some variability
