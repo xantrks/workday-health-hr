@@ -55,7 +55,7 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
   return (
     <div
       className={cn(
-        "flex w-full items-start gap-4",
+        "flex w-full items-start gap-3 sm:gap-4",
         isUser
           ? "animate-zoom-in justify-end"
           : "animate-slide-up"
@@ -63,24 +63,25 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
     >
       {!isUser && (
         <Avatar className={cn(
-          "h-8 w-8 shadow-md",
+          "h-8 w-8 sm:h-9 sm:w-9 shadow-lg",
           "ring-2 ring-primary/20",
-          isDarkTheme ? "bg-primary-deep/80" : "bg-gradient-to-br from-primary to-primary-deep"
+          "bg-gradient-to-br from-primary to-primary-deep transition-all duration-300"
         )}>
           <AvatarFallback className="text-white">
-            <BotIcon className="h-4 w-4" />
+            <BotIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </AvatarFallback>
         </Avatar>
       )}
       
       <div
         className={cn(
-          "rounded-lg px-4 py-3 max-w-[85%]",
+          "rounded-2xl px-4 py-3 max-w-[87%]",
+          "transition-all duration-300 ease-in-out",
           isUser
-            ? "bg-gradient-to-br from-primary/90 to-primary-deep text-white shadow-lg"
+            ? "bg-gradient-to-br from-primary to-primary-deep text-white shadow-lg"
             : isDarkTheme 
-              ? "bg-neutral-800 border border-neutral-700 text-white" 
-              : "bg-white border border-primary/10 text-slate-700 shadow-sm"
+              ? "bg-neutral-800/80 border border-neutral-700/80 text-white backdrop-blur-sm shadow-md" 
+              : "bg-white/90 border border-primary/10 text-slate-700 shadow-md backdrop-blur-sm"
         )}
       >
         <ReactMarkdown
@@ -116,37 +117,37 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
             ),
             p: ({ node, ...props }) => (
               <p 
-                className="my-2" 
+                className="my-2 leading-relaxed" 
                 {...props} 
               />
             ),
             ul: ({ node, ...props }) => (
               <ul 
-                className="list-disc pl-5 my-2" 
+                className="list-disc pl-5 my-3 space-y-1" 
                 {...props} 
               />
             ),
             ol: ({ node, ...props }) => (
               <ol 
-                className="list-decimal pl-5 my-2" 
+                className="list-decimal pl-5 my-3 space-y-1" 
                 {...props} 
               />
             ),
             li: ({ node, ...props }) => (
               <li 
-                className="my-1" 
+                className="my-1 leading-relaxed" 
                 {...props} 
               />
             ),
             a: ({ node, ...props }) => (
               <a 
                 className={cn(
-                  "underline hover:no-underline",
+                  "underline hover:no-underline transition-colors duration-200",
                   isUser 
                     ? "text-white/90 hover:text-white" 
                     : isDarkTheme 
                       ? "text-blue-300 hover:text-blue-200" 
-                      : "text-blue-600 hover:text-blue-800"
+                      : "text-blue-600 hover:text-blue-500"
                 )}
                 target="_blank"
                 rel="noopener noreferrer" 
@@ -157,12 +158,12 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
               inline ? (
                 <code 
                   className={cn(
-                    "px-1 py-0.5 rounded text-sm font-mono",
+                    "px-1.5 py-0.5 rounded text-sm font-mono",
                     isUser 
                       ? "bg-black/20 text-white" 
                       : isDarkTheme 
-                        ? "bg-neutral-700 text-neutral-200" 
-                        : "bg-neutral-100 text-primary-deep"
+                        ? "bg-neutral-700/80 text-neutral-200" 
+                        : "bg-neutral-100/80 text-primary-deep"
                   )}
                   {...props} 
                 />
@@ -173,8 +174,8 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
                     isUser 
                       ? "bg-black/20 text-white" 
                       : isDarkTheme 
-                        ? "bg-neutral-900 text-neutral-200 border border-neutral-700" 
-                        : "bg-neutral-100 text-primary-deep border border-neutral-200"
+                        ? "bg-neutral-900/80 text-neutral-200 border border-neutral-700/80" 
+                        : "bg-neutral-100/80 text-primary-deep border border-neutral-200/80"
                   )}
                   {...props} 
                 />
@@ -183,12 +184,12 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
             pre: ({ node, ...props }) => (
               <pre 
                 className={cn(
-                  "my-4 rounded-md overflow-x-auto",
+                  "my-4 rounded-lg overflow-x-auto",
                   isUser 
                     ? "bg-black/20" 
                     : isDarkTheme 
-                      ? "bg-neutral-900" 
-                      : "bg-neutral-100"
+                      ? "bg-neutral-900/90" 
+                      : "bg-neutral-100/90"
                 )}
                 {...props} 
               />
@@ -207,10 +208,10 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
               />
             ),
             table: ({ node, ...props }) => (
-              <div className="overflow-x-auto my-4">
+              <div className="overflow-x-auto my-4 rounded-lg shadow-sm">
                 <table 
                   className={cn(
-                    "min-w-full divide-y rounded-md",
+                    "min-w-full divide-y rounded-lg overflow-hidden",
                     isUser 
                       ? "divide-white/20" 
                       : isDarkTheme 
@@ -227,21 +228,21 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
                   isUser 
                     ? "bg-black/10" 
                     : isDarkTheme 
-                      ? "bg-neutral-800" 
-                      : "bg-neutral-100"
+                      ? "bg-neutral-800/90" 
+                      : "bg-neutral-100/90"
                 )}
                 {...props} 
               />
             ),
             th: ({ node, ...props }) => (
               <th 
-                className="px-4 py-2 text-left font-medium text-sm" 
+                className="px-4 py-2.5 text-left font-medium text-sm" 
                 {...props} 
               />
             ),
             td: ({ node, ...props }) => (
               <td 
-                className="px-4 py-2 text-sm border-t" 
+                className="px-4 py-2.5 text-sm border-t" 
                 {...props} 
               />
             ),
@@ -251,8 +252,8 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
                   isUser
                     ? "border-white/10" 
                     : isDarkTheme 
-                      ? "border-neutral-700" 
-                      : "border-neutral-200"
+                      ? "border-neutral-700/90" 
+                      : "border-neutral-200/90"
                 )}
                 {...props} 
               />
@@ -264,9 +265,9 @@ export function ChatMessage({ message, isLastMessage }: ChatMessageProps) {
       </div>
       
       {isUser && (
-        <Avatar className="h-8 w-8 bg-muted shadow-md">
-          <AvatarFallback className="bg-primary/10 text-primary">
-            <User className="h-4 w-4" />
+        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 bg-gradient-to-br from-accent to-accent/80 text-white shadow-lg">
+          <AvatarFallback className="text-white">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
           </AvatarFallback>
         </Avatar>
       )}

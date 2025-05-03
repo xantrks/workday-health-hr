@@ -1,14 +1,16 @@
 "use client";
 
+import { Send, X, MessageSquare, BotIcon, Sparkles } from "lucide-react";
+import { useTheme } from "next-themes";
 import React, { useState, useRef, useEffect } from "react";
-import { Send, X, MessageSquare, BotIcon } from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChatMessage } from "./ChatMessage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useTheme } from "next-themes";
+
+import { ChatMessage } from "./ChatMessage";
 
 // Define interface for messages
 interface Message {
@@ -339,52 +341,70 @@ export function ChatWidget() {
   const handleSubmit = handleSubmitStreaming;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-5 right-5 z-50">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             size="icon"
             className={cn(
-              "w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md hover:shadow-lg transition-all",
+              "w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300",
               isOpen
-                ? "bg-red-500 text-white hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600"
-                : "bg-primary text-white hover:bg-primary/90"
+                ? "bg-red-500 text-white hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600 scale-95"
+                : "bg-gradient-to-br from-primary to-primary-deep text-white hover:opacity-90"
             )}
             aria-label={isOpen ? "Close chat" : "Open chat"}
           >
-            {isOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />}
+            {isOpen ? 
+              <X className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-200 ease-out" /> 
+              : 
+              <div className="relative">
+                <MessageSquare className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-200 ease-out" />
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-accent"></span>
+                </span>
+              </div>
+            }
           </Button>
         </PopoverTrigger>
         <PopoverContent
           className={cn(
-            "w-[320px] sm:w-[380px] p-0 rounded-xl shadow-lg border-0",
-            isDarkTheme ? "bg-gray-900/95 backdrop-blur-sm" : "bg-white/95 backdrop-blur-sm"
+            "w-[340px] sm:w-[400px] p-0 rounded-2xl shadow-2xl border-0 overflow-hidden",
+            "transition-all duration-300 ease-in-out",
+            isDarkTheme 
+              ? "bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-md" 
+              : "bg-gradient-to-b from-white/98 to-gray-50/98 backdrop-blur-md"
           )}
           side="top"
           align="end"
-          sideOffset={16}
+          sideOffset={20}
         >
-          <div className="flex flex-col h-[450px] sm:h-[500px]">
+          <div className="flex flex-col h-[500px] sm:h-[550px]">
             {/* Chat header */}
             <div 
               className={cn(
-                "flex items-center p-3 sm:p-4 border-b",
+                "flex items-center p-4 sm:p-5 border-b",
                 isDarkTheme ? "border-gray-700" : "border-gray-200"
               )}
             >
-              <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 bg-primary/10">
-                <AvatarFallback className="text-primary">
-                  <BotIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-9 w-9 sm:h-10 sm:w-10 mr-3 sm:mr-4 shadow-md bg-gradient-to-br from-primary to-primary-deep">
+                  <AvatarFallback className="text-white">
+                    <BotIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -right-1 -bottom-1 h-4 w-4 bg-accent rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                  <Sparkles className="h-2 w-2 text-white" />
+                </span>
+              </div>
               <div className="flex-1">
-                <h3 className="text-sm sm:text-base font-medium">Sani Assistant</h3>
-                <p className="text-xs text-muted-foreground">Women's Health Assistant</p>
+                <h3 className="text-base sm:text-lg font-medium">Sani Assistant</h3>
+                <p className="text-xs text-muted-foreground">WatsonX AI Health Assistant</p>
               </div>
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close chat"
               >
@@ -395,8 +415,8 @@ export function ChatWidget() {
             {/* Messages container */}
             <div 
               className={cn(
-                "flex-1 overflow-y-auto p-3 sm:p-4",
-                isDarkTheme ? "bg-gray-900/30" : "bg-gray-50/50"
+                "flex-1 overflow-y-auto p-4 sm:p-5 space-y-4",
+                isDarkTheme ? "bg-gray-900/30" : "bg-gray-50/30"
               )}
             >
               {messages.map((message, index) => (
@@ -408,7 +428,7 @@ export function ChatWidget() {
               ))}
               
               {isLoading && (
-                <div className="flex items-start gap-3 max-w-[85%] mb-3">
+                <div className="flex items-start gap-3 max-w-[85%] my-2">
                   <TypingIndicator />
                 </div>
               )}
@@ -418,26 +438,34 @@ export function ChatWidget() {
             
             {/* Input area */}
             <form 
-              onSubmit={handleSubmitStandard} 
+              onSubmit={handleSubmit} 
               className={cn(
-                "p-2 sm:p-3 border-t flex items-center gap-2",
-                isDarkTheme ? "border-gray-700" : "border-gray-200"
+                "p-3 sm:p-4 border-t flex items-center gap-3",
+                "transition-all duration-200",
+                isDarkTheme ? "border-gray-700 bg-gray-900/50" : "border-gray-200 bg-white/50"
               )}
             >
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 text-xs sm:text-sm h-8 sm:h-10 bg-transparent"
+                className={cn(
+                  "flex-1 text-sm h-10 sm:h-11 bg-transparent border",
+                  "rounded-full px-4 transition-all duration-200 focus-visible:ring-primary",
+                  isDarkTheme ? "border-gray-700 focus-visible:border-primary" : "border-gray-300 focus-visible:border-primary"
+                )}
                 disabled={isLoading}
               />
               <Button 
                 type="submit" 
                 size="icon" 
-                className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
+                className={cn(
+                  "h-10 w-10 sm:h-11 sm:w-11 rounded-full shadow-md transition-all duration-200",
+                  "bg-gradient-to-br from-primary to-primary-deep hover:opacity-90"
+                )}
                 disabled={isLoading || input.trim() === ""}
               >
-                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Send className="h-5 w-5 text-white transition-transform duration-200 group-hover:translate-x-1" />
               </Button>
             </form>
           </div>
@@ -450,10 +478,10 @@ export function ChatWidget() {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-muted px-4 py-2 rounded-lg flex items-center space-x-1">
-        <div className="w-2 h-2 rounded-full bg-primary-deep/70 animate-bounce" style={{ animationDelay: "0ms" }}></div>
-        <div className="w-2 h-2 rounded-full bg-primary-deep/70 animate-bounce" style={{ animationDelay: "300ms" }}></div>
-        <div className="w-2 h-2 rounded-full bg-primary-deep/70 animate-bounce" style={{ animationDelay: "600ms" }}></div>
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 px-4 py-3 rounded-2xl flex items-center space-x-1.5">
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }}></div>
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }}></div>
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "600ms" }}></div>
       </div>
     </div>
   );
