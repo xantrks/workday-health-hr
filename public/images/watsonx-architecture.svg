@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="500" fill="#f8f9fa" rx="10" ry="10"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">IBM Cloud watsonx AI Integration Architecture</text>
+  
+  <!-- Client Side (Left) -->
+  <rect x="50" y="100" width="300" height="350" fill="#e6f7ff" stroke="#1890ff" stroke-width="2" rx="10" ry="10"/>
+  <text x="200" y="125" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1890ff">Frontend (Client Side)</text>
+  
+  <!-- Server Side (Right) -->
+  <rect x="450" y="100" width="300" height="200" fill="#f6ffed" stroke="#52c41a" stroke-width="2" rx="10" ry="10"/>
+  <text x="600" y="125" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#52c41a">Backend (Server Side)</text>
+  
+  <!-- IBM Cloud (Bottom Right) -->
+  <rect x="450" y="330" width="300" height="120" fill="#f9f0ff" stroke="#722ed1" stroke-width="2" rx="10" ry="10"/>
+  <text x="600" y="355" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#722ed1">IBM Cloud</text>
+  
+  <!-- Components: Client Side -->
+  <rect x="75" y="150" width="250" height="60" fill="white" stroke="#1890ff" stroke-width="1" rx="5" ry="5"/>
+  <text x="200" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">ChatWidget.tsx</text>
+  <text x="200" y="198" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">User interface for the chat</text>
+  
+  <rect x="75" y="230" width="250" height="60" fill="white" stroke="#1890ff" stroke-width="1" rx="5" ry="5"/>
+  <text x="200" y="260" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">ChatMessage.tsx</text>
+  <text x="200" y="278" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">Message rendering with Markdown</text>
+  
+  <rect x="75" y="310" width="250" height="60" fill="white" stroke="#1890ff" stroke-width="1" rx="5" ry="5"/>
+  <text x="200" y="340" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">API Client</text>
+  <text x="200" y="358" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">Fetch API requests to backend</text>
+  
+  <!-- Components: Server Side -->
+  <rect x="475" y="150" width="250" height="60" fill="white" stroke="#52c41a" stroke-width="1" rx="5" ry="5"/>
+  <text x="600" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">app/api/watsonx-chat/route.ts</text>
+  <text x="600" y="198" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">Next.js API endpoint</text>
+  
+  <rect x="475" y="230" width="250" height="50" fill="white" stroke="#52c41a" stroke-width="1" rx="5" ry="5"/>
+  <text x="600" y="260" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">lib/watsonx.ts</text>
+  <text x="600" y="278" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">watsonx API client</text>
+  
+  <!-- Components: IBM Cloud -->
+  <rect x="475" y="370" width="250" height="60" fill="white" stroke="#722ed1" stroke-width="1" rx="5" ry="5"/>
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">watsonx.ai Service</text>
+  <text x="600" y="418" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">llama-3-405b-instruct model</text>
+  
+  <!-- Flow Arrows -->
+  <!-- Client to Server -->
+  <line x1="325" y1="180" x2="475" y2="180" stroke="#1890ff" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="400" y="170" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">HTTP Request</text>
+  
+  <!-- Server to IBM Cloud -->
+  <line x1="600" y1="280" x2="600" y2="370" stroke="#52c41a" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="620" y="325" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">API Call</text>
+  
+  <!-- IBM Cloud to Server -->
+  <line x1="575" y1="370" x2="575" y2="280" stroke="#722ed1" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="555" y="325" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">Response</text>
+  
+  <!-- Server to Client -->
+  <line x1="475" y1="210" x2="325" y2="210" stroke="#52c41a" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="400" y="225" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">SSE / JSON Response</text>
+  
+  <!-- Markers -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <rect x="300" y="450" width="200" height="30" fill="white" stroke="#333" stroke-width="1" rx="5" ry="5"/>
+  <text x="400" y="470" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">Data Flow Direction</text>
+</svg> 

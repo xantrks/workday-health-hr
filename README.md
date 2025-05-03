@@ -52,6 +52,7 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
 
 - 🗓️ **Health Calendar Management** - Track menstrual cycles, symptoms, and health data
 - 🤖 **AI Health Assistant (Sani)** - Get personalized health advice and support
+- 🤖 **Dual AI Support** - Integrated Google Gemini AI and IBM watsonx AI capabilities
 - 📊 **Anonymous Health Data Analysis** - For HR workforce planning
 - 📱 **Dual Dashboard System** - Separate interfaces for employees and HR
 - 🔐 **Privacy-First Architecture** - Enhanced data protection measures
@@ -88,6 +89,17 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
   - [🤖 AI Assistant Implementation](#-ai-assistant-implementation)
     - [Features](#features)
     - [Technology](#technology)
+  - [🧠 IBM Cloud watsonx AI Integration](#-ibm-cloud-watsonx-ai-integration)
+    - [Overview](#overview)
+    - [Features](#features-1)
+    - [Architecture](#architecture)
+      - [Frontend Implementation](#frontend-implementation)
+      - [Backend Implementation](#backend-implementation)
+    - [Configuration](#configuration)
+    - [Setup Instructions](#setup-instructions)
+    - [Technical Implementation Details](#technical-implementation-details)
+    - [Error Handling and Fallbacks](#error-handling-and-fallbacks)
+    - [Security Considerations](#security-considerations)
   - [🔒 Privacy \& Security](#-privacy--security)
   - [🗄️ Database Schema](#️-database-schema)
   - [🤝 Contributing](#-contributing)
@@ -127,12 +139,16 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
         <img src="https://cdn.simpleicons.org/google/4285F4" width="48" height="48" alt="Google AI" />
         <br>Google AI
       </td>
+      <td align="center" width="96">
+        <img src="https://cdn.simpleicons.org/ibm/052FAD" width="48" height="48" alt="IBM watsonx" />
+        <br>IBM watsonx
+      </td>
     </tr>
   </table>
 </div>
 
 > [!TIP]
-> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The AI functionality leverages Google's Gemini AI models through the @ai-sdk/google integration.
+> Each component in our tech stack was chosen for its reliability, modern features, and developer experience. The dual AI functionality leverages both Google's Gemini AI models through the @ai-sdk/google integration and IBM's watsonx AI for comprehensive women's health support.
 
 ## 📂 Project Structure
 
@@ -293,6 +309,87 @@ Sani, the AI health assistant, provides personalized support and guidance to emp
 ### Technology
 
 The AI assistant is powered by Google's Gemini AI models through the @ai-sdk/google integration, with custom middleware for handling health-specific queries and ensuring privacy.
+
+## 🧠 IBM Cloud watsonx AI Integration
+
+The platform features dual AI capabilities, leveraging both Google's Gemini AI and IBM's watsonx AI to provide comprehensive women's health support.
+
+### Overview
+
+While the main AI Health Assistant (accessed via the Women's Health Assistant button) uses Google's Gemini AI, the platform also integrates IBM's watsonx AI through a convenient chat widget located in the bottom-right corner of the employee dashboard.
+
+### Features
+
+- **Accessible Chat Widget**: Always available in the employee dashboard interface
+- **Specialized Health Focus**: Trained specifically for women's health conversations
+- **Real-time Streaming Responses**: Provides dynamic, typing-like response generation
+- **Enterprise-Grade Security**: Leverages IBM Cloud's robust security infrastructure
+- **Multi-modal Integration**: Complements the primary Gemini-based AI assistant
+
+### Architecture
+
+The watsonx AI integration follows a client-server architecture:
+
+#### Frontend Implementation
+- **Chat Widget Component**: A floating button in the bottom-right corner of the employee dashboard that expands into a chat interface
+- **Real-time UI**: Supports both standard and streaming response modes with typing indicators
+- **Error Handling**: Graceful fallbacks when the service is unavailable
+- **Markdown Rendering**: Properly formats AI responses with Markdown styling
+
+#### Backend Implementation
+- **API Route**: Dedicated `/api/watsonx-chat` endpoint for handling chat requests
+- **IBM Cloud Authentication**: Secure token-based authentication with IBM Cloud IAM
+- **Streaming Support**: Server-Sent Events (SSE) for real-time response streaming
+- **Fallback Mechanism**: Mock responses when the service is unavailable
+- **Debugging Features**: Comprehensive logging for troubleshooting
+
+### Configuration
+
+To use the IBM watsonx AI feature, you need to configure the following environment variables:
+
+```env
+# IBM WatsonX AI configuration
+NEXT_PUBLIC_WATSONX_API_URL=https://us-south.ml.cloud.ibm.com/ml/v4/deployments
+WATSONX_API_KEY=your_watsonx_api_key
+WATSONX_DEPLOYMENT_ID=your_watsonx_deployment_id
+WATSONX_TOKEN_URL=https://iam.cloud.ibm.com/identity/token
+WATSONX_VERSION=2021-05-01
+```
+
+### Setup Instructions
+
+1. **Create an IBM Cloud Account**: Sign up at [IBM Cloud](https://cloud.ibm.com/)
+2. **Provision watsonx.ai Service**: Set up the watsonx.ai service in your IBM Cloud dashboard
+3. **Create a Model Deployment**: Deploy a language model (the project uses llama-3-405b-instruct)
+4. **Get API Credentials**: Generate an API key from your IBM Cloud dashboard
+5. **Configure Environment Variables**: Add the required variables to your `.env.local` file
+6. **Test the Integration**: Verify the chat widget appears in the employee dashboard
+
+### Technical Implementation Details
+
+The watsonx AI integration is built with these key components:
+
+1. **Environment Configuration** (`lib/env.ts`): Manages watsonx-specific environment variables
+2. **API Client** (`lib/watsonx.ts`): Handles authentication and communication with IBM Cloud API
+3. **API Route** (`app/api/watsonx-chat/route.ts`): Next.js API route for processing chat requests
+4. **Chat UI Components**:
+   - `ChatWidget.tsx`: Main widget interface with expand/collapse functionality
+   - `ChatMessage.tsx`: Renders individual chat messages with Markdown support
+
+The implementation supports both standard API calls and streaming responses for a more dynamic user experience.
+
+### Error Handling and Fallbacks
+
+The system includes robust error handling:
+- Automatic fallback to mock responses when the API is unavailable
+- Informative error messages for different failure scenarios
+- Detailed logging for troubleshooting integration issues
+
+### Security Considerations
+
+- API keys are securely handled server-side only
+- Authentication tokens are generated for each session
+- User chat data is not permanently stored unless explicitly configured
 
 ## 🔒 Privacy & Security
 
