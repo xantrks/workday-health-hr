@@ -1,5 +1,8 @@
 // This file handles the API interactions with IBM WatsonX AI
 
+import endent from "endent";
+import { NextResponse } from "next/server";
+
 import { WATSONX_CONFIG } from './env';
 
 // Define message format for the WatsonX chat API
@@ -17,6 +20,7 @@ export const DEFAULT_SYSTEM_MESSAGE: ChatMessage = {
   2. Reproductive health: Discuss general topics around fertility, pregnancy, and reproductive conditions
   3. Mental wellbeing: Offer supportive conversation about mood changes, stress management, and emotional health
   4. General wellness: Provide guidance on nutrition, exercise, and lifestyle choices that support women's health
+  5. Leave management: Help employees create and submit leave requests
 
   Guidelines for your responses:
   - Provide compassionate, judgment-free support
@@ -39,98 +43,164 @@ function debugLog(message: string, data?: any): void {
   }
 }
 
-/**
- * Gets an IAM token from IBM Cloud using the API key
- */
-async function getIBMCloudToken(): Promise<string> {
-  if (!WATSONX_CONFIG.API_KEY) {
-    throw new Error('WatsonX API key is not configured');
-  }
-  
-  debugLog("Getting IBM Cloud token");
-  
-  try {
-    const response = await fetch(WATSONX_CONFIG.TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
-      },
-      body: `grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=${WATSONX_CONFIG.API_KEY}`
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      debugLog("Token fetch error", { status: response.status, error: errorText });
-      throw new Error(`Failed to get IAM token: ${response.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    debugLog("Token received successfully");
-    return data.access_token;
-  } catch (error) {
-    debugLog("Token fetch exception", { error });
-    throw error;
-  }
-}
-
-/**
- * Make a request to the WatsonX AI service using the chat API
- */
+// Function to get WatsonX response
 export async function getWatsonxResponse(
   messages: ChatMessage[],
   streaming: boolean = false
 ): Promise<Response> {
+  const WATSONX_API_KEY = process.env.WATSONX_API_KEY;
+  const WATSONX_API_URL = process.env.NEXT_PUBLIC_WATSONX_API_URL || 'https://us-south.ml.cloud.ibm.com/ml/v4/deployments';
+  const WATSONX_DEPLOYMENT_ID = process.env.WATSONX_DEPLOYMENT_ID || '';
+
+  if (!WATSONX_API_KEY) {
+    throw new Error("WatsonX API key is not configured");
+  }
+
   debugLog("Preparing WatsonX request", { 
     streaming, 
-    messageCount: messages.length 
+    messageCount: messages.length,
+    deploymentId: WATSONX_DEPLOYMENT_ID
   });
-  
-  if (!WATSONX_CONFIG.DEPLOYMENT_ID) {
-    throw new Error('WatsonX deployment ID is not configured');
-  }
-  
+
   try {
-    // Get IBM Cloud token
-    const token = await getIBMCloudToken();
+    // Convert messages to WatsonX format
+    const formattedMessages = messages.map(message => ({
+      role: message.role,
+      content: message.content
+    }));
+
+    // Create model payload
+    const payload = {
+      model_id: "meta-llama/llama-3-70b-instruct",
+      input: formattedMessages,
+      parameters: {
+        decoding_method: "greedy",
+        max_new_tokens: 1024,
+        min_new_tokens: 0,
+        temperature: 0.7,
+        ...(streaming ? { stream: true } : {})
+      }
+    };
+
+    // API headers
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": streaming ? "text/event-stream" : "application/json",
+      "Authorization": `Bearer ${WATSONX_API_KEY}`
+    };
+
+    // Construct the URL with deployment ID
+    const apiUrl = `${WATSONX_API_URL}/${WATSONX_DEPLOYMENT_ID}/chat/completions`;
     
-    // Determine endpoint URL based on streaming mode
-    const endpointUrl = streaming
-      ? `${WATSONX_CONFIG.API_URL}/${WATSONX_CONFIG.DEPLOYMENT_ID}/ai_service_stream?version=${WATSONX_CONFIG.VERSION}`
-      : `${WATSONX_CONFIG.API_URL}/${WATSONX_CONFIG.DEPLOYMENT_ID}/ai_service?version=${WATSONX_CONFIG.VERSION}`;
-    
-    debugLog("Calling WatsonX API endpoint", { 
-      url: endpointUrl, 
-      deploymentId: WATSONX_CONFIG.DEPLOYMENT_ID,
-      messageCount: messages.length
+    debugLog("Calling WatsonX API", { 
+      url: apiUrl,
+      streaming,
+      headerKeys: Object.keys(headers)
     });
-    
-    // Prepare the payload
-    const payload = { messages };
-    
-    debugLog("Request payload", { 
-      payload: { 
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content.length > 50 ? 
-            m.content.substring(0, 50) + "..." : 
-            m.content
-        }))
-      } 
-    });
-    
-    // Make request to WatsonX API
-    return fetch(endpointUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': streaming ? 'text/event-stream' : 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+
+    // Make the API call
+    return fetch(apiUrl, {
+      method: "POST",
+      headers,
       body: JSON.stringify(payload)
     });
   } catch (error) {
-    debugLog("Error in getWatsonxResponse", { error });
+    debugLog("Error in getWatsonxResponse", { 
+      error: error instanceof Error ? error.message : String(error) 
+    });
     throw error;
   }
+}
+
+// Helper functions for leave request functionality
+export async function generateLeaveTypeOptions() {
+  const leaveTypes = [
+    "Annual Leave",
+    "Sick Leave",
+    "Personal Leave",
+    "Maternity Leave",
+    "Paternity Leave",
+    "Medical Leave",
+    "Family Leave",
+    "Bereavement Leave"
+  ];
+  
+  return { leaveTypes };
+}
+
+export async function generateLeaveReasonSuggestions(leaveType: string) {
+  let suggestions = [];
+  
+  switch(leaveType) {
+    case "Annual Leave":
+      suggestions = ["Vacation", "Personal time off", "Family holiday", "Rest and recharge"];
+      break;
+    case "Sick Leave":
+      suggestions = ["Feeling unwell", "Doctor's appointment", "Recovery from illness", "Medical procedure"];
+      break;
+    case "Personal Leave":
+      suggestions = ["Personal matter", "Family emergency", "House move", "Administrative errands"];
+      break;
+    case "Maternity Leave":
+      suggestions = ["Childbirth", "Prenatal care", "Postnatal recovery", "Newborn care"];
+      break;
+    case "Paternity Leave":
+      suggestions = ["Birth of child", "Supporting partner", "Newborn care", "Family bonding"];
+      break;
+    case "Medical Leave":
+      suggestions = ["Scheduled surgery", "Medical treatment", "Specialist appointment", "Medical recovery"];
+      break;
+    case "Family Leave":
+      suggestions = ["Care for family member", "Family emergency", "Childcare", "Elder care"];
+      break;
+    case "Bereavement Leave":
+      suggestions = ["Loss of family member", "Funeral attendance", "Grief period", "Family support"];
+      break;
+    default:
+      suggestions = ["Time off request", "Personal day", "Scheduled absence"];
+  }
+  
+  return { suggestions };
+}
+
+export async function validateLeaveRequest(startDate: string, endDate: string, leaveType: string, reason: string) {
+  // Parse dates
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+  
+  // Basic validation
+  const isValid = 
+    start instanceof Date && !isNaN(start.getTime()) &&
+    end instanceof Date && !isNaN(end.getTime()) &&
+    start <= end &&
+    leaveType && leaveType.trim() !== "" &&
+    reason && reason.trim() !== "";
+  
+  // Additional validations
+  const messages = [];
+  
+  if (start < today) {
+    messages.push("Start date cannot be in the past");
+  }
+  
+  if (end < start) {
+    messages.push("End date must be after start date");
+  }
+  
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  
+  if (leaveType === "Sick Leave" && diffDays > 14) {
+    messages.push("Sick leave requests exceeding 14 days require medical documentation");
+  }
+  
+  if (leaveType === "Annual Leave" && diffDays > 30) {
+    messages.push("Annual leave requests exceeding 30 days require manager pre-approval");
+  }
+  
+  return {
+    isValid: isValid && messages.length === 0,
+    messages: messages.length > 0 ? messages : ["Leave request is valid"]
+  };
 } 

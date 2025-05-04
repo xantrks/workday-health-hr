@@ -1,8 +1,10 @@
 "use client";
 
+import { format, addDays, differenceInDays, parse } from "date-fns";
 import { Send, X, MessageSquare, BotIcon, Sparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +19,25 @@ interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+// Leave Request State for conversation tracking
+type LeaveRequestState = {
+  active: boolean;
+  stage: "type" | "startDate" | "endDate" | "reason" | "confirm" | "complete";
+  leaveType: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  reason: string;
+}
+
+// Leave type options
+const leaveTypes = [
+  { id: "1", name: "Annual Leave", description: "Vacation or personal time off", maxDays: 30 },
+  { id: "2", name: "Sick Leave", description: "For illness or medical appointments", maxDays: 14 },
+  { id: "3", name: "Personal Leave", description: "For personal matters", maxDays: 5 },
+  { id: "4", name: "Family Leave", description: "To care for family members", maxDays: 10 },
+  { id: "5", name: "Bereavement Leave", description: "For loss of family member", maxDays: 5 },
+];
 
 // Add detailed debug logging
 const DEBUG = true;
@@ -33,10 +54,20 @@ export function ChatWidget() {
   const { theme } = useTheme();
   const isDarkTheme = theme === 'dark';
   
+  // Leave request conversation state
+  const [leaveRequest, setLeaveRequest] = useState<LeaveRequestState>({
+    active: false,
+    stage: "type",
+    leaveType: "",
+    startDate: null,
+    endDate: null,
+    reason: ""
+  });
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi, I'm Sanicle's women's health assistant. I'm here to chat with you about physiological and psychological health topics. How can I support you today?",
+      content: "Hi, I'm Sanicle's women's health assistant. I'm here to chat with you about physiological and psychological health topics and can help with leave requests. How can I support you today?",
     },
   ]);
   
@@ -57,125 +88,658 @@ export function ChatWidget() {
     }
   }, [messages]);
 
-  // Non-streaming API implementation
-  async function handleSubmitStandard(e: React.FormEvent) {
-    e.preventDefault();
+  // Helper function to determine if text contains a leave request
+  const isLeaveRelated = (text: string): boolean => {
+    const lowerText = text.toLowerCase();
+    return (
+      lowerText.includes("leave") || 
+      lowerText.includes("time off") || 
+      lowerText.includes("vacation") || 
+      lowerText.includes("sick") || 
+      lowerText.includes("day off") ||
+      lowerText.includes("holiday") ||
+      lowerText.includes("absence")
+    );
+  };
+
+  // Helper to extract date from text using various formats
+  const extractDate = (text: string): Date | null => {
+    // Try to find a date in various formats
+    const today = new Date();
     
-    if (input.trim() === "") return;
+    // Check for "today", "tomorrow", etc
+    if (text.toLowerCase().includes("today")) {
+      return today;
+    }
     
-    debugLog("Submitting message via standard API", { message: input });
+    if (text.toLowerCase().includes("tomorrow")) {
+      return addDays(today, 1);
+    }
     
-    const userMessage: Message = { role: "user", content: input };
-    setMessages((prev: Message[]) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-    
-    try {
-      debugLog("Fetching from /api/watsonx-chat endpoint");
-      const startTime = Date.now();
+    // Check for relative days ("next monday", "this friday", etc)
+    const dayMatches = text.match(/(?:this|next) (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i);
+    if (dayMatches) {
+      const dayMap: {[key: string]: number} = {
+        monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0
+      };
       
-      const response = await fetch("/api/watsonx-chat", {
+      const targetDay = dayMap[dayMatches[1].toLowerCase()];
+      const currentDay = today.getDay();
+      let daysToAdd = (targetDay - currentDay + 7) % 7;
+      
+      if (dayMatches[0].toLowerCase().startsWith("next")) {
+        daysToAdd += 7;
+      } else if (daysToAdd === 0) { // "this sunday" when today is sunday means next week
+        daysToAdd = 7;
+      }
+      
+      return addDays(today, daysToAdd);
+    }
+    
+    // Try to detect common date formats
+    const datePatterns = [
+      // MM/DD/YYYY or DD/MM/YYYY
+      /(\d{1,2})\/(\d{1,2})\/(\d{4})/,
+      // YYYY-MM-DD
+      /(\d{4})-(\d{1,2})-(\d{1,2})/,
+      // Month DD, YYYY
+      /(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2})(?:st|nd|rd|th)?,? (\d{4})/i,
+      // DD Month YYYY
+      /(\d{1,2})(?:st|nd|rd|th)? (January|February|March|April|May|June|July|August|September|October|November|December),? (\d{4})/i,
+    ];
+    
+    for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        try {
+          // Different parsing logic based on the pattern
+          if (pattern === datePatterns[0]) {
+            // MM/DD/YYYY or DD/MM/YYYY (assume MM/DD/YYYY for simplicity)
+            return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
+          } else if (pattern === datePatterns[1]) {
+            // YYYY-MM-DD
+            return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+          } else if (pattern === datePatterns[2]) {
+            // Month DD, YYYY
+            const monthNames = ["january", "february", "march", "april", "may", "june", 
+                               "july", "august", "september", "october", "november", "december"];
+            const month = monthNames.indexOf(match[1].toLowerCase());
+            return new Date(parseInt(match[3]), month, parseInt(match[2]));
+          } else if (pattern === datePatterns[3]) {
+            // DD Month YYYY
+            const monthNames = ["january", "february", "march", "april", "may", "june", 
+                               "july", "august", "september", "october", "november", "december"];
+            const month = monthNames.indexOf(match[2].toLowerCase());
+            return new Date(parseInt(match[3]), month, parseInt(match[1]));
+          }
+        } catch (e) {
+          console.error("Error parsing date:", e);
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Process user input during a leave request conversation
+  const processLeaveRequestInput = (userInput: string): string => {
+    const { stage } = leaveRequest;
+    let updatedLeaveRequest = { ...leaveRequest };
+    let response = "";
+    
+    // First, try to extract all relevant information from the input at once
+    const leaveInfo = extractLeaveInformation(userInput);
+    
+    // If we can extract complete information in one go, skip the conversation flow
+    if (leaveInfo.isComplete) {
+      // Update all fields at once
+      updatedLeaveRequest.leaveType = leaveInfo.leaveType || updatedLeaveRequest.leaveType;
+      updatedLeaveRequest.startDate = leaveInfo.startDate || updatedLeaveRequest.startDate;
+      updatedLeaveRequest.endDate = leaveInfo.endDate || updatedLeaveRequest.endDate;
+      updatedLeaveRequest.reason = leaveInfo.reason || updatedLeaveRequest.reason;
+      updatedLeaveRequest.stage = "confirm";
+      
+      // Format the summary
+      const startDateStr = updatedLeaveRequest.startDate ? format(updatedLeaveRequest.startDate, "EEEE, MMMM d, yyyy") : "";
+      const endDateStr = updatedLeaveRequest.endDate === updatedLeaveRequest.startDate 
+        ? "Same day" 
+        : updatedLeaveRequest.endDate ? format(updatedLeaveRequest.endDate, "EEEE, MMMM d, yyyy") : "";
+      const days = (updatedLeaveRequest.startDate && updatedLeaveRequest.endDate) ? 
+        differenceInDays(updatedLeaveRequest.endDate, updatedLeaveRequest.startDate) + 1 : 1;
+      
+      response = `I've prepared your leave request based on what you've told me:\n\n` +
+        `- **Type:** ${updatedLeaveRequest.leaveType}\n` +
+        `- **Date:** ${startDateStr}${endDateStr !== "Same day" ? ` to ${endDateStr}` : ""}\n` +
+        `- **Duration:** ${days} day${days > 1 ? 's' : ''}\n` +
+        `- **Reason:** ${updatedLeaveRequest.reason}\n\n` +
+        `Does this look correct? I can submit it now, or you can tell me what to change.`;
+        
+      setLeaveRequest(updatedLeaveRequest);
+      return response;
+    }
+    
+    // Update any partial information we extracted
+    if (leaveInfo.leaveType && !updatedLeaveRequest.leaveType) {
+      updatedLeaveRequest.leaveType = leaveInfo.leaveType;
+    }
+    if (leaveInfo.startDate && !updatedLeaveRequest.startDate) {
+      updatedLeaveRequest.startDate = leaveInfo.startDate;
+    }
+    if (leaveInfo.endDate && !updatedLeaveRequest.endDate) {
+      updatedLeaveRequest.endDate = leaveInfo.endDate;
+    }
+    if (leaveInfo.reason && !updatedLeaveRequest.reason) {
+      updatedLeaveRequest.reason = leaveInfo.reason;
+    }
+    
+    // Now continue with the staged conversation, but try to skip steps if possible
+    switch (stage) {
+      case "type":
+        // If we already extracted a leave type from the current input, move forward
+        if (leaveInfo.leaveType) {
+          updatedLeaveRequest.stage = "startDate";
+          
+          // If we also have start date, we can move further
+          if (leaveInfo.startDate) {
+            updatedLeaveRequest.stage = "endDate";
+            
+            // If we have end date too, move to reason
+            if (leaveInfo.endDate) {
+              updatedLeaveRequest.stage = "reason";
+              
+              // If we even have the reason, jump to confirm
+              if (leaveInfo.reason) {
+                updatedLeaveRequest.stage = "confirm";
+                
+                // Format the summary
+                const startDateStr = format(updatedLeaveRequest.startDate!, "EEEE, MMMM d, yyyy");
+                const endDateStr = updatedLeaveRequest.endDate === updatedLeaveRequest.startDate 
+                  ? "Same day" 
+                  : format(updatedLeaveRequest.endDate!, "EEEE, MMMM d, yyyy");
+                const days = differenceInDays(updatedLeaveRequest.endDate!, updatedLeaveRequest.startDate!) + 1;
+                
+                response = `Great! I've put together your leave request:\n\n` +
+                  `- **Type:** ${updatedLeaveRequest.leaveType}\n` +
+                  `- **Date:** ${startDateStr}${endDateStr !== "Same day" ? ` to ${endDateStr}` : ""}\n` +
+                  `- **Duration:** ${days} day${days > 1 ? 's' : ''}\n` +
+                  `- **Reason:** ${updatedLeaveRequest.reason}\n\n` +
+                  `Ready to submit this request?`;
+                
+                setLeaveRequest(updatedLeaveRequest);
+                return response;
+              }
+              
+              // If we have start/end date but no reason
+              const startDateStr = format(updatedLeaveRequest.startDate!, "EEEE, MMMM d, yyyy");
+              const endDateStr = updatedLeaveRequest.endDate === updatedLeaveRequest.startDate 
+                ? "Same day" 
+                : format(updatedLeaveRequest.endDate!, "EEEE, MMMM d, yyyy");
+              const days = differenceInDays(updatedLeaveRequest.endDate!, updatedLeaveRequest.startDate!) + 1;
+              
+              response = `I'll request ${updatedLeaveRequest.leaveType} from ${startDateStr}${endDateStr !== "Same day" ? ` to ${endDateStr}` : ""} (${days} day${days > 1 ? 's' : ''}). Could you briefly tell me the reason for your leave?`;
+              
+              setLeaveRequest(updatedLeaveRequest);
+              return response;
+            }
+            
+            // If we have start date but no end date
+            const startDateStr = format(updatedLeaveRequest.startDate!, "EEEE, MMMM d, yyyy");
+            response = `I'll put in a request for ${updatedLeaveRequest.leaveType} starting ${startDateStr}. When will you return? (If it's just for one day, you can simply say "same day")`;
+            
+            setLeaveRequest(updatedLeaveRequest);
+            return response;
+          }
+          
+          // Only have leave type
+          response = `I've noted you're requesting ${updatedLeaveRequest.leaveType}. When do you want to start your leave?`;
+          
+          setLeaveRequest(updatedLeaveRequest);
+          return response;
+        }
+        
+        // Try to identify leave type from input again
+        const lowerInput = userInput.toLowerCase();
+        let matchedType = "";
+        
+        // Check if user input matches any leave type name
+        for (const type of leaveTypes) {
+          if (lowerInput.includes(type.name.toLowerCase())) {
+            matchedType = type.name;
+            break;
+          }
+        }
+        
+        // Check for common terms if no exact match
+        if (!matchedType) {
+          if (lowerInput.includes("vacation") || lowerInput.includes("holiday") || lowerInput.includes("annual")) {
+            matchedType = "Annual Leave";
+          } else if (lowerInput.includes("sick") || lowerInput.includes("ill") || lowerInput.includes("health")) {
+            matchedType = "Sick Leave";
+          } else if (lowerInput.includes("personal") || lowerInput.includes("private")) {
+            matchedType = "Personal Leave";
+          } else if (lowerInput.includes("family") || lowerInput.includes("care")) {
+            matchedType = "Family Leave";
+          } else if (lowerInput.includes("bereave") || lowerInput.includes("funeral") || lowerInput.includes("death")) {
+            matchedType = "Bereavement Leave";
+          } else if (lowerInput.includes("day") && (lowerInput.includes("off") || lowerInput.includes("leave") || lowerInput.includes("out"))) {
+            // Default to personal leave for general "day off" requests
+            matchedType = "Personal Leave";
+          } else if (lowerInput.includes("time") && lowerInput.includes("off")) {
+            // Default to annual leave for "time off"
+            matchedType = "Annual Leave";
+          }
+        }
+        
+        if (matchedType) {
+          updatedLeaveRequest.leaveType = matchedType;
+          updatedLeaveRequest.stage = "startDate";
+          
+          response = `For your ${matchedType}, when would you like to start?`;
+        } else {
+          // If we couldn't identify a type, list the options more conversationally
+          response = "What type of leave would you like to request? Options include sick leave, annual leave, personal leave, family leave, or bereavement leave.";
+        }
+        break;
+      
+      case "startDate":
+        // Try to extract a date from the input
+        const startDate = leaveInfo.startDate || extractDate(userInput);
+        
+        if (startDate) {
+          // Use the extracted date
+          updatedLeaveRequest.startDate = startDate;
+          updatedLeaveRequest.stage = "endDate";
+          
+          const formattedDate = format(startDate, "EEEE, MMMM d");
+          response = `Starting ${formattedDate}. Is this just for one day or when will you return?`;
+        } else {
+          // If we couldn't extract a date, ask again more conversationally
+          response = "I need to know when you'd like your leave to start. You can say something like 'today', 'tomorrow', 'next Monday', or a specific date.";
+        }
+        break;
+      
+      case "endDate":
+        // Check for "same day" or "one day" response
+        if (userInput.toLowerCase().match(/\b(same|one|1|single|just one)\s*(day)?\b/) || 
+            userInput.toLowerCase().includes("just that day") ||
+            userInput.toLowerCase().includes("only that day")) {
+          // Use the start date as the end date
+          if (updatedLeaveRequest.startDate) {
+            updatedLeaveRequest.endDate = updatedLeaveRequest.startDate;
+            updatedLeaveRequest.stage = "reason";
+            
+            const dateStr = format(updatedLeaveRequest.startDate, "MMMM d");
+            response = `Got it, just for ${dateStr}. What's the reason for your leave?`;
+          }
+        } else {
+          // Try to extract a date from the input
+          const endDate = leaveInfo.endDate || extractDate(userInput);
+          
+          if (endDate) {
+            // Check if end date is after start date
+            if (updatedLeaveRequest.startDate && endDate < updatedLeaveRequest.startDate) {
+              response = "The return date needs to be on or after the start date. When do you plan to return?";
+            } else {
+              updatedLeaveRequest.endDate = endDate;
+              updatedLeaveRequest.stage = "reason";
+              
+              const startDateStr = format(updatedLeaveRequest.startDate!, "MMMM d");
+              const endDateStr = format(endDate, "MMMM d");
+              const days = differenceInDays(endDate, updatedLeaveRequest.startDate!) + 1;
+              
+              if (days === 1) {
+                response = `Just for ${startDateStr}. What's the reason for your leave?`;
+              } else {
+                response = `${startDateStr} to ${endDateStr} (${days} days). What's the reason for your leave?`;
+              }
+            }
+          } else {
+            // If we couldn't extract a date, ask again more conversationally
+            response = "When do you plan to return? You can say 'same day' if it's just for one day, or give me a specific date.";
+          }
+        }
+        break;
+      
+      case "reason":
+        // Store the reason
+        if (userInput.trim() || leaveInfo.reason) {
+          updatedLeaveRequest.reason = leaveInfo.reason || userInput.trim();
+          updatedLeaveRequest.stage = "confirm";
+          
+          // Format the summary in a more conversational way
+          const startDateStr = format(updatedLeaveRequest.startDate!, "MMMM d");
+          const endDateStr = updatedLeaveRequest.endDate === updatedLeaveRequest.startDate 
+            ? "" 
+            : ` to ${format(updatedLeaveRequest.endDate!, "MMMM d")}`;
+          const days = updatedLeaveRequest.endDate ? differenceInDays(updatedLeaveRequest.endDate, updatedLeaveRequest.startDate!) + 1 : 1;
+          
+          response = `Here's what I have: ${updatedLeaveRequest.leaveType} from ${startDateStr}${endDateStr} (${days} day${days > 1 ? 's' : ''}) for "${updatedLeaveRequest.reason}". Should I submit this request?`;
+        } else {
+          response = "I need a reason for your leave request. This helps your manager understand and approve it.";
+        }
+        break;
+      
+      case "confirm":
+        // Check for confirmation
+        if (userInput.toLowerCase().match(/\b(yes|yep|yeah|correct|right|confirm|submit|go ahead|proceed|fine|ok|okay|sounds good|approved|that's right|that's it)\b/)) {
+          updatedLeaveRequest.stage = "complete";
+          response = "I'm submitting your leave request now...";
+        } else if (userInput.toLowerCase().match(/\b(no|nope|wrong|incorrect|not right|change|modify|edit|alter|adjust|fix|update)\b/)) {
+          // If user explicitly mentions what to change, try to identify it
+          if (userInput.toLowerCase().includes("type") || userInput.toLowerCase().includes("leave type")) {
+            updatedLeaveRequest.stage = "type";
+            response = "What type of leave would you like instead?";
+          } else if (userInput.toLowerCase().includes("date") || userInput.toLowerCase().includes("start") || userInput.toLowerCase().includes("day")) {
+            updatedLeaveRequest.stage = "startDate";
+            response = "What's the correct start date?";
+          } else if (userInput.toLowerCase().includes("end") || userInput.toLowerCase().includes("return")) {
+            updatedLeaveRequest.stage = "endDate";
+            response = "When will you return from leave?";
+          } else if (userInput.toLowerCase().includes("reason")) {
+            updatedLeaveRequest.stage = "reason";
+            response = "What's the correct reason for your leave?";
+          } else {
+            // Start over if we can't determine what to change
+            updatedLeaveRequest.stage = "type";
+            response = "Let's start over. What type of leave are you requesting?";
+          }
+        } else {
+          // Check if the input contains new information that might be updating the request
+          const updateInfo = extractLeaveInformation(userInput);
+          
+          if (updateInfo.leaveType) {
+            updatedLeaveRequest.leaveType = updateInfo.leaveType;
+            response = "I've updated the leave type. Anything else you'd like to change, or shall I submit the request?";
+          } else if (updateInfo.startDate) {
+            updatedLeaveRequest.startDate = updateInfo.startDate;
+            if (updatedLeaveRequest.endDate && updatedLeaveRequest.endDate < updateInfo.startDate) {
+              updatedLeaveRequest.endDate = updateInfo.startDate;
+            }
+            response = "I've updated the start date. Anything else to change, or should I submit it?";
+          } else if (updateInfo.endDate) {
+            updatedLeaveRequest.endDate = updateInfo.endDate;
+            response = "I've updated the end date. Anything else to change, or should I submit it?";
+          } else if (updateInfo.reason) {
+            updatedLeaveRequest.reason = updateInfo.reason;
+            response = "I've updated the reason. Anything else to change, or shall I submit the request?";
+          } else {
+            response = "Should I submit this leave request as is? Please say 'yes' to confirm or tell me what you'd like to change.";
+          }
+        }
+        break;
+        
+      case "complete":
+        // This should not happen as the state will be reset after completion
+        updatedLeaveRequest.active = false;
+        response = "Your leave request has been processed. Is there anything else I can help you with?";
+        break;
+    }
+    
+    setLeaveRequest(updatedLeaveRequest);
+    return response;
+  };
+
+  // Extract multiple pieces of leave information at once from natural language
+  const extractLeaveInformation = (text: string): {
+    leaveType: string | null,
+    startDate: Date | null,
+    endDate: Date | null,
+    reason: string | null,
+    isComplete: boolean
+  } => {
+    const lowerText = text.toLowerCase();
+    let leaveType: string | null = null;
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+    let reason: string | null = null;
+    
+    // Extract leave type using both exact matches and fuzzy matches
+    for (const type of leaveTypes) {
+      if (lowerText.includes(type.name.toLowerCase())) {
+        leaveType = type.name;
+        break;
+      }
+    }
+    
+    // Use more common keywords if no direct match
+    if (!leaveType) {
+      if (lowerText.includes("vacation") || lowerText.includes("holiday") || lowerText.includes("annual")) {
+        leaveType = "Annual Leave";
+      } else if (lowerText.includes("sick") || lowerText.includes("ill") || lowerText.includes("health") || lowerText.includes("doctor")) {
+        leaveType = "Sick Leave";
+      } else if (lowerText.includes("personal") || lowerText.includes("private")) {
+        leaveType = "Personal Leave";
+      } else if (lowerText.includes("family") || lowerText.includes("care") || lowerText.includes("relative")) {
+        leaveType = "Family Leave";
+      } else if (lowerText.includes("bereave") || lowerText.includes("funeral") || lowerText.includes("death")) {
+        leaveType = "Bereavement Leave";
+      } else if (lowerText.includes("day off") || lowerText.includes("time off")) {
+        // Default to Personal Leave for general requests
+        leaveType = "Personal Leave";
+      }
+    }
+    
+    // Look for date-related keywords and extract dates
+    
+    // Check for "today" or "tomorrow"
+    if (lowerText.includes("today")) {
+      startDate = new Date();
+    } else if (lowerText.includes("tomorrow")) {
+      startDate = addDays(new Date(), 1);
+    }
+    
+    // If no simple keyword match, try to extract dates with more complex patterns
+    if (!startDate) {
+      // Common patterns like "on Monday", "next Friday", "from June 1"
+      const datePatterns = [
+        // "on Monday", "this Friday"
+        /\b(?:on|this|next) (monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
+        // "from June 1", "starting June 1"
+        /\b(?:from|starting|start on|beginning|begin on) (?:the )?(\d{1,2}(?:st|nd|rd|th)? (?:of )?(?:january|february|march|april|may|june|july|august|september|october|november|december)|(?:january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2}(?:st|nd|rd|th)?)\b/i,
+        // Date formats MM/DD, MM/DD/YYYY
+        /\b(\d{1,2}\/\d{1,2}(?:\/\d{4})?)\b/,
+        // YYYY-MM-DD
+        /\b(\d{4}-\d{1,2}-\d{1,2})\b/,
+      ];
+      
+      for (const pattern of datePatterns) {
+        const match = lowerText.match(pattern);
+        if (match) {
+          const extractedDate = extractDate(match[0]);
+          if (extractedDate) {
+            startDate = extractedDate;
+            break;
+          }
+        }
+      }
+    }
+    
+    // Look for date ranges and end dates
+    if (startDate) {
+      // "until Friday", "to June 5", "through next week"
+      const endDatePatterns = [
+        /\b(?:until|till|to|through) (monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
+        /\b(?:until|till|to|through) (?:the )?(\d{1,2}(?:st|nd|rd|th)? (?:of )?(?:january|february|march|april|may|june|july|august|september|october|november|december)|(?:january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2}(?:st|nd|rd|th)?)\b/i,
+        /\b(?:until|till|to|through) (\d{1,2}\/\d{1,2}(?:\/\d{4})?)\b/,
+      ];
+      
+      for (const pattern of endDatePatterns) {
+        const match = lowerText.match(pattern);
+        if (match) {
+          const extractedDate = extractDate(match[0].replace(/\b(?:until|till|to|through)\b/i, ''));
+          if (extractedDate) {
+            endDate = extractedDate;
+            break;
+          }
+        }
+      }
+      
+      // Check for "for X days"
+      const durationMatch = lowerText.match(/\bfor (\d+) days?\b/i);
+      if (durationMatch && startDate) {
+        const days = parseInt(durationMatch[1]);
+        if (!isNaN(days) && days > 0) {
+          endDate = addDays(startDate, days - 1); // -1 because the start day counts
+        }
+      }
+      
+      // If we have a start date but no end date, and there's no indication it's multiple days,
+      // assume it's a single day request
+      if (!endDate && (
+        lowerText.includes("just one day") || 
+        lowerText.includes("just for one day") || 
+        lowerText.includes("single day") || 
+        lowerText.includes("one day") ||
+        lowerText.includes("a day") ||
+        (lowerText.includes("day") && !lowerText.includes("days"))
+      )) {
+        endDate = startDate;
+      }
+    }
+    
+    // Try to extract reason
+    // This is more complex as reasons can be varied, but we can look for common patterns
+    const reasonPatterns = [
+      /\b(?:because|as|since|due to|for) (.*?)(?:\.|\?|$)/i, // Match "because I'm sick" or "due to illness."
+      /\b(?:reason is|reason being) (.*?)(?:\.|\?|$)/i, // Match "reason is I have a doctor's appointment"
+      /\bI(?:'m| am) (sick|ill|not feeling well|unwell)/i, // Match common illness phrases
+      /\b(?:doctor'?s |dental |medical |family )(?:appointment|emergency)/i, // Match medical appointments
+      /\b(?:family|personal) (?:matter|emergency|issue)/i, // Match personal emergencies
+      /\bneed (?:to|a) (.*?)(?:\.|\?|$)/i, // Match "need to take care of something"
+    ];
+    
+    for (const pattern of reasonPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        reason = match[1] ? match[1].trim() : match[0].trim();
+        break;
+      }
+    }
+    
+    // If we couldn't extract a specific reason but we have a leave type,
+    // we can use the leave type as a basic reason
+    if (!reason && leaveType) {
+      // For sick leave, having "sick" is sufficient reason
+      if (leaveType === "Sick Leave") {
+        reason = "Sick leave";
+      } else if (leaveType === "Annual Leave") {
+        reason = "Annual leave";
+      } else if (leaveType === "Personal Leave") {
+        reason = "Personal matters";
+      }
+    }
+    
+    // Check if we have complete information to create a leave request
+    const isComplete = 
+      leaveType !== null && 
+      startDate !== null && 
+      endDate !== null && 
+      reason !== null;
+    
+    return {
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+      isComplete
+    };
+  };
+
+  // Submit the leave request to the database
+  const submitLeaveRequest = async () => {
+    try {
+      const { leaveType, startDate, endDate, reason } = leaveRequest;
+      
+      if (!leaveType || !startDate || !endDate || !reason) {
+        throw new Error("Incomplete leave request information");
+      }
+      
+      // API call to submit leave request
+      const response = await fetch("/api/leave", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
-          streaming: false,
+          startDate: format(startDate, "yyyy-MM-dd"),
+          endDate: format(endDate, "yyyy-MM-dd"),
+          leaveType,
+          reason,
         }),
       });
       
-      const endTime = Date.now();
-      debugLog(`API request completed in ${endTime - startTime}ms with status ${response.status}`);
+      // Read the response content
+      const responseData = await response.json().catch(() => null);
       
-      if (!response.ok) {
-        // Handle HTTP errors gracefully
-        debugLog("API Error response", { 
-          status: response.status, 
-          statusText: response.statusText 
+      if (response.ok) {
+        // Add success message
+        setMessages(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `✅ Your leave request has been submitted successfully!\n\n` +
+              `The request ID is **${responseData?.id || "Unknown"}**. Your manager will review your request soon. ` +
+              `You'll receive a notification when it's approved or if any additional information is required.`
+          }
+        ]);
+        
+        // Reset leave request state
+        setLeaveRequest({
+          active: false,
+          stage: "type",
+          leaveType: "",
+          startDate: null,
+          endDate: null,
+          reason: ""
         });
-        throw new Error(`API Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      debugLog("API response received", data);
-      
-      // Adjust parsing logic based on watsonx.ai response structure
-      let assistantMessage = "Sorry, I couldn't process your request. Please try again.";
-      
-      // Add logging based on error messages
-      if (data.error) {
-        debugLog("Error from API", { error: data.error, details: data.details });
         
-        // Handle specific deployment not found error with a helpful message
-        if (data.details && data.details.includes("deployment_not_found")) {
-          assistantMessage = "I'm sorry, but the WatsonX AI service is currently unavailable. The deployment configuration needs to be updated.";
-        } else {
-          assistantMessage = `I encountered an issue: ${data.error}. Please try again later.`;
-        }
+        toast.success("Leave request submitted successfully");
       } else {
-        // Check different possible response structures - prioritize the sample project's expected format
-        debugLog("Parsing response data structure");
+        // Handle specific error responses
+        let errorMessage = "Failed to submit leave request to the server.";
         
-        if (data.results && Array.isArray(data.results) && data.results[0]?.generated_text) {
-          debugLog("Found response in data.results[0].generated_text");
-          assistantMessage = data.results[0].generated_text;
-        } else if (data.generated_text) {
-          debugLog("Found response in data.generated_text");
-          assistantMessage = data.generated_text;
-        } else if (data.result && data.result.generated_text) {
-          debugLog("Found response in data.result.generated_text");
-          assistantMessage = data.result.generated_text;
-        } else if (data.choices && data.choices[0]?.message?.content) {
-          debugLog("Found response in data.choices[0].message.content");
-          assistantMessage = data.choices[0].message.content;
-        } else {
-          debugLog("WARNING: Could not find response in any expected location", data);
+        if (responseData) {
+          if (responseData.error === "Database error") {
+            errorMessage = `There was a database error: ${responseData.details || 'Unknown database issue'}`;
+            console.error("Database error details:", responseData);
+          } else if (responseData.message) {
+            errorMessage = responseData.message;
+          }
         }
-
-        // Log the parsed message
-        debugLog("Parsed assistant message:", assistantMessage.substring(0, 50) + "...");
+        
+        throw new Error(errorMessage);
       }
-      
-      // Make sure we have a valid message to display
-      if (!assistantMessage || assistantMessage.trim() === "") {
-        debugLog("WARNING: Empty response received");
-        assistantMessage = "I received your message but couldn't generate a proper response. Please try again.";
-      }
-      
-      setMessages((prev: Message[]) => [
-        ...prev,
-        { role: "assistant", content: assistantMessage },
-      ]);
     } catch (error) {
-      debugLog("Error during API call", { 
-        message: error instanceof Error ? error.message : String(error),
-        error 
-      });
+      console.error("Error submitting leave request:", error);
       
-      // Provide a fallback response when API is unavailable
-      const fallbackResponses = [
-        "I'm sorry, but I'm having trouble connecting to my backend services. Please try again later.",
-        "The WatsonX AI service is currently unavailable. This may be due to missing or invalid API credentials.",
-        "I encountered a network issue. The system administrator needs to check the WatsonX API configuration.",
-        "I apologize for the inconvenience, but I can't process your request right now due to a service configuration issue."
-      ];
-      
-      const randomFallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
-      debugLog("Using fallback response", { response: randomFallback });
-      
-      setMessages((prev: Message[]) => [
+      setMessages(prev => [
         ...prev,
         {
           role: "assistant",
-          content: randomFallback,
-        },
+          content: `❌ I'm sorry, there was an error submitting your leave request: ${error instanceof Error ? error.message : "Unknown error"}. Please try again later or contact HR directly.`
+        }
       ]);
-    } finally {
-      setIsLoading(false);
-      debugLog("Request handling completed");
+      
+      toast.error("Failed to submit leave request");
+      
+      // Reset leave request state
+      setLeaveRequest({
+        active: false,
+        stage: "type",
+        leaveType: "",
+        startDate: null,
+        endDate: null,
+        reason: ""
+      });
     }
-  }
+  };
+
+  // Handle effect for leave request completion
+  useEffect(() => {
+    if (leaveRequest.active && leaveRequest.stage === "complete") {
+      submitLeaveRequest();
+    }
+  }, [leaveRequest]);
 
   // Streaming API implementation
   async function handleSubmitStreaming(e: React.FormEvent) {
@@ -183,157 +747,189 @@ export function ChatWidget() {
     
     if (input.trim() === "") return;
     
-    debugLog("Submitting message via streaming API", { message: input });
-    
+    // Store user message
     const userMessage: Message = { role: "user", content: input };
+    
+    // Add user message to chat
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
     
-    // Create an initial AI response message
+    // Track current length which is where we'll insert the AI response
+    const userMessageIndex = messages.length;
+    const assistantMessageIndex = userMessageIndex + 1;
+    
+    // First, check if we're in an active leave request conversation
+    if (leaveRequest.active) {
+      // Process the input based on current stage of leave request
+      const response = processLeaveRequestInput(input);
+      
+      // Add the response as an assistant message
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: response }
+      ]);
+      
+      setIsLoading(false);
+      return;
+    }
+    
+    // Check for leave request intent
+    const lowerInput = input.toLowerCase();
+    const isLeaveRequestIntent = isLeaveRelated(lowerInput);
+    
+    // Start a leave request conversation if detected
+    if (isLeaveRequestIntent && 
+        (lowerInput.includes("request") || 
+         lowerInput.includes("need") || 
+         lowerInput.includes("want") || 
+         lowerInput.includes("take"))) {
+      
+      setLeaveRequest({
+        ...leaveRequest,
+        active: true
+      });
+      
+      // Initial response to start the leave request process
+      setMessages((prev) => [
+        ...prev, 
+        { 
+          role: "assistant", 
+          content: "I'd be happy to help you request leave. What type of leave would you like to request? Here are the available options:\n\n" +
+            leaveTypes.map(type => `- **${type.name}**: ${type.description} (Maximum ${type.maxDays} days)`).join("\n")
+        }
+      ]);
+      
+      setIsLoading(false);
+      return;
+    }
+    
+    // Create an initial AI response message with empty content
     setMessages((prev) => [
       ...prev,
       { role: "assistant", content: "" },
     ]);
     
+    // Initialize accumulatedContent at the function level so it's available throughout
+    let accumulatedContent = "";
+    
     try {
-      debugLog("Fetching from streaming API endpoint");
-      const startTime = Date.now();
+      // Get all messages except the last empty one for context
+      const conversationHistory = messages.concat(userMessage);
       
+      debugLog("Sending to WatsonX API", {
+        messageCount: conversationHistory.length,
+        userMessage: userMessage.content.substring(0, 50) + "..."
+      });
+      
+      // Call the API with streaming response
       const response = await fetch("/api/watsonx-chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
-          streaming: true,
+          messages: conversationHistory,
+          streaming: true
         }),
       });
       
-      const endTime = Date.now();
-      debugLog(`Streaming API request initiated in ${endTime - startTime}ms with status ${response.status}`);
-      
       if (!response.ok) {
-        // Handle HTTP errors gracefully
-        debugLog("API Error response", { 
-          status: response.status, 
-          statusText: response.statusText 
-        });
-        throw new Error(`API Error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
       
-      // Handle SSE response
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("Response body is null");
-      
-      let partialResponse = "";
-      let chunkCounter = 0;
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          debugLog("Stream completed after receiving", { 
-            chunkCount: chunkCounter,
-            totalResponseLength: partialResponse.length
-          });
-          break;
-        }
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
         
-        // Decode chunk
-        const chunk = new TextDecoder().decode(value);
-        chunkCounter++;
-        
-        // Parse SSE data
-        const lines = chunk.split('\n');
-        let parsedChunk = "";
-        
-        debugLog(`Processing chunk #${chunkCounter}`, { chunkSize: chunk.length });
-        
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try {
-              const jsonData = JSON.parse(line.substring(5));
-              debugLog("Parsed SSE JSON data", { dataKeys: Object.keys(jsonData) });
-              
-              if (jsonData.generated_text) {
-                parsedChunk += jsonData.generated_text;
-              } else if (jsonData.results && Array.isArray(jsonData.results) && jsonData.results[0]?.generated_text) {
-                parsedChunk += jsonData.results[0].generated_text;
-              } else if (jsonData.choices && jsonData.choices[0]?.delta?.content) {
-                parsedChunk += jsonData.choices[0].delta.content;
-              } else if (jsonData.error) {
-                debugLog("Error in stream", { error: jsonData.error });
-                throw new Error(jsonData.error);
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            debugLog("Stream completed");
+            break;
+          }
+          
+          // Decode and parse the chunk
+          const chunk = decoder.decode(value, { stream: true });
+          debugLog("Received chunk", { chunkLength: chunk.length });
+          
+          // Process the chunk line by line
+          const lines = chunk.split("\n\n");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                // Extract the JSON data
+                const jsonStr = line.replace("data: ", "");
+                if (jsonStr.trim() === "") continue;
+                if (jsonStr === "[DONE]") break;
+                
+                const data = JSON.parse(jsonStr);
+                const text = data.generated_text || "";
+                // Use the role from the response if available, otherwise default to assistant
+                const role = data.role || "assistant";
+                
+                if (text) {
+                  accumulatedContent += text;
+                  
+                  // Update the AI message while preserving the user message
+                  setMessages(current => {
+                    // Create a copy of the current messages
+                    const updated = [...current];
+                    
+                    // Make sure we're updating the assistant message, not overwriting the user message
+                    if (updated.length > assistantMessageIndex && updated[assistantMessageIndex]) {
+                      updated[assistantMessageIndex] = {
+                        role: role,
+                        content: accumulatedContent
+                      };
+                    }
+                    
+                    return updated;
+                  });
+                }
+              } catch (err) {
+                console.error("Error parsing streaming response:", err);
               }
-            } catch (e) {
-              debugLog("Failed to parse JSON from SSE", {
-                error: e instanceof Error ? e.message : String(e), 
-                line: line.substring(0, 100) + "..."
-              });
             }
           }
         }
-        
-        // Update partialResponse
-        partialResponse += parsedChunk;
-        debugLog("Updated partial response", { 
-          newContentLength: parsedChunk.length,
-          totalLength: partialResponse.length 
-        });
-        
-        // Update the last message
-        setMessages((prev) => {
-          const updatedMessages = [...prev];
-          updatedMessages[updatedMessages.length - 1] = {
-            role: "assistant",
-            content: partialResponse || "Processing your request...",
-          };
-          return updatedMessages;
-        });
       }
-
-      // If we ended up with an empty response, provide a fallback
-      if (!partialResponse || partialResponse.trim() === "") {
-        debugLog("WARNING: Empty streaming response received");
-        setMessages((prev) => {
-          const updatedMessages = [...prev];
-          updatedMessages[updatedMessages.length - 1] = {
-            role: "assistant",
-            content: "I received your message but couldn't generate a proper response. Please try again.",
-          };
-          return updatedMessages;
-        });
+      
+      // Check if the generated response contains a leave request suggestion
+      // If it does, we'll follow up with a more direct question
+      if (isLeaveRelated(accumulatedContent) && !leaveRequest.active) {
+        setTimeout(() => {
+          setMessages(prev => {
+            const existingMessages = [...prev];
+            return [
+              ...existingMessages,
+              { 
+                role: "assistant", 
+                content: "It sounds like you might be interested in requesting leave. Would you like me to help you submit a leave request? Please respond with 'yes' if you'd like to proceed." 
+              }
+            ];
+          });
+        }, 1000);
       }
+      
     } catch (error) {
-      debugLog("Error during streaming API call", { 
-        message: error instanceof Error ? error.message : String(error),
-        error 
-      });
+      console.error("Error in chat:", error);
       
-      // Provide a fallback response when API is unavailable
-      const fallbackResponses = [
-        "I'm sorry, but I'm having trouble connecting to my backend services. Please try again later.",
-        "The WatsonX AI service is currently unavailable. This may be due to missing or invalid API credentials.",
-        "I encountered a network issue. The system administrator needs to check the WatsonX API configuration.",
-        "I apologize for the inconvenience, but I can't process your request right now due to a service configuration issue."
-      ];
-      
-      const randomFallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
-      debugLog("Using fallback streaming response", { response: randomFallback });
-      
-      // Update error message
-      setMessages((prev) => {
-        const updatedMessages = [...prev];
-        updatedMessages[updatedMessages.length - 1] = {
-          role: "assistant",
-          content: randomFallback,
-        };
-        return updatedMessages;
+      // Add error message while preserving the user message
+      setMessages(current => {
+        const updated = [...current];
+        
+        // Make sure we're updating the assistant message at the correct index
+        if (updated.length > assistantMessageIndex && updated[assistantMessageIndex].role === "assistant" && updated[assistantMessageIndex].content === "") {
+          updated[assistantMessageIndex] = {
+            role: "assistant",
+            content: "I'm sorry, I'm having trouble connecting right now. Please try again later."
+          };
+        }
+        
+        return updated;
       });
     } finally {
       setIsLoading(false);
-      debugLog("Streaming request handling completed");
     }
   }
 
@@ -369,7 +965,7 @@ export function ChatWidget() {
         </PopoverTrigger>
         <PopoverContent
           className={cn(
-            "w-[340px] sm:w-[400px] p-0 rounded-2xl shadow-2xl border-0 overflow-hidden",
+            "w-[340px] sm:w-[450px] p-0 rounded-2xl shadow-2xl border-0 overflow-hidden",
             "transition-all duration-300 ease-in-out",
             isDarkTheme 
               ? "bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-md" 
@@ -379,7 +975,7 @@ export function ChatWidget() {
           align="end"
           sideOffset={20}
         >
-          <div className="flex flex-col h-[500px] sm:h-[550px]">
+          <div className="flex flex-col h-[540px] sm:h-[600px]">
             {/* Chat header */}
             <div 
               className={cn(

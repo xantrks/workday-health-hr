@@ -89,7 +89,7 @@ Sanicle-AI is a comprehensive women's health platform designed for workplace wel
   - [🤖 AI Assistant Implementation](#-ai-assistant-implementation)
     - [Features](#features)
     - [Technology](#technology)
-  - [🧠 IBM Cloud watsonx AI Integration](#-ibm-cloud-watsonx-ai-integration)
+  - [🧠 IBM Cloud Watson X AI Integration](#-ibm-cloud-watson-x-ai-integration)
     - [Overview](#overview)
     - [Features](#features-1)
     - [Architecture](#architecture)
@@ -305,18 +305,17 @@ Sani, the AI health assistant, provides personalized support and guidance to emp
 - **Mental Health Support**: Conversations about stress and emotional well-being
 - **Privacy Protection**: Confidential interactions with user data protection
 - **Health Education**: Information about women's health topics and resources
+- **Leave Management**: Assistance with creating and submitting leave requests
 
 ### Technology
 
-The AI assistant is powered by Google's Gemini AI models through the @ai-sdk/google integration, with custom middleware for handling health-specific queries and ensuring privacy.
+The AI assistant is powered by IBM's Watson X AI, with custom middleware for handling health-specific queries and ensuring privacy.
 
-## 🧠 IBM Cloud watsonx AI Integration
-
-The platform features dual AI capabilities, leveraging both Google's Gemini AI and IBM's watsonx AI to provide comprehensive women's health support.
+## 🧠 IBM Cloud Watson X AI Integration
 
 ### Overview
 
-While the main AI Health Assistant (accessed via the Women's Health Assistant button) uses Google's Gemini AI, the platform also integrates IBM's watsonx AI through a convenient chat widget located in the bottom-right corner of the employee dashboard.
+The platform leverages IBM's Watson X AI to provide comprehensive women's health support through a convenient chat widget located in the bottom-right corner of the employee dashboard.
 
 ### Features
 
@@ -324,11 +323,11 @@ While the main AI Health Assistant (accessed via the Women's Health Assistant bu
 - **Specialized Health Focus**: Trained specifically for women's health conversations
 - **Real-time Streaming Responses**: Provides dynamic, typing-like response generation
 - **Enterprise-Grade Security**: Leverages IBM Cloud's robust security infrastructure
-- **Multi-modal Integration**: Complements the primary Gemini-based AI assistant
+- **Leave Request Processing**: Facilitates employee leave requests through natural conversation
 
 ### Architecture
 
-The watsonx AI integration follows a client-server architecture:
+The Watson X AI integration follows a client-server architecture:
 
 #### Frontend Implementation
 - **Chat Widget Component**: A floating button in the bottom-right corner of the employee dashboard that expands into a chat interface
@@ -345,15 +344,13 @@ The watsonx AI integration follows a client-server architecture:
 
 ### Configuration
 
-To use the IBM watsonx AI feature, you need to configure the following environment variables:
+To use the IBM Watson X AI feature, you need to configure the following environment variables:
 
 ```env
 # IBM WatsonX AI configuration
 NEXT_PUBLIC_WATSONX_API_URL=https://us-south.ml.cloud.ibm.com/ml/v4/deployments
 WATSONX_API_KEY=your_watsonx_api_key
 WATSONX_DEPLOYMENT_ID=your_watsonx_deployment_id
-WATSONX_TOKEN_URL=https://iam.cloud.ibm.com/identity/token
-WATSONX_VERSION=2021-05-01
 ```
 
 ### Setup Instructions

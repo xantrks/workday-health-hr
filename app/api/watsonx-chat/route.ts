@@ -116,7 +116,33 @@ export async function POST(req: NextRequest) {
       // Return streaming response directly
       if (streaming) {
         debugLog("Returning streaming response from WatsonX");
-        return new NextResponse(response.body, {
+        const transformedStream = new TransformStream({
+          async transform(chunk, controller) {
+            // Convert the chunk to string
+            const text = new TextDecoder().decode(chunk);
+            
+            // Handle JSON parsing and transformation for streaming
+            try {
+              // IBM WatsonX format could vary - we need to adapt
+              // The key issue: ensure we're always using assistant role in the response
+              const jsonData = { 
+                role: "assistant",
+                generated_text: text 
+              };
+              
+              // Format in SSE format
+              const data = `data: ${JSON.stringify(jsonData)}\n\n`;
+              controller.enqueue(new TextEncoder().encode(data));
+            } catch (e) {
+              // In case of parsing error, send original chunk with proper role
+              const fallbackData = `data: ${JSON.stringify({ role: "assistant", generated_text: text })}\n\n`;
+              controller.enqueue(new TextEncoder().encode(fallbackData));
+            }
+          }
+        });
+        
+        // Return the transformed stream
+        return new NextResponse(response.body?.pipeThrough(transformedStream), {
           headers: {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
@@ -187,6 +213,7 @@ function generateMockResponse(userInput: string, streaming: boolean = false): Ne
           delay += 30 + Math.random() * 70;
           setTimeout(() => {
             const packet = {
+              role: "assistant",
               generated_text: part + (index < parts.length - 1 ? ' ' : '')
             };
             const data = `data: ${JSON.stringify(packet)}\n\n`;

@@ -969,37 +969,178 @@ export async function createLeaveRequest({
   endDate,
   leaveType,
   reason,
+  organizationId
 }: {
   employeeId: string;
   startDate: Date;
   endDate: Date; 
   leaveType: string;
   reason: string;
+  organizationId?: string;
 }) {
+  // Add comprehensive logging for debugging
+  console.log("[LEAVE_REQUEST_CREATE] Starting with params:", { 
+    employeeId, 
+    startDate: startDate.toISOString(), 
+    endDate: endDate.toISOString(), 
+    leaveType, 
+    reason, 
+    organizationId 
+  });
+  
   try {
-    const result = await sql`
+    // Get employee record to find organization ID if not provided
+    let orgId = organizationId;
+    
+    if (!orgId) {
+      console.log("[LEAVE_REQUEST_CREATE] No organization ID provided, looking up from Employee record");
+      // First try raw SQL because we have issues with the Drizzle query
+      const employeeResult = await sql`
+        SELECT organization_id FROM "Employee" 
+        WHERE user_id = ${employeeId} 
+        LIMIT 1
+      `;
+      
+      console.log("[LEAVE_REQUEST_CREATE] Employee lookup result:", employeeResult);
+      
+      if (employeeResult.length > 0 && employeeResult[0].organization_id) {
+        orgId = employeeResult[0].organization_id;
+        console.log("[LEAVE_REQUEST_CREATE] Found organization ID from Employee:", orgId);
+      } else {
+        // Try getting from user table
+        console.log("[LEAVE_REQUEST_CREATE] No Employee record with org ID, checking User table");
+        const userResult = await sql`
+          SELECT organization_id FROM "User" 
+          WHERE id = ${employeeId} 
+          LIMIT 1
+        `;
+        
+        console.log("[LEAVE_REQUEST_CREATE] User lookup result:", userResult);
+        
+        if (userResult.length > 0 && userResult[0].organization_id) {
+          orgId = userResult[0].organization_id;
+          console.log("[LEAVE_REQUEST_CREATE] Found organization ID from User:", orgId);
+        }
+      }
+    }
+    
+    // Check if employee record exists
+    console.log("[LEAVE_REQUEST_CREATE] Checking if Employee record exists");
+    const employeeCheck = await sql`
+      SELECT id FROM "Employee" 
+      WHERE user_id = ${employeeId}
+      LIMIT 1
+    `;
+    
+    console.log("[LEAVE_REQUEST_CREATE] Employee check result:", employeeCheck);
+    
+    let employeeRecordId;
+    let result;
+    
+    // If employee record doesn't exist, create one
+    if (employeeCheck.length === 0) {
+      console.log(`[LEAVE_REQUEST_CREATE] Creating missing employee record for user: ${employeeId}`);
+      
+      // Get user data if needed for the employee record
+      const userData = await sql`
+        SELECT first_name, last_name, organization_id 
+        FROM "User" 
+        WHERE id = ${employeeId}
+        LIMIT 1
+      `;
+      
+      console.log("[LEAVE_REQUEST_CREATE] User data for employee creation:", userData);
+      
+      if (userData.length === 0) {
+        throw new Error(`User with ID ${employeeId} not found`);
+      }
+      
+      // Create employee record with a new generated UUID for the id field
+      const newEmployeeResult = await sql`
+        INSERT INTO "Employee" (
+          user_id,
+          organization_id,
+          job_title,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ${employeeId},
+          ${userData[0].organization_id || orgId || null},
+          'Employee',
+          NOW(),
+          NOW()
+        )
+        RETURNING id
+      `;
+      
+      console.log("[LEAVE_REQUEST_CREATE] New employee record result:", newEmployeeResult);
+      
+      if (newEmployeeResult.length === 0) {
+        throw new Error("Failed to create employee record");
+      }
+      
+      employeeRecordId = newEmployeeResult[0].id;
+      console.log(`[LEAVE_REQUEST_CREATE] Employee record created with ID: ${employeeRecordId}`);
+    } else {
+      employeeRecordId = employeeCheck[0].id;
+      console.log(`[LEAVE_REQUEST_CREATE] Using existing employee record ID: ${employeeRecordId}`);
+    }
+    
+    // Format dates properly to avoid timezone issues
+    const formattedStartDate = startDate.toISOString().split('T')[0];
+    const formattedEndDate = endDate.toISOString().split('T')[0];
+    
+    console.log("[LEAVE_REQUEST_CREATE] Inserting leave request with formatted dates:", {
+      formattedStartDate,
+      formattedEndDate
+    });
+    
+    // Insert leave request
+    result = await sql`
       INSERT INTO "LeaveRequest" (
         employee_id,
         start_date,
         end_date,
         leave_type,
         reason,
-        status
+        status,
+        organization_id,
+        created_at,
+        updated_at
       )
       VALUES (
-        ${employeeId},
-        ${startDate},
-        ${endDate},
+        ${employeeRecordId},
+        ${formattedStartDate},
+        ${formattedEndDate},
         ${leaveType},
         ${reason},
-        'pending'
+        'pending',
+        ${orgId || null},
+        NOW(),
+        NOW()
       )
       RETURNING *
     `;
     
+    console.log("[LEAVE_REQUEST_CREATE] Leave request insert result:", result);
+    
+    // Double-check that the record was created by fetching it
+    const verifyRecord = await sql`
+      SELECT * FROM "LeaveRequest" 
+      WHERE id = ${result[0].id}
+      LIMIT 1
+    `;
+    
+    console.log("[LEAVE_REQUEST_CREATE] Verification query result:", verifyRecord);
+    
+    if (verifyRecord.length === 0) {
+      throw new Error("Leave request was not properly saved in the database");
+    }
+    
     return result[0];
   } catch (error) {
-    console.error("Failed to create leave request:", error);
+    console.error("[LEAVE_REQUEST_CREATE] Failed to create leave request:", error);
     throw error;
   }
 }
@@ -1160,22 +1301,14 @@ export async function saveChat({
   organizationId?: string | null;
 }) {
   try {
-    // Check if chat exists
-    const existingChat = await sql`
-      SELECT * FROM "Chat"
-      WHERE id = ${id}
-    `;
+    // Check if chat exists first
+    const existingChat = await getChatById({ id });
     
-    if (existingChat.length > 0) {
-      // Update existing chat
-      await sql`
-        UPDATE "Chat"
-        SET messages = ${JSON.stringify(messages)}
-        WHERE id = ${id}
-      `;
-      return existingChat[0];
-    } else {
-      // Create new chat
+    // Format date in ISO format for consistent storage
+    const createdAt = new Date().toISOString();
+    
+    // If chat doesn't exist, create it
+    if (!existingChat) {
       const result = await sql`
         INSERT INTO "Chat" (
           id,
@@ -1186,17 +1319,40 @@ export async function saveChat({
         )
         VALUES (
           ${id},
-          ${new Date()},
+          ${createdAt},
           ${JSON.stringify(messages)},
           ${userId},
           ${organizationId || null}
         )
         RETURNING *
       `;
-      return result[0];
+      
+      return {
+        id: result[0].id,
+        createdAt: result[0].createdAt,
+        messages: result[0].messages,
+        userId: result[0].userId,
+        organizationId: result[0].organization_id
+      };
     }
+    
+    // Otherwise, update the existing chat
+    const result = await sql`
+      UPDATE "Chat"
+      SET messages = ${JSON.stringify(messages)}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return {
+      id: result[0].id,
+      createdAt: result[0].createdAt,
+      messages: result[0].messages,
+      userId: result[0].userId,
+      organizationId: result[0].organization_id
+    };
   } catch (error) {
-    console.error("Failed to save chat:", error);
+    console.error('Error in saveChat:', error);
     throw error;
   }
 }

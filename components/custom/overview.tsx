@@ -24,28 +24,13 @@ export const Overview = () => {
           <MessageIcon size={14} />
         </p>
         <p>
-          This is an open source Chatbot template powered by the Google Gemini
-          model built with Next.js and the AI SDK by Vercel. It uses the{" "}
-          <code className="rounded-sm bg-muted-foreground/15 px-1 sm:px-1.5 py-0.5">
-            streamText
-          </code>{" "}
-          function in the server and the{" "}
-          <code className="rounded-sm bg-muted-foreground/15 px-1 sm:px-1.5 py-0.5">
-            useChat
-          </code>{" "}
-          hook on the client to create a seamless chat experience.
+          This is an open source Chatbot template powered by IBM Watson X AI
+          built with Next.js. It uses server-sent events for streaming responses
+          and provides a seamless chat experience.
         </p>
         <p>
           {" "}
-          You can learn more about the AI SDK by visiting the{" "}
-          <Link
-            className="text-blue-500 dark:text-blue-400"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            Docs
-          </Link>
-          .
+          Explore more about health assistance features through the dashboard interface.
         </p>
       </div>
     </motion.div>

@@ -9,9 +9,11 @@ node_modules
 coverage
 
 # next.js
-.next/
-out/
-build
+.next
+out
+
+# production
+/build
 
 # misc
 .DS_Store
@@ -24,19 +26,39 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*.local
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Specific
+__pycache__/
+
+# IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sanicle AI output
+/sanicle-ai
+
+# Test data
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # turbo
 .turbo
 
 .env
-.vercel
 .vscode
 .env*.local
-/gemini-chatbot
 /sanicle-cloud-实现AI对话功能的示例项目
 /登陆成功的示例项目
 20250310_1840_登录重定向问题的全过程复盘与分析（详细英文版）.md

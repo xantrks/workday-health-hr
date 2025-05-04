@@ -40,15 +40,6 @@ export default function DashboardHeader({ userName, userId, profileImageUrl }: D
           <p className="text-xs sm:text-sm text-muted-foreground mt-0 sm:mt-1">Welcome back, {userName}</p>
         </div>
       </div>
-      <Button 
-        className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9"
-        variant="accent"
-        size="sm"
-        onClick={() => router.push(`/chat/new?userId=${userId}&role=hr`)}
-      >
-        <MessageSquare className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-        Consult Sani Assistant
-      </Button>
     </div>
   );
 } 

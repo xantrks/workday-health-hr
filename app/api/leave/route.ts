@@ -55,36 +55,65 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      console.log("Creating leave request with data:", {
+        employeeId: session.user.id,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        leaveType,
+        reason,
+        organizationId: session.user.organizationId
+      });
+
+      // Create the leave request with organization ID if available
       const leaveRequest = await createLeaveRequest({
         employeeId: session.user.id,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         leaveType,
         reason,
+        organizationId: session.user.organizationId
       });
 
+      if (!leaveRequest || !leaveRequest.id) {
+        throw new Error("Failed to create leave request in database - no ID returned");
+      }
+
+      console.log("Leave request created successfully:", leaveRequest);
       return NextResponse.json(leaveRequest);
     } catch (dbError) {
       console.error("Database error when creating leave request:", dbError);
       
-      // Return a mock response to ensure UI flow works even if DB fails
-      const mockLeaveRequest = {
-        id: crypto.randomUUID(),
-        employee_id: session.user.id,
-        start_date: new Date(startDate),
-        end_date: new Date(endDate),
-        leave_type: leaveType,
-        reason,
-        status: "pending",
-        created_at: new Date(),
-        updated_at: new Date()
-      };
-      
-      return NextResponse.json(mockLeaveRequest);
+      // Return a proper error with full details
+      return new NextResponse(
+        JSON.stringify({ 
+          error: "Database error", 
+          message: "Failed to save leave request to database",
+          details: dbError instanceof Error ? dbError.message : String(dbError),
+          stack: dbError instanceof Error ? dbError.stack : undefined
+        }), 
+        { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
     }
   } catch (error) {
     console.error("Failed to create leave request:", error);
-    return new NextResponse("An error occurred while creating leave request", { status: 500 });
+    return new NextResponse(
+      JSON.stringify({
+        error: "Server error",
+        message: "An error occurred while creating leave request",
+        details: error instanceof Error ? error.message : String(error)
+      }),
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   }
 }
 
