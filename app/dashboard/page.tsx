@@ -66,10 +66,11 @@ export default function Dashboard() {
         // Try multiple navigation methods for increased reliability
         
         // Method 1: Direct window location navigation
-        window.location.href = dashboardPath;
-        
-        // If the above doesn't work immediately, the following code won't execute
-        // because the page will have navigated away
+        if (window.top) {
+          window.top.location.href = dashboardPath;
+        } else {
+          window.location.href = dashboardPath;
+        }
       } else {
         console.error("Could not determine dashboard path");
         setIsRedirecting(false);
@@ -99,11 +100,19 @@ export default function Dashboard() {
         const form = document.createElement('form');
         form.method = 'GET';
         form.action = fallbackPath;
+        form.target = '_top';
         document.body.appendChild(form);
         form.submit();
       } catch (fallbackError) {
-        console.error("All navigation methods failed:", fallbackError);
-        setIsRedirecting(false);
+        console.error("Form-based navigation failed:", fallbackError);
+        
+        // Method 3: Static fallback dashboard
+        try {
+          window.location.href = '/employee-dashboard/static';
+        } catch (finalError) {
+          console.error("All navigation methods failed:", finalError);
+          setIsRedirecting(false);
+        }
       }
     }
   };

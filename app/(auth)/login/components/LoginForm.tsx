@@ -55,10 +55,19 @@ export function LoginForm() {
           // Try multiple navigation methods to increase chances of success
           if (typeof window !== 'undefined') {
             // Method 1: Direct location change
-            window.location.href = dashboardPath;
+            window.top ? window.top.location.href = dashboardPath : window.location.href = dashboardPath;
             
-            // If the above doesn't immediately redirect, the user will see
-            // the success UI with manual options
+            // Method 2: Form-based navigation (more compatible) as fallback
+            try {
+              const form = document.createElement('form');
+              form.method = 'GET';
+              form.action = dashboardPath;
+              form.target = '_top';
+              document.body.appendChild(form);
+              setTimeout(() => form.submit(), 200);
+            } catch (formError) {
+              console.error("Form navigation fallback failed:", formError);
+            }
           }
         } catch (error) {
           console.error("Automatic redirection failed:", error);
@@ -143,14 +152,15 @@ export function LoginForm() {
         document.body.appendChild(form);
         form.submit();
       } catch (backupError) {
-        console.error("All navigation methods failed:", backupError);
+        console.error("Form-based navigation failed:", backupError);
         
         // Approach 4: Static page fallback
         try {
           window.location.href = '/employee-dashboard/static';
-        } catch {
-          // If even this fails, user will need to navigate manually
-          console.error("Static fallback navigation failed");
+        } catch (finalError) {
+          console.error("All navigation methods failed:", finalError);
+          // Display an error to the user
+          toast.error("Navigation failed. Please use one of the other options.");
         }
       }
     }
@@ -163,7 +173,7 @@ export function LoginForm() {
         <div className="text-center w-full max-w-md bg-white shadow-lg rounded-lg p-6 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-4">Login Successful</h2>
           <p className="mb-4 text-gray-600">You will be redirected to your dashboard shortly...</p>
-          <p className="mb-6 sm:mb-8 text-gray-600">If you are not redirected automatically, please use the button below.</p>
+          <p className="mb-6 sm:mb-8 text-gray-600">If you are not redirected automatically, please use one of the options below.</p>
           
           <div className="space-y-4">
             <button 
@@ -178,6 +188,26 @@ export function LoginForm() {
               className="block w-full bg-green-600 text-white px-4 py-3 rounded-md text-center hover:bg-green-700 transition-colors"
             >
               Direct link to dashboard
+            </a>
+
+            <form 
+              action={getDashboardPath(formState.role, userId)} 
+              method="GET"
+              className="block"
+            >
+              <button 
+                type="submit" 
+                className="w-full bg-purple-600 text-white px-4 py-3 rounded-md text-center hover:bg-purple-700 transition-colors"
+              >
+                Form-based navigation
+              </button>
+            </form>
+            
+            <a 
+              href="/employee-dashboard/static"
+              className="block w-full bg-yellow-600 text-white px-4 py-3 rounded-md text-center hover:bg-yellow-700 transition-colors"
+            >
+              Static fallback dashboard
             </a>
           </div>
           
