@@ -47,12 +47,56 @@ function debugLog(message: string, data?: any): void {
   }
 }
 
-export function ChatWidget() {
+// Props type for the ChatWidget component
+interface ChatWidgetProps {
+  viewportHeight?: number;
+}
+
+export function ChatWidget({ viewportHeight = 0 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
   const isDarkTheme = theme === 'dark';
+  
+  // Calculate maximum dialog height based on viewport
+  const maxDialogHeight = viewportHeight > 0 
+    ? `${Math.min(600, viewportHeight * 0.7)}px` 
+    : undefined;
+  
+  // Ref for the popover content element
+  const popoverRef = useRef<HTMLDivElement>(null);
+  
+  // Effect to handle dialog positioning
+  useEffect(() => {
+    if (!isOpen || !popoverRef.current) return;
+    
+    // Ensure the dialog stays within viewport
+    const handleDialogPosition = () => {
+      const dialog = popoverRef.current;
+      if (!dialog) return;
+      
+      const viewportHeight = window.innerHeight;
+      const dialogRect = dialog.getBoundingClientRect();
+      
+      // Check if dialog extends beyond top of viewport
+      if (dialogRect.top < 0) {
+        // Adjust the dialog's position to be within viewport
+        dialog.style.maxHeight = `${viewportHeight - 100}px`;
+        dialog.style.transform = 'translateY(0)';
+      }
+    };
+    
+    // Apply positioning
+    handleDialogPosition();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', handleDialogPosition);
+    
+    return () => {
+      window.removeEventListener('resize', handleDialogPosition);
+    };
+  }, [isOpen]);
   
   // Leave request conversation state
   const [leaveRequest, setLeaveRequest] = useState<LeaveRequestState>({
@@ -362,7 +406,7 @@ export function ChatWidget() {
         // Check for "same day" or "one day" response
         if (userInput.toLowerCase().match(/\b(same|one|1|single|just one)\s*(day)?\b/) || 
             userInput.toLowerCase().includes("just that day") ||
-            userInput.toLowerCase().includes("only that day")) {
+            userInput.includes("only that day")) {
           // Use the start date as the end date
           if (updatedLeaveRequest.startDate) {
             updatedLeaveRequest.endDate = updatedLeaveRequest.startDate;
@@ -967,15 +1011,26 @@ export function ChatWidget() {
           className={cn(
             "w-[340px] sm:w-[450px] p-0 rounded-2xl shadow-2xl border-0 overflow-hidden",
             "transition-all duration-300 ease-in-out",
+            "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out",
+            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             isDarkTheme 
               ? "bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-md" 
               : "bg-gradient-to-b from-white/98 to-gray-50/98 backdrop-blur-md"
           )}
-          side="top"
+          side="bottom"
           align="end"
-          sideOffset={20}
+          sideOffset={16}
+          avoidCollisions={true}
+          ref={popoverRef}
         >
-          <div className="flex flex-col h-[540px] sm:h-[600px]">
+          <div 
+            className="flex flex-col max-h-[80vh]"
+            style={{
+              height: maxDialogHeight || 'min(600px, 80vh)'
+            }}
+          >
             {/* Chat header */}
             <div 
               className={cn(
