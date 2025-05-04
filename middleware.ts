@@ -81,9 +81,37 @@ export async function middleware(request: NextRequest) {
       }
     }
   } else {
-    // Only handle the root path redirect for non-authenticated users
-    if (path === '/' || path === '') {
-      console.log("[Middleware] Root path access, redirecting to login page");
+    // Handle authentication for protected routes
+    if (path.startsWith('/dashboard') || 
+        path.startsWith('/super-admin') || 
+        path.startsWith('/admin-dashboard') || 
+        path.startsWith('/manager-dashboard') || 
+        path.startsWith('/hr-dashboard') || 
+        path.startsWith('/employee-dashboard')) {
+      console.log("[Middleware] Protected route access without authentication, redirecting to login");
+      return NextResponse.redirect(new URL('/login', origin));
+    }
+  }
+  
+  // Specifically handle the root path for both authenticated and non-authenticated users
+  if (path === '/' || path === '') {
+    if (token && token.id) {
+      console.log("[Middleware] Root path access with authentication, redirecting to appropriate dashboard");
+      // Redirect to the appropriate dashboard based on user role
+      if (token.isSuperAdmin) {
+        return NextResponse.redirect(new URL(`/super-admin/${token.id}`, origin));
+      } else if (token.role === 'orgadmin') {
+        return NextResponse.redirect(new URL(`/admin-dashboard/${token.id}`, origin));
+      } else if (token.role === 'manager') {
+        return NextResponse.redirect(new URL(`/manager-dashboard/${token.id}`, origin));
+      } else if (token.role === 'hr') {
+        return NextResponse.redirect(new URL(`/hr-dashboard/${token.id}`, origin));
+      } else {
+        // Default to employee dashboard
+        return NextResponse.redirect(new URL(`/employee-dashboard/${token.id}`, origin));
+      }
+    } else {
+      console.log("[Middleware] Root path access without authentication, redirecting to login page");
       return NextResponse.redirect(new URL('/login', origin));
     }
   }
