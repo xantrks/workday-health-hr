@@ -34,6 +34,23 @@ One-click **FREE** deployment with enterprise-grade security and scalability.
 
 <sup>🌟 Pioneering the future of women's health in the workplace. Built for enterprises and organizations of all sizes.</sup>
 
+## 🎬 Project Demo Video
+
+> [!TIP]
+> Watch our comprehensive project introduction video to see Sanicle-AI in action!
+
+<div align="center">
+  
+[![Project Introduction Video](https://img.youtube.com/vi/fomqFZWIK2Q/maxresdefault.jpg)](https://youtu.be/fomqFZWIK2Q?si=Gt44eMFpQnXFQ_rr)
+
+**🎥 [Watch Full Demo Video](https://youtu.be/fomqFZWIK2Q?si=Gt44eMFpQnXFQ_rr)**
+
+<sup>Click the image above or the link to watch our complete platform walkthrough</sup>
+
+</div>
+
+---
+
 ## 📸 Project Screenshots
 
 > [!TIP]
@@ -95,6 +112,7 @@ One-click **FREE** deployment with enterprise-grade security and scalability.
 #### TOC
 
 - [🌸 Sanicle-AIWomen's Health Platform for Workplace Wellness](#-sanicle-aiwomens-health-platform-for-workplace-wellness)
+  - [🎬 Project Demo Video](#-project-demo-video)
   - [📸 Project Screenshots](#-project-screenshots)
       - [TOC](#toc)
       - [](#)
@@ -982,5 +1000,3 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 <!-- Vercel Link -->
 [vercel-link]: https://sanicle-ai.vercel.app
-</rewritten_file>
-
