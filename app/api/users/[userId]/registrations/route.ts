@@ -1,8 +1,6 @@
-import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { eventRegistration } from "@/db/schema";
 import { db } from "@/lib/db";
 
 // GET - Retrieve all event registrations for a user
@@ -27,9 +25,7 @@ export async function GET(
     const userId = params.userId;
     
     // Get all registrations for the user
-    const registrations = await db.select()
-      .from(eventRegistration)
-      .where(eq(eventRegistration.userId, userId));
+    const registrations = db.eventRegistrations.findMany().filter(r => r.userId === userId);
     
     return NextResponse.json(registrations);
   } catch (error) {

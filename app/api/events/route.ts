@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, gte, SQL } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
-import { event } from "@/db/schema";
 
 // Event validation schema
 const EventSchema = z.object({
@@ -36,32 +34,19 @@ export async function GET(request: Request) {
     const limitParam = url.searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam) : undefined;
     
-    // Build conditions array
-    const conditions: SQL[] = [];
-    
-    // Apply filters to conditions
+    let events = db.events.findMany();
+
     if (eventType) {
-      conditions.push(eq(event.eventType, eventType));
+      events = events.filter(event => event.eventType === eventType);
     }
-    
-    // Filter for upcoming events only
+
     if (upcomingOnly) {
       const now = new Date();
-      conditions.push(gte(event.startDate, now));
+      events = events.filter(event => new Date(event.startDate) >= now);
     }
-    
-    // Execute query with conditions and order by start date
-    let events;
-    if (conditions.length > 0) {
-      events = await db.select().from(event)
-        .where(conditions[0])
-        .orderBy(event.startDate);
-    } else {
-      events = await db.select().from(event)
-        .orderBy(event.startDate);
-    }
-    
-    // Apply limit
+
+    events = events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
     const limitedEvents = limit && limit > 0 ? events.slice(0, limit) : events;
     
     return NextResponse.json(limitedEvents);
@@ -96,38 +81,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
     
-    const { 
-      title, 
-      description, 
-      eventType, 
-      startDate, 
-      endDate, 
-      location, 
-      maxAttendees, 
-      registrationLink, 
-      resourceMaterials, 
-      createdById 
-    } = validatedData.data;
+    const newEvent = db.events.create(validatedData.data);
     
-    // Convert string dates to Date objects if needed
-    const parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : startDate;
-    const parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : endDate;
-    
-    // Insert into database
-    const newEvent = await db.insert(event).values({
-      title,
-      description: description || null,
-      eventType,
-      startDate: parsedStartDate,
-      endDate: parsedEndDate,
-      location: location || null,
-      maxAttendees: maxAttendees === undefined || maxAttendees === null ? null : maxAttendees,
-      registrationLink: registrationLink === undefined || registrationLink === '' ? null : registrationLink,
-      resourceMaterials: resourceMaterials || [],
-      createdById,
-    }).returning();
-    
-    return NextResponse.json(newEvent[0]);
+    return NextResponse.json(newEvent);
   } catch (error) {
     console.error("Failed to create event:", error);
     return NextResponse.json(
@@ -153,14 +109,7 @@ export async function DELETE(request: Request) {
   }
   
   try {
-    // Delete event
-    const deleted = await db.delete(event)
-      .where(eq(event.id, id))
-      .returning();
-    
-    if (deleted.length === 0) {
-      return NextResponse.json({ error: "Event does not exist" }, { status: 404 });
-    }
+    db.events.delete(id);
     
     return NextResponse.json({ message: "Event deleted successfully" });
   } catch (error) {

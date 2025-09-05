@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
-import { resourceFile } from "@/db/schema";
 
 // POST - Increase resource download count
 export async function POST(
@@ -25,26 +23,19 @@ export async function POST(
 
   try {
     // Get current resource
-    const existingResource = await db
-      .select()
-      .from(resourceFile)
-      .where(eq(resourceFile.id, id));
+    const existingResource = db.healthRecords.findUnique(id);
 
-    if (existingResource.length === 0) {
+    if (!existingResource) {
       return NextResponse.json({ error: "Resource does not exist" }, { status: 404 });
     }
 
     // Update download count
-    const updated = await db
-      .update(resourceFile)
-      .set({
-        downloadCount: existingResource[0].downloadCount + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(resourceFile.id, id))
-      .returning();
+    const updated = db.healthRecords.update(id, {
+      downloadCount: existingResource.downloadCount + 1,
+      updatedAt: new Date(),
+    });
 
-    return NextResponse.json(updated[0]);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error("Failed to update resource download count:", error);
     return NextResponse.json(

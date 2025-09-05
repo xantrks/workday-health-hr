@@ -1,4 +1,4 @@
-import { sql } from "@/lib/db";
+import { db } from "@/lib/db";
 
 type AuditLogParams = {
   action: string;
@@ -18,47 +18,8 @@ type AuditLogParams = {
  */
 export async function createAuditLog(params: AuditLogParams) {
   try {
-    const {
-      action,
-      entityId,
-      entityType,
-      userId,
-      organizationId,
-      details,
-      ipAddress,
-      userAgent,
-    } = params;
-
-    const detailsJson = details ? JSON.stringify(details) : null;
-    const timestamp = new Date();
-
-    const auditLog = await sql`
-      INSERT INTO "AuditLog" (
-        action,
-        entity_id,
-        entity_type,
-        user_id,
-        organization_id,
-        details,
-        ip_address,
-        user_agent,
-        timestamp
-      )
-      VALUES (
-        ${action},
-        ${entityId},
-        ${entityType},
-        ${userId || null},
-        ${organizationId || null},
-        ${detailsJson},
-        ${ipAddress || null},
-        ${userAgent || null},
-        ${timestamp}
-      )
-      RETURNING *
-    `;
-
-    return auditLog[0] || null;
+    const auditLog = db.auditLogs.create(params);
+    return auditLog;
   } catch (error) {
     console.error("Error creating audit log:", error);
     // Don't throw error to prevent disrupting the main flow

@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
-import { event } from "@/db/schema";
 
 // Event update validation schema
 const EventUpdateSchema = z.object({
@@ -33,9 +31,7 @@ export async function GET(
   try {
     const id = params.id;
     
-    const [selectedEvent] = await db.select()
-      .from(event)
-      .where(eq(event.id, id));
+    const selectedEvent = db.events.findUnique(id);
     
     if (!selectedEvent) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
@@ -77,57 +73,13 @@ export async function PATCH(
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
     
-    const updateData = validatedData.data;
+    const updatedEvent = db.events.update(id, validatedData.data);
     
-    // Create a properly typed update object
-    const dbUpdateObject: {
-      title?: string;
-      description?: string;
-      eventType?: string;
-      startDate?: Date;
-      endDate?: Date;
-      location?: string;
-      maxAttendees?: number;
-      registrationLink?: string;
-      resourceMaterials?: string[];
-      updatedAt: Date;
-    } = {
-      updatedAt: new Date()
-    };
-    
-    // Copy validated properties to our typed update object
-    if (updateData.title !== undefined) dbUpdateObject.title = updateData.title;
-    if (updateData.description !== undefined) dbUpdateObject.description = updateData.description;
-    if (updateData.eventType !== undefined) dbUpdateObject.eventType = updateData.eventType;
-    if (updateData.location !== undefined) dbUpdateObject.location = updateData.location;
-    if (updateData.maxAttendees !== undefined) dbUpdateObject.maxAttendees = updateData.maxAttendees;
-    if (updateData.registrationLink !== undefined) dbUpdateObject.registrationLink = updateData.registrationLink;
-    if (updateData.resourceMaterials !== undefined) dbUpdateObject.resourceMaterials = updateData.resourceMaterials;
-    
-    // Convert date strings to Date objects
-    if (updateData.startDate) {
-      dbUpdateObject.startDate = typeof updateData.startDate === 'string' 
-        ? new Date(updateData.startDate)
-        : updateData.startDate;
-    }
-    
-    if (updateData.endDate) {
-      dbUpdateObject.endDate = typeof updateData.endDate === 'string'
-        ? new Date(updateData.endDate)
-        : updateData.endDate;
-    }
-    
-    // Update event with properly typed object
-    const updatedEvent = await db.update(event)
-      .set(dbUpdateObject)
-      .where(eq(event.id, id))
-      .returning();
-    
-    if (updatedEvent.length === 0) {
+    if (!updatedEvent) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
     
-    return NextResponse.json(updatedEvent[0]);
+    return NextResponse.json(updatedEvent);
   } catch (error) {
     console.error("Failed to update event:", error);
     return NextResponse.json(
@@ -152,14 +104,7 @@ export async function DELETE(
   try {
     const id = params.id;
     
-    // Delete event
-    const deleted = await db.delete(event)
-      .where(eq(event.id, id))
-      .returning();
-    
-    if (deleted.length === 0) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
+    db.events.delete(id);
     
     return NextResponse.json({ message: "Event deleted successfully" });
   } catch (error) {

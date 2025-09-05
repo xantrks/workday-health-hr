@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { sql } from "@/lib/db";
+import { db } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,10 +29,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Find user
-    const users = await sql`
-      SELECT id, email, role FROM "User" 
-      WHERE email = ${email}
-    `;
+    const users = db.users.findMany().filter(user => user.email === email);
     
     if (!users || users.length === 0) {
       return NextResponse.json(
@@ -42,11 +39,8 @@ export async function POST(req: NextRequest) {
     }
     
     // Update user role to HR
-    await sql`
-      UPDATE "User"
-      SET role = 'hr'
-      WHERE email = ${email}
-    `;
+    const user = users[0];
+    db.users.update(user.id, { role: 'hr' });
     
     // Return success response
     return NextResponse.json({

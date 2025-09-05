@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
-import { resourceFile } from "@/db/schema";
 
 // POST - Increase resource view count
 export async function POST(
@@ -25,26 +23,19 @@ export async function POST(
 
   try {
     // Get current resource
-    const existingResource = await db
-      .select()
-      .from(resourceFile)
-      .where(eq(resourceFile.id, id));
+    const existingResource = db.healthRecords.findUnique(id);
 
-    if (existingResource.length === 0) {
+    if (!existingResource) {
       return NextResponse.json({ error: "Resource does not exist" }, { status: 404 });
     }
 
     // Update view count
-    const updated = await db
-      .update(resourceFile)
-      .set({
-        viewCount: existingResource[0].viewCount + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(resourceFile.id, id))
-      .returning();
+    const updated = db.healthRecords.update(id, {
+      viewCount: existingResource.viewCount + 1,
+      updatedAt: new Date(),
+    });
 
-    return NextResponse.json(updated[0]);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error("Failed to update resource view count:", error);
     return NextResponse.json(

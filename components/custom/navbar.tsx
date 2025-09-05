@@ -98,10 +98,10 @@ export const Navbar = async () => {
                 <div className="flex flex-col gap-4 py-4">
                   <Link href={logoLinkPath} className="flex items-center px-2">
                     <Image
-                      src="/images/sanicle_logo.svg"
+                      src="/images/workday_logo.svg"
                       height={28}
                       width={100}
-                      alt="Sanicle Logo"
+                      alt="Workday Logo"
                       className="h-7 w-auto"
                     />
                   </Link>
@@ -115,6 +115,12 @@ export const Navbar = async () => {
                           My Dashboard
                         </Link>
                       )}
+                      <Link
+                        href="/ai-insights"
+                        className="px-2 py-2 hover:bg-muted rounded-md transition-colors"
+                      >
+                        AI Insights
+                      </Link>
                       <Link
                         href="/chat/new"
                         className="px-2 py-2 hover:bg-muted rounded-md transition-colors"
@@ -154,10 +160,10 @@ export const Navbar = async () => {
           <div className="flex items-center gap-2">
             <Link href={logoLinkPath} className="flex items-center">
               <Image
-                src="/images/sanicle_logo.svg"
+                src="/images/workday_logo.svg"
                 height={24}
                 width={90}
-                alt="Sanicle Logo"
+                alt="Workday Logo"
                 className="h-6 sm:h-7 w-auto"
               />
             </Link>
@@ -165,7 +171,7 @@ export const Navbar = async () => {
               <SlashIcon size={16} />
             </div>
             <div className="text-xs sm:text-sm text-primary dark:text-primary truncate w-24 md:w-fit hidden sm:block font-medium">
-              FemTech Health Platform
+              Workday
             </div>
           </div>
         </div>
@@ -201,6 +207,11 @@ export const Navbar = async () => {
                 <DropdownMenuItem>
                   <Link href={dashboardPath} className="w-full">
                     My Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/ai-insights" className="w-full">
+                    AI Insights
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="p-1 z-50">

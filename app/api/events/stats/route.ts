@@ -1,9 +1,7 @@
-import { eq, count } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
-import { event, eventRegistration } from "@/db/schema";
 
 // GET - Retrieve events with registration counts
 export async function GET(request: Request) {
@@ -16,20 +14,14 @@ export async function GET(request: Request) {
   
   try {
     // Get all events
-    const events = await db.select().from(event).orderBy(event.startDate);
+    const events = db.events.findMany().sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
-    // Get registration counts for each event
-    const registrationCounts = await db
-      .select({
-        eventId: eventRegistration.eventId,
-        count: count(eventRegistration.id),
-      })
-      .from(eventRegistration)
-      .groupBy(eventRegistration.eventId);
-    
+    // Get all registrations
+    const registrations = db.eventRegistrations.findMany();
+
     // Create a map of eventId -> count
-    const countsMap = registrationCounts.reduce((acc, item) => {
-      acc[item.eventId] = item.count;
+    const countsMap = registrations.reduce((acc, item) => {
+      acc[item.eventId] = (acc[item.eventId] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     

@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
-import { resourceFile } from "@/db/schema";
 import { db } from "@/lib/db";
 
 const FileSchema = z.object({
@@ -110,7 +109,7 @@ export async function POST(request: Request) {
 
       try {
         // Save resource record directly in this API to avoid cross-API calls
-        const newResource = await db.insert(resourceFile).values({
+        const newResource = db.healthRecords.create({
           title,
           description: description || null,
           fileUrl: blob.url,
@@ -122,15 +121,15 @@ export async function POST(request: Request) {
           downloadCount: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }).returning();
+        });
 
-        if (!newResource || newResource.length === 0) {
+        if (!newResource) {
           throw new Error("Resource creation failed");
         }
 
         return NextResponse.json({
           ...blob,
-          resource: newResource[0],
+          resource: newResource,
         });
       } catch (error) {
         console.error("Resource save failed:", error);

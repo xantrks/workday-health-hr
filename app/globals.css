@@ -12,26 +12,26 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 185 73% 30%;
+    --primary: 213 62% 45%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 18 75% 95%;
-    --secondary-foreground: 185 73% 24%;
+    --secondary: 36 94% 50%;
+    --secondary-foreground: 0 0% 98%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 13 73% 53%;
+    --accent: 36 94% 50%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 185 73% 30%;
-    --chart-1: 185 73% 30%;
-    --chart-2: 13 73% 53%;
+    --ring: 213 62% 45%;
+    --chart-1: 213 62% 45%;
+    --chart-2: 36 94% 50%;
     --chart-3: 18 75% 95%;
-    --chart-4: 185 60% 40%;
-    --chart-5: 185 40% 60%;
+    --chart-4: 213 62% 55%;
+    --chart-5: 213 62% 65%;
     --radius: 0.75rem;
-    --primary-deep: #0050a0;
+    --primary-deep: #2c69b6;
 }
 
 .dark {
@@ -44,24 +44,24 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 185 73% 30%;
+    --primary: 213 62% 45%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 18 20% 20%;
-    --secondary-foreground: 18 75% 95%;
+    --secondary: 36 94% 40%;
+    --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 13 73% 53%;
+    --accent: 36 94% 40%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 185 73% 40%;
-    --chart-1: 185 73% 40%;
-    --chart-2: 13 73% 53%;
+    --ring: 213 62% 45%;
+    --chart-1: 213 62% 45%;
+    --chart-2: 36 94% 40%;
     --chart-3: 18 75% 70%;
-    --chart-4: 185 60% 60%;
-    --chart-5: 185 40% 70%;
+    --chart-4: 213 62% 60%;
+    --chart-5: 213 62% 70%;
 }
 
 @layer utilities {

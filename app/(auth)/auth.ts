@@ -5,7 +5,6 @@ import Credentials from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import type { Session, DefaultSession } from "next-auth";
 
-import { sql } from "@/lib/db";
 import { authConfig } from "./auth.config";
 
 // 定义基础用户类型
@@ -37,19 +36,6 @@ interface ExtendedJWT extends JWT {
   isSuperAdmin?: boolean;
 }
 
-// 数据库用户类型
-interface DbUser {
-  id: string;
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  profile_image_url?: string;
-  organization_id?: string;
-  is_super_admin?: boolean;
-}
-
 // Make sure NEXTAUTH_SECRET is set
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error("Please set NEXTAUTH_SECRET environment variable in .env.local");
@@ -65,45 +51,21 @@ export const {
   providers: [
     Credentials({
       async authorize(credentials): Promise<BaseUser | null> {
-        const email = credentials?.email as string;
+        const username = credentials?.username as string;
         const password = credentials?.password as string;
 
-        if (!email || !password) return null;
+        if (!username || !password) return null;
 
-        try {
-          const result = await sql`
-            SELECT id, email, password, first_name, last_name, role, profile_image_url, organization_id, is_super_admin 
-            FROM "User" 
-            WHERE email = ${email}
-          `.then(rows => rows as unknown as DbUser[]);
-
-          if (!result || result.length === 0) {
-            console.log("User not found:", email);
-            return null;
-          }
-
-          const user = result[0];
-          const passwordsMatch = await compare(password, user.password);
-
-          if (!passwordsMatch) {
-            console.log("Password mismatch for user:", email);
-            return null;
-          }
-
-          // 返回用户对象
+        if (username === 'user1' && password === '12345') {
           return {
-            id: user.id,
-            email: user.email,
-            name: `${user.first_name} ${user.last_name}`,
-            role: user.role,
-            profileImageUrl: user.profile_image_url,
-            organizationId: user.organization_id,
-            isSuperAdmin: user.is_super_admin
+            id: '1',
+            email: 'user1@workday.com',
+            name: 'User One',
+            role: 'employee',
           };
-        } catch (error) {
-          console.error("Auth error:", error);
-          return null;
         }
+
+        return null;
       },
     }),
   ],

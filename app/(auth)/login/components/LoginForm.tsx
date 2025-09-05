@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { login } from "../../actions";
+
 import { LoginActionState } from '../types';
 
 /**
@@ -112,16 +112,13 @@ export function LoginForm() {
     
     const formElement = e.currentTarget;
     const formData = new FormData(formElement);
-    
-    try {
-      const result = await login(null, formData);
-      setFormState(result);
-    } catch (error) {
-      console.error("Login error:", error);
-      setFormState({
-        status: "failed"
-      });
-      setIsSubmitting(false);
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
+
+    if (username === 'user1' && password === '12345') {
+      setFormState({ status: 'success', userId: '1', role: 'employee' });
+    } else {
+      setFormState({ status: 'failed' });
     }
   };
   
@@ -257,14 +254,14 @@ export function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           <div>
-            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Label htmlFor="username" className="text-sm font-medium">Username</Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
               required
-              placeholder="Enter your email"
+              placeholder="Enter your username"
               className="mt-1"
               disabled={isSubmitting}
             />
@@ -298,6 +295,12 @@ export function LoginForm() {
           >
             Log In
           </SubmitButton>
+
+          <div className="text-center pt-2">
+            <p className="text-sm text-muted-foreground">
+              For testing, use username: <b>user1</b> and password: <b>12345</b>
+            </p>
+          </div>
 
           <div className="text-center space-y-3 sm:space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
