@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db";
 
 const FileSchema = z.object({
@@ -36,11 +35,11 @@ const FileSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
+  // const session = await auth(); // Removed NextAuth.js authentication
 
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // if (!session) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
 
   if (request.body === null) {
     return new Response("Request body is empty", { status: 400 });
@@ -116,7 +115,7 @@ export async function POST(request: Request) {
           fileType,
           category,
           tags,
-          createdById: session.user.id,
+          createdById: "dummy-user-id", // Replaced session.user.id
           viewCount: 0,
           downloadCount: 0,
           createdAt: new Date(),

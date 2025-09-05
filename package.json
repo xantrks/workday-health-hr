@@ -44,7 +44,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.5.0",
+    
     "endent": "^2.1.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
@@ -53,7 +53,7 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "next": "15.0.0-canary.152",
-    "next-auth": "5.0.0-beta.22",
+    
     "next-themes": "^0.3.0",
     "react": "19.0.0-rc-7771d3a7-20240827",
     "react-day-picker": "8.10.1",

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
-import { auth, signOut } from "@/app/(auth)/auth";
+
 
 import { History } from "./history";
 import { MenuIcon, SlashIcon } from "./icons";
@@ -45,7 +45,8 @@ const getDashboardPath = (user: any) => {
  * Enhanced for mobile responsiveness
  */
 export const Navbar = async () => {
-  let session = await auth();
+  const isLoggedIn = typeof window !== 'undefined' && window.localStorage.getItem('user-id') === '1'; // Simple check for dummy user
+  const session = isLoggedIn ? { user: { id: "1", name: "User One", email: "user1@workday.com", role: "employee" } } : null; // Dummy session
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "";
   
@@ -64,17 +65,17 @@ export const Navbar = async () => {
   }
   
   // Don't show Sign In button on login page when user is not logged in
-  const shouldShowSignIn = !isAuthPage && !session?.user;
+  const shouldShowSignIn = !isAuthPage && !isLoggedIn;
   
   console.log("[Navbar] Should show sign in:", shouldShowSignIn);
   console.log("[Navbar] Is auth page:", isAuthPage);
-  console.log("[Navbar] User session:", session?.user ? "Exists" : "None");
+  console.log("[Navbar] User session:", isLoggedIn ? "Exists" : "None");
 
   // Get the correct dashboard path for this user
-  const dashboardPath = session?.user ? getDashboardPath(session.user) : "/dashboard";
+  const dashboardPath = isLoggedIn ? getDashboardPath(session.user) : "/dashboard";
   
   // Determine where the logo should link to based on the current page
-  let logoLinkPath = session?.user ? dashboardPath : "/";
+  let logoLinkPath = isLoggedIn ? dashboardPath : "/";
   
   // If on terms or privacy pages, link directly to the register page
   if (pathname === "/terms" || pathname === "/privacy") {
@@ -107,7 +108,7 @@ export const Navbar = async () => {
                   </Link>
                   <div className="border-t pt-4">
                     <nav className="flex flex-col gap-2">
-                      {session?.user && (
+                      {isLoggedIn && (
                         <Link
                           href={dashboardPath}
                           className="px-2 py-2 hover:bg-muted rounded-md transition-colors"
@@ -127,23 +128,18 @@ export const Navbar = async () => {
                       >
                         New Chat
                       </Link>
-                      {session?.user && (
-                        <form
-                          action={async () => {
-                            "use server";
-                            
-                            await signOut({
-                              redirectTo: "/login",
-                            });
+                      {isLoggedIn && (
+                        <button
+                          onClick={() => {
+                            if (typeof window !== 'undefined') {
+                              window.localStorage.clear();
+                              window.location.href = "/login";
+                            }
                           }}
+                          className="w-full text-left px-2 py-2 hover:bg-muted rounded-md transition-colors"
                         >
-                          <button
-                            type="submit"
-                            className="w-full text-left px-2 py-2 hover:bg-muted rounded-md transition-colors"
-                          >
-                            Sign Out
-                          </button>
-                        </form>
+                          Sign Out
+                        </button>
                       )}
                     </nav>
                   </div>
@@ -179,7 +175,7 @@ export const Navbar = async () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
           
-          {session?.user ? (
+          {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -215,23 +211,17 @@ export const Navbar = async () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="p-1 z-50">
-                  <form
-                    className="w-full"
-                    action={async () => {
-                      "use server";
-
-                      await signOut({
-                        redirectTo: "/login",
-                      });
+                  <button
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.localStorage.clear();
+                        window.location.href = "/login";
+                      }
                     }}
+                    className="w-full text-left px-1 py-0.5 text-accent hover:text-accent/90"
                   >
-                    <button
-                      type="submit"
-                      className="w-full text-left px-1 py-0.5 text-accent hover:text-accent/90"
-                    >
-                      Sign Out
-                    </button>
-                  </form>
+                    Sign Out
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -247,3 +237,4 @@ export const Navbar = async () => {
     </header>
   );
 };
+
